@@ -8,7 +8,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { User } from '../users/users.service';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -19,6 +20,7 @@ export type AuthenticatedRequest = Request & { user: User };
 export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
+    private usersService: UsersService,
     private reflector: Reflector,
   ) {}
 
@@ -28,7 +30,6 @@ export class AuthGuard implements CanActivate {
       context.getClass(),
     ]);
     if (isPublic) {
-      // 💡 See this condition
       return true;
     }
 
@@ -37,16 +38,22 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException();
     }
+    let id: number;
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: 'TEMP',
       });
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
-      request['user'] = payload;
+      id = payload.sub;
     } catch {
       throw new UnauthorizedException();
     }
+    const user: User | undefined = await this.usersService.findOneById(id);
+
+    console.log(user);
+
+    if (!user) throw new UnauthorizedException();
+
+    request['user'] = user;
     return true;
   }
 

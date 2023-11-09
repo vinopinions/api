@@ -20,6 +20,7 @@ import { AuthService } from './auth.service';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    AuthService,
   ],
   controllers: [AuthController],
   exports: [AuthService],

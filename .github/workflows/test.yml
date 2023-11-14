@@ -6,7 +6,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: node:18.16.0-alpine3.17
+    container: node:21
 
     steps:
       - name: Check out repository code

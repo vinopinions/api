@@ -12,8 +12,10 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: yarn --ignore-scripts --non-interactive
+        run: npm install --ignore-scripts --no-package-lock --no-audit --no-fund
       - name: Test tests
-        run: yarn test
+        run: npm run test
+      - name: Check dependencies
+        run: npm audit
       # - name: Test coverage
       #   run: yarn test:cov

@@ -38,7 +38,7 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException();
     }
-    let id: number;
+    let id: string;
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: 'TEMP',
@@ -47,9 +47,7 @@ export class AuthGuard implements CanActivate {
     } catch {
       throw new UnauthorizedException();
     }
-    const user: User | undefined = await this.usersService.findOneById(id);
-
-    console.log(user);
+    const user: User | null = await this.usersService.findOneById(id);
 
     if (!user) throw new UnauthorizedException();
 

@@ -1,26 +1,45 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [];
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
 
-  async findOneByUsername(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
-  }
-
-  async findOneById(id: number): Promise<User | undefined> {
-    return this.users.find((user) => user.id === id);
-  }
-
-  create(username: string, passwordHash: string) {
-    this.users.push({
-      id:
-        this.users.length == 0
-          ? 1
-          : Math.max(...this.users.map((user) => user.id)) + 1,
-      username,
-      passwordHash,
+  async create(username: string, passwordHash: string): Promise<User> {
+    const existingUser: User | null = await this.userRepository.findOne({
+      where: { username },
     });
+
+    if (existingUser !== null)
+      throw new ConflictException('username already exists');
+
+    const user: User = this.userRepository.create({ username, passwordHash });
+    return this.userRepository.save(user);
+  }
+
+  findAll() {
+    return this.userRepository.find();
+  }
+
+  findOneById(id: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  findOneByUsername(username: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { username } });
+  }
+
+  async remove(id: string): Promise<User> {
+    const user: User | null = await this.findOneById(id);
+    if (user === null) throw new NotFoundException();
+    return this.userRepository.remove(user);
   }
 }

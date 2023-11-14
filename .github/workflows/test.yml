@@ -12,7 +12,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: npm install --ignore-scripts --no-package-lock --no-audit --no-fund
+        run: npm install --ignore-scripts --no-package-lock --no-audit --no-fund && npm rebuild bcrypt --from-source
       - name: Test tests
         run: npm run test
       - name: Check dependencies

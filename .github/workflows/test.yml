@@ -6,7 +6,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: node:21
+    container: node:lts-slim
 
     steps:
       - name: Check out repository code

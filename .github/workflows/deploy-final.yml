@@ -1,0 +1,30 @@
+name: deploy final
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Modify tag version
+        run: VERSION=${{ github.ref_name }} && echo "PROJ_VERSION=${VERSION:1}" >> $GITHUB_ENV
+      - name: Login to ghcr
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+      - name: 'Build and push image'
+        run: |
+          docker build . --tag ghcr.io/layla-oskar-schule/vinopininionsapi:${{ github.ref_name }} --tag ghcr.io/layla-oskar-schule/vinopininionsapi:latest
+          docker push ghcr.io/layla-oskar-schule/vinopininionsapi:latest
+          docker push ghcr.io/layla-oskar-schule/vinopininionsapi:${{ github.ref_name }}

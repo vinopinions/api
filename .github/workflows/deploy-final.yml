@@ -25,6 +25,6 @@ jobs:
           password: ${{secrets.GITHUB_TOKEN}}
       - name: 'Build and push image'
         run: |
-          docker build . --tag ghcr.io/layla-oskar-schule/vinopininionsapi:${{ github.ref_name }} --tag ghcr.io/layla-oskar-schule/vinopininionsapi:latest
-          docker push ghcr.io/layla-oskar-schule/vinopininionsapi:latest
-          docker push ghcr.io/layla-oskar-schule/vinopininionsapi:${{ github.ref_name }}
+          docker build . --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }} --tag ghcr.io/layla-oskar-schule/vinopinionsapi:latest
+          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:latest
+          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}

@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Matches } from 'class-validator';
-import { Winemaker } from 'src/winemakers/entities/winemaker.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Winemaker } from '../../winemakers/entities/winemaker.entity';
 
 @Entity()
 export class Wine {

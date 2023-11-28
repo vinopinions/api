@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -18,6 +19,10 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<{ access_token: string }> {
+    if (!username)
+      throw new BadRequestException("'username' has to be defined");
+    if (!password)
+      throw new BadRequestException("'password' has to be defined");
     const user = await this.usersService.findOneByUsername(username);
 
     if (!user) throw new UnauthorizedException();
@@ -32,6 +37,11 @@ export class AuthService {
   }
 
   async signUp(username: string, password: string) {
+    if (!username)
+      throw new BadRequestException("'username' has to be defined");
+    if (!password)
+      throw new BadRequestException("'password' has to be defined");
+
     if (await this.usersService.findOneByUsername(username))
       throw new ConflictException();
     const hash: string = await bcrypt.hash(password, 12);

@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  InternalServerErrorException,
   SetMetadata,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -39,11 +40,16 @@ export class AuthGuard implements CanActivate {
     }
     let id: string;
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: 'TEMP',
-      });
+      const payload = await this.jwtService.verifyAsync(token);
+
+      // this only happens when the token is valid but no sub is present
+      if (!payload.sub) {
+        throw new InternalServerErrorException();
+      }
+
       id = payload.sub;
-    } catch {
+    } catch (e) {
+      console.log(e);
       throw new UnauthorizedException();
     }
     const user: User | null = await this.usersService.findOneById(id);

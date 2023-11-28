@@ -4,9 +4,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Winemaker } from '../../winemakers/entities/winemaker.entity';
 
 @Entity()
 export class Wine {
@@ -40,12 +42,32 @@ export class Wine {
   year: number;
 
   @ApiProperty({
-    example: 'Sina Mertz',
-    description: 'winemaker of the wine',
+    example: 'Scheurebe',
+    description: 'the wines grape variety',
     type: String,
   })
   @Column()
-  winemaker: string;
+  grapeVariety: string;
+
+  @ApiProperty({
+    example: 'Rheinhessen',
+    description: 'the wines heritage',
+    type: String,
+  })
+  @Column()
+  heritage: string;
+
+  @ApiProperty({
+    example: {
+      id: 'uuid',
+      name: 'Sina Mertz',
+      wines: [],
+    },
+    description: 'the wines winemaker',
+    type: Winemaker,
+  })
+  @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
+  winemaker: Winemaker;
 
   @ApiProperty({
     readOnly: true,

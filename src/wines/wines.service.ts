@@ -1,16 +1,40 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Winemaker } from 'src/winemakers/entities/winemaker.entity';
 import { Repository } from 'typeorm';
+import { WinemakersService } from './../winemakers/winemakers.service';
 import { Wine } from './entities/wine.entity';
 
 @Injectable()
 export class WinesService {
   constructor(
     @InjectRepository(Wine) private wineRepository: Repository<Wine>,
+    private winemakersService: WinemakersService,
   ) {}
 
-  async create(name: string, year: number, winemaker: string): Promise<Wine> {
-    const Wine: Wine = this.wineRepository.create({ name, year, winemaker });
+  async create(
+    name: string,
+    year: number,
+    winemakerId: string,
+    grapeVariety: string,
+    heritage: string,
+  ): Promise<Wine> {
+    const winemaker: Winemaker | null =
+      await this.winemakersService.find(winemakerId);
+
+    if (!winemaker) throw new BadRequestException('Winemaker not found');
+
+    const Wine: Wine = this.wineRepository.create({
+      name,
+      year,
+      winemaker,
+      grapeVariety,
+      heritage,
+    });
     return this.wineRepository.save(Wine);
   }
 

@@ -25,7 +25,9 @@ export class WinesController {
     return this.wineService.create(
       createWineDto.name,
       createWineDto.year,
-      createWineDto.winemaker,
+      createWineDto.winemakerId,
+      createWineDto.grapeVariety,
+      createWineDto.heritage,
     );
   }
 }

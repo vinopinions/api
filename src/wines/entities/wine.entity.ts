@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Matches } from 'class-validator';
+import { Winemaker } from 'src/winemakers/entities/winemaker.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -55,13 +57,8 @@ export class Wine {
   @Column()
   heritage: string;
 
-  @ApiProperty({
-    example: 'Sina Mertz',
-    description: 'winemaker of the wine',
-    type: String,
-  })
-  @Column()
-  winemaker: string;
+  @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
+  winemaker: Winemaker;
 
   @ApiProperty({
     readOnly: true,

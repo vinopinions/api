@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Wine } from 'src/wines/entities/wine.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -26,6 +28,9 @@ export class Winemaker {
   })
   @Column({ unique: true })
   username: string;
+
+  @OneToMany(() => Wine, (wine) => wine.winemaker)
+  wines: Wine[];
 
   @ApiProperty({
     readOnly: true,

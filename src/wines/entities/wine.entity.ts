@@ -40,6 +40,22 @@ export class Wine {
   year: number;
 
   @ApiProperty({
+    example: 'Scheurebe',
+    description: 'the wines grape variety',
+    type: String,
+  })
+  @Column()
+  grapeVariety: string;
+
+  @ApiProperty({
+    example: 'Rheinhessen',
+    description: 'the wines heritage',
+    type: String,
+  })
+  @Column()
+  heritage: string;
+
+  @ApiProperty({
     example: 'Sina Mertz',
     description: 'winemaker of the wine',
     type: String,

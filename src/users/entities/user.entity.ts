@@ -26,7 +26,7 @@ export class User {
     type: String,
     minLength: 3,
     maxLength: 20,
-    pattern: '^[a-zA-Z0-9_]{3,20}$',
+    pattern: '/^[a-zA-Z0-9_]{3,20}$/',
   })
   @Column({ unique: true })
   @Matches(/^[a-zA-Z0-9_]{3,20}$/, {
@@ -35,11 +35,6 @@ export class User {
   })
   username: string;
 
-  @ApiProperty({
-    example: 'password',
-    description: 'password hash of the user',
-    type: String,
-  })
   @Column()
   passwordHash: string;
 
@@ -52,12 +47,6 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ApiProperty({
-    readOnly: true,
-    example: new Date(),
-    description: 'updatedAt',
-    type: Date,
-  })
   @UpdateDateColumn()
   updatedAt: Date;
 }

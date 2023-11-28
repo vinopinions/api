@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
-import { WinemakersService } from './winemakers.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Winemaker } from './entities/winemaker.entity';
 import { WinemakersController } from './winemakers.controller';
+import { WinemakersService } from './winemakers.service';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([Winemaker])],
   providers: [WinemakersService],
-  controllers: [WinemakersController]
+  controllers: [WinemakersController],
+  exports: [WinemakersService],
 })
 export class WinemakersModule {}

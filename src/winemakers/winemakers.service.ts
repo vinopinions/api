@@ -7,19 +7,29 @@ import { Winemaker } from './entities/winemaker.entity';
 export class WinemakersService {
   constructor(
     @InjectRepository(Winemaker)
-    private winemakerRepository: Repository<Winemaker>,
+    private winemakersRepository: Repository<Winemaker>,
   ) {}
 
   async create(name: string): Promise<Winemaker> {
     const existingWinemaker: Winemaker | null =
-      await this.winemakerRepository.findOne({
+      await this.winemakersRepository.findOne({
         where: { name },
       });
 
     if (existingWinemaker !== null)
       throw new ConflictException('winemaker with that name already exists');
 
-    const user: Winemaker = this.winemakerRepository.create({ name });
-    return this.winemakerRepository.save(user);
+    const user: Winemaker = this.winemakersRepository.create({ name });
+    return this.winemakersRepository.save(user);
+  }
+
+  async find(id: string): Promise<Winemaker | null> {
+    return await this.winemakersRepository.findOne({
+      where: { id },
+    });
+  }
+
+  async findAll(): Promise<Winemaker[]> {
+    return await this.winemakersRepository.find();
   }
 }

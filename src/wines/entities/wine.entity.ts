@@ -57,6 +57,15 @@ export class Wine {
   @Column()
   heritage: string;
 
+  @ApiProperty({
+    example: {
+      id: 'uuid',
+      name: 'Sina Mertz',
+      wines: [],
+    },
+    description: 'the wines winemaker',
+    type: Winemaker,
+  })
   @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
   winemaker: Winemaker;
 

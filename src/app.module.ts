@@ -3,9 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
-import { MController } from './m/m.controller';
+import { UsersModule } from './users/users.module';
 import { WinesModule } from './wines/wines.module';
 
 @Module({
@@ -18,7 +17,7 @@ import { WinesModule } from './wines/wines.module';
     DatabaseModule,
     WinesModule,
   ],
-  controllers: [AppController, MController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

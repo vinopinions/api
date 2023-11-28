@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class User {
+export class Wine {
   @ApiProperty({
     readOnly: true,
     example: 'uuid',
@@ -21,22 +21,31 @@ export class User {
   id: string;
 
   @ApiProperty({
-    example: 'hans',
-    description: 'name of the user',
+    example: 'Scheurebe',
+    description: 'name of the wine',
     type: String,
-    minLength: 3,
-    maxLength: 20,
-    pattern: '/^[a-zA-Z0-9_]{3,20}$/',
   })
-  @Column({ unique: true })
-  @Matches(/^[a-zA-Z0-9_]{3,20}$/, {
-    message:
-      'username must can be 3-20 characters long and can only include letters or underscores, but no spaces',
-  })
-  username: string;
-
   @Column()
-  passwordHash: string;
+  name: string;
+
+  @ApiProperty({
+    example: 2017,
+    description: 'year of the wine',
+    type: Number,
+  })
+  @Matches(/^(?:[1-9]\d{3})$/, {
+    message: 'Year must be a valid year',
+  })
+  @Column()
+  year: number;
+
+  @ApiProperty({
+    example: 'Sina Mertz',
+    description: 'winemaker of the wine',
+    type: String,
+  })
+  @Column()
+  winemaker: string;
 
   @ApiProperty({
     readOnly: true,
@@ -47,6 +56,12 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
+  @ApiProperty({
+    readOnly: true,
+    example: new Date(),
+    description: 'updatedAt',
+    type: Date,
+  })
   @UpdateDateColumn()
   updatedAt: Date;
 }

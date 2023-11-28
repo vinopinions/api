@@ -1,0 +1,33 @@
+version: '3'
+services:
+  api:
+    container_name: vinopinionsapi-local
+    build:
+      dockerfile: ./Dockerfile
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - vinopinionsapi-local-internal
+      - server
+  postgres:
+    container_name: vinopinionsapi-local-db
+    image: postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+    volumes:
+      - vinopinionsapi-local-db-data:/var/lib/postgresql/data
+    networks:
+      - vinopinionsapi-local-internal
+networks:
+  server:
+    external: true
+  vinopinionsapi-local-internal:
+volumes:
+  vinopinionsapi-local-db-data:

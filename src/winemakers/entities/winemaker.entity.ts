@@ -27,7 +27,7 @@ export class Winemaker {
     type: String,
   })
   @Column({ unique: true })
-  username: string;
+  name: string;
 
   @OneToMany(() => Wine, (wine) => wine.winemaker)
   wines: Wine[];

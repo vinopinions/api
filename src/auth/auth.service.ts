@@ -14,7 +14,10 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(username: string, password: string) {
+  async signIn(
+    username: string,
+    password: string,
+  ): Promise<{ access_token: string }> {
     const user = await this.usersService.findOneByUsername(username);
 
     if (!user) throw new UnauthorizedException();

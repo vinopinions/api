@@ -3,8 +3,8 @@ FROM node:20.9-slim as builder
 
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package.json package-lock.json ./
+# Copy package.json and yarn.lock to the working directory
+COPY package.json yarn.lock ./
 
 # Install dependencies using yarn
 RUN yarn install

@@ -25,7 +25,7 @@ FROM node:20.9-slim as server
 WORKDIR /usr/src/app
 
 # Copy package.json and yarn.lock to the working directory
-COPY package.json package-lock.json ./
+COPY package.json yarn.lock ./
 
 # Install production dependencies using yarn
 RUN yarn install --prod --non-interactive --ignore-scripts

@@ -12,10 +12,12 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: npm install --ignore-scripts --no-package-lock --no-audit --no-fund && npm rebuild bcrypt --from-source
+        run: yarn --ignore-scripts --non-interactive
+      - name: Test formatting
+        run: yarn format:check
+      - name: Test linting
+        run: yarn lint:check
       - name: Test tests
-        run: npm run test
-      - name: Check dependencies
-        run: npm audit
+        run: yarn test
       # - name: Test coverage
       #   run: yarn test:cov

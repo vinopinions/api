@@ -6,10 +6,12 @@ import {
   HttpStatus,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CreateWineMakerDto } from './dtos/create-winemaker.dto';
 import { WinemakersService } from './winemakers.service';
 
 @Controller('winemakers')
+@ApiTags('winemakers')
 export class WinemakersController {
   constructor(private winemakersService: WinemakersService) {}
 

@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { WinesModule } from './wines/wines.module';
 import { WinemakersModule } from './winemakers/winemakers.module';
+import { StoresModule } from './stores/stores.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { WinemakersModule } from './winemakers/winemakers.module';
     DatabaseModule,
     WinesModule,
     WinemakersModule,
+    StoresModule,
   ],
   controllers: [AppController],
   providers: [AppService],

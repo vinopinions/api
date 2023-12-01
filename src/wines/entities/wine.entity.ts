@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Winemaker } from '../../winemakers/entities/winemaker.entity';
+import { Store } from 'src/stores/entities/store.entity';
 
 @Entity()
 export class Wine {
@@ -68,6 +69,9 @@ export class Wine {
   })
   @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
   winemaker: Winemaker;
+
+  @ManyToOne(() => Store, (store) => store.wines)
+  store: Store;
 
   @ApiProperty({
     readOnly: true,

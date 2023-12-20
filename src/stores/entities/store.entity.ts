@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Matches } from 'class-validator';
 import { Wine } from 'src/wines/entities/wine.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -34,7 +35,15 @@ export class Store {
     example: 'https://www.weinundgut-berlin.de/',
     description: 'website of store',
     type: String,
+    pattern:
+      '[(http(s)?)://(www.)?a-zA-Z0-9@:%._+~#=]{2,256}.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)',
   })
+  @Matches(
+    /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
+    {
+      message: 'invalid url',
+    },
+  )
   @Column()
   url?: string;
 

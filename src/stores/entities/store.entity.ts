@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Matches } from 'class-validator';
-import { Wine } from 'src/wines/entities/wine.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Wine } from '../../wines/entities/wine.entity';
 
 @Entity()
 export class Store {

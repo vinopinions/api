@@ -70,6 +70,15 @@ export class Wine {
   @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
   winemaker: Winemaker;
 
+  @ApiProperty({
+    example: {
+      id: 'uuid',
+      name: 'Wein&Gut',
+      wines: [],
+    },
+    description: 'the store where the wine was bought at',
+    type: Store,
+  })
   @ManyToOne(() => Store, (store) => store.wines)
   store: Store;
 

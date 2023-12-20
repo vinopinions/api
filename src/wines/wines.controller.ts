@@ -28,6 +28,7 @@ export class WinesController {
       createWineDto.name,
       createWineDto.year,
       createWineDto.winemakerId,
+      createWineDto.storeId,
       createWineDto.grapeVariety,
       createWineDto.heritage,
     );

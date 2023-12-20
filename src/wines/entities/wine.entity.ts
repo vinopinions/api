@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Winemaker } from '../../winemakers/entities/winemaker.entity';
-import { Store } from 'src/stores/entities/store.entity';
+import { Store } from '../../stores/entities/store.entity';
 
 @Entity()
 export class Wine {

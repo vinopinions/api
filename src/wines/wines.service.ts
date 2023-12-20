@@ -4,12 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Winemaker } from 'src/winemakers/entities/winemaker.entity';
 import { Repository } from 'typeorm';
 import { WinemakersService } from './../winemakers/winemakers.service';
 import { Wine } from './entities/wine.entity';
-import { StoresService } from 'src/stores/stores.service';
-import { Store } from 'src/stores/entities/store.entity';
+import { Store } from '../stores/entities/store.entity';
+import { StoresService } from '../stores/stores.service';
+import { Winemaker } from '../winemakers/entities/winemaker.entity';
 
 @Injectable()
 export class WinesService {

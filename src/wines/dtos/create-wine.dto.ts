@@ -15,9 +15,9 @@ export class CreateWineDto extends PickType(Wine, [
   winemakerId: string;
 
   @ApiProperty({
-    example: 'uuid',
-    description: 'the id of the store',
-    type: String,
+    example: '[uuid]',
+    description: 'the ids of the stores',
+    type: Array,
   })
-  storeId: string;
+  storeIds: string[];
 }

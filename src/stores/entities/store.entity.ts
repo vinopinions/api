@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Matches } from 'class-validator';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Wine } from '../../wines/entities/wine.entity';
 
 @Entity()
@@ -28,7 +28,7 @@ export class Store {
     description: 'address of store',
     type: String,
   })
-  @Column()
+  @Column({ nullable: true })
   address?: string;
 
   @ApiProperty({
@@ -44,9 +44,9 @@ export class Store {
       message: 'invalid url',
     },
   )
-  @Column()
+  @Column({ nullable: true })
   url?: string;
 
-  @OneToMany(() => Wine, (wine) => wine.store)
+  @ManyToMany(() => Wine, (wine) => wine.stores)
   wines: Wine[];
 }

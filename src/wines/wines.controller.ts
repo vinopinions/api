@@ -24,13 +24,6 @@ export class WinesController {
   @HttpCode(HttpStatus.CREATED)
   @Post()
   create(@Body() createWineDto: CreateWineDto) {
-    return this.wineService.create(
-      createWineDto.name,
-      createWineDto.year,
-      createWineDto.winemakerId,
-      createWineDto.storeId,
-      createWineDto.grapeVariety,
-      createWineDto.heritage,
-    );
+    return this.wineService.create(createWineDto);
   }
 }

@@ -19,30 +19,26 @@ export class WinesService {
     private storesService: StoresService,
   ) {}
 
-  async create(
-    name: string,
-    year: number,
-    winemakerId: string,
-    storeId: string,
-    grapeVariety: string,
-    heritage: string,
-  ): Promise<Wine> {
-    const winemaker: Winemaker | null =
-      await this.winemakersService.find(winemakerId);
-    const store: Store | null = await this.storesService.find(storeId);
+  async create(data: {
+    name: string;
+    year: number;
+    winemakerId: string;
+    storeId: string;
+    grapeVariety: string;
+    heritage: string;
+  }): Promise<Wine> {
+    const winemaker: Winemaker | null = await this.winemakersService.find(
+      data.winemakerId,
+    );
+    const store: Store | null = await this.storesService.find(data.storeId);
 
     if (!winemaker) throw new BadRequestException('Winemaker not found');
     if (!store) throw new BadRequestException('Store not found');
 
-    const Wine: Wine = this.wineRepository.create({
-      name,
-      year,
-      winemaker,
-      store,
-      grapeVariety,
-      heritage,
-    });
-    return this.wineRepository.save(Wine);
+    const wine: Wine = this.wineRepository.create(data);
+    wine.winemaker = winemaker;
+    wine.stores = [store];
+    return this.wineRepository.save(wine);
   }
 
   findAll() {

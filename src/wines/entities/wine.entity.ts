@@ -4,6 +4,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -79,8 +81,22 @@ export class Wine {
     description: 'the store where the wine was bought at',
     type: Store,
   })
-  @ManyToOne(() => Store, (store) => store.wines)
-  store: Store;
+  @ManyToMany(() => Store, (store) => store.wines, {
+    eager: true,
+    nullable: false,
+  })
+  @JoinTable({
+    name: 'store_wine',
+    joinColumn: {
+      name: 'wineId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'storeId',
+      referencedColumnName: 'id',
+    },
+  })
+  stores: Store[];
 
   @ApiProperty({
     readOnly: true,

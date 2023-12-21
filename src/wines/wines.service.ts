@@ -27,9 +27,8 @@ export class WinesService {
     grapeVariety: string;
     heritage: string;
   }): Promise<Wine> {
-    const winemaker: Winemaker | null = await this.winemakersService.find(
-      data.winemakerId,
-    );
+    const winemaker: Winemaker | null =
+      await this.winemakersService.findOneById(data.winemakerId);
     if (!winemaker) throw new BadRequestException('Winemaker not found');
 
     const stores: Store[] = await Promise.all(

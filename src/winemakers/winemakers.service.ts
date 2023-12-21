@@ -23,9 +23,12 @@ export class WinemakersService {
     return this.winemakersRepository.save(user);
   }
 
-  async find(id: string): Promise<Winemaker | null> {
-    return await this.winemakersRepository.findOne({
+  findOneById(id: string): Promise<Winemaker | null> {
+    return this.winemakersRepository.findOne({
       where: { id },
+      relations: {
+        wines: true,
+      },
     });
   }
 

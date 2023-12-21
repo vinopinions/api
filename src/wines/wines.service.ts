@@ -33,7 +33,8 @@ export class WinesService {
 
     const stores: Store[] = await Promise.all(
       (data.storeIds ?? []).map(async (storeId: string) => {
-        const store: Store | null = await this.storesService.find(storeId);
+        const store: Store | null =
+          await this.storesService.findOneById(storeId);
         if (!store)
           throw new BadRequestException(`Store with id ${storeId} not found`);
 

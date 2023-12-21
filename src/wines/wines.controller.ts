@@ -17,15 +17,15 @@ export class WinesController {
   constructor(private wineService: WinesService) {}
 
   @HttpCode(HttpStatus.OK)
-  @Get()
-  findAll() {
-    return this.wineService.findAll();
-  }
-
-  @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.wineService.findOneById(id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get()
+  findAll() {
+    return this.wineService.findAll();
   }
 
   @HttpCode(HttpStatus.CREATED)

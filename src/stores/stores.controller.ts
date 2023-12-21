@@ -4,16 +4,23 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dtos/create-store.dto';
+import { StoresService } from './stores.service';
 
 @Controller('stores')
 @ApiTags('stores')
 export class StoresController {
   constructor(private storesService: StoresService) {}
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.storesService.findOneById(id);
+  }
 
   @HttpCode(HttpStatus.OK)
   @Get()

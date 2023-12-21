@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -14,6 +15,12 @@ import { WinemakersService } from './winemakers.service';
 @ApiTags('winemakers')
 export class WinemakersController {
   constructor(private winemakersService: WinemakersService) {}
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.winemakersService.findOneById(id);
+  }
 
   @HttpCode(HttpStatus.OK)
   @Get()

@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -19,6 +20,12 @@ export class WinesController {
   @Get()
   findAll() {
     return this.wineService.findAll();
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.wineService.findOneById(id);
   }
 
   @HttpCode(HttpStatus.CREATED)

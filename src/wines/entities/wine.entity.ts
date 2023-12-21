@@ -4,11 +4,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Winemaker } from '../../winemakers/entities/winemaker.entity';
+import { Store } from '../../stores/entities/store.entity';
 
 @Entity()
 export class Wine {
@@ -68,6 +71,32 @@ export class Wine {
   })
   @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
   winemaker: Winemaker;
+
+  @ApiProperty({
+    example: {
+      id: 'uuid',
+      name: 'Wein&Gut',
+      wines: [],
+    },
+    description: 'the store where the wine was bought at',
+    type: Store,
+  })
+  @ManyToMany(() => Store, (store) => store.wines, {
+    eager: true,
+    nullable: false,
+  })
+  @JoinTable({
+    name: 'store_wine',
+    joinColumn: {
+      name: 'wineId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'storeId',
+      referencedColumnName: 'id',
+    },
+  })
+  stores: Store[];
 
   @ApiProperty({
     readOnly: true,

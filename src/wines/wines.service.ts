@@ -4,8 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Winemaker } from 'src/winemakers/entities/winemaker.entity';
 import { Repository } from 'typeorm';
+import { Store } from '../stores/entities/store.entity';
+import { StoresService } from '../stores/stores.service';
+import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
 import { Wine } from './entities/wine.entity';
 
@@ -14,28 +16,35 @@ export class WinesService {
   constructor(
     @InjectRepository(Wine) private wineRepository: Repository<Wine>,
     private winemakersService: WinemakersService,
+    private storesService: StoresService,
   ) {}
 
-  async create(
-    name: string,
-    year: number,
-    winemakerId: string,
-    grapeVariety: string,
-    heritage: string,
-  ): Promise<Wine> {
+  async create(data: {
+    name: string;
+    year: number;
+    winemakerId: string;
+    storeIds: string[];
+    grapeVariety: string;
+    heritage: string;
+  }): Promise<Wine> {
     const winemaker: Winemaker | null =
-      await this.winemakersService.find(winemakerId);
-
+      await this.winemakersService.findOneById(data.winemakerId);
     if (!winemaker) throw new BadRequestException('Winemaker not found');
 
-    const Wine: Wine = this.wineRepository.create({
-      name,
-      year,
-      winemaker,
-      grapeVariety,
-      heritage,
-    });
-    return this.wineRepository.save(Wine);
+    const stores: Store[] = await Promise.all(
+      (data.storeIds ?? []).map(async (storeId: string) => {
+        const store: Store | null = await this.storesService.find(storeId);
+        if (!store)
+          throw new BadRequestException(`Store with id ${storeId} not found`);
+
+        return store;
+      }),
+    );
+
+    const wine: Wine = this.wineRepository.create(data);
+    wine.winemaker = winemaker;
+    wine.stores = stores;
+    return this.wineRepository.save(wine);
   }
 
   findAll() {
@@ -43,7 +52,13 @@ export class WinesService {
   }
 
   findOneById(id: string): Promise<Wine | null> {
-    return this.wineRepository.findOne({ where: { id } });
+    return this.wineRepository.findOne({
+      where: { id },
+      relations: {
+        winemaker: true,
+        stores: true,
+      },
+    });
   }
 
   async remove(id: string): Promise<Wine> {

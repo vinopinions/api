@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -29,16 +29,32 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  findOneById(id: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { id } });
+  async findOneById(
+    id: string,
+    relations?: FindOptionsRelations<User>,
+  ): Promise<User> {
+    const user = await this.findOne({ id }, relations);
+    if (!user) throw new NotFoundException(`User with name ${name} not found`);
+    return user;
   }
 
-  findOneByName(name: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { username: name } });
+  findOneByUsername(
+    username: string,
+    relations?: FindOptionsRelations<User>,
+  ): Promise<User> {
+    return this.findOne({ username }, relations);
   }
 
-  findOneByUsername(username: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { username } });
+  async findOne(
+    where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
+    relations?: FindOptionsRelations<User>,
+  ): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where,
+      relations,
+    });
+    if (!user) throw new NotFoundException(`User with name ${name} not found`);
+    return user;
   }
 
   async remove(id: string): Promise<User> {
@@ -48,14 +64,25 @@ export class UsersService {
   }
 
   async sendFriendRequest(sender: User, receiver: User) {
-    if (receiver.receivedFriendRequests.includes(sender))
+    const receiverWithRelation = await this.findOneById(receiver.id, {
+      receivedFriendRequests: true,
+    });
+    if (
+      receiverWithRelation.receivedFriendRequests.find(
+        (user) => user.id == sender.id,
+      )
+    )
       throw new ConflictException(
         'The user already sent a friend request to that user',
       );
 
-    sender.sentFriendRequests.push(receiver);
-    receiver.receivedFriendRequests.push(sender);
-    this.userRepository.save([sender, receiver]);
+    const senderWithRelation = await this.findOneById(sender.id, {
+      sentFriendRequests: true,
+    });
+
+    senderWithRelation.sentFriendRequests.push(receiver);
+    receiverWithRelation.receivedFriendRequests.push(sender);
+    this.userRepository.save([senderWithRelation, receiverWithRelation]);
   }
 
   /**
@@ -140,10 +167,26 @@ export class UsersService {
   }
 
   async getReceivedFriendRequests(user: User): Promise<User[]> {
-    return user.receivedFriendRequests;
+    const userWithRelation = await this.findOneById(user.id, {
+      receivedFriendRequests: true,
+    });
+
+    return userWithRelation.receivedFriendRequests;
   }
 
   async getSentFriendRequests(user: User): Promise<User[]> {
-    return user.sentFriendRequests;
+    const userWithRelation = await this.findOneById(user.id, {
+      sentFriendRequests: true,
+    });
+
+    return userWithRelation.sentFriendRequests;
+  }
+
+  async getFriends(user: User): Promise<User[]> {
+    const userWithRelation = await this.findOneById(user.id, {
+      friends: true,
+    });
+
+    return userWithRelation.friends;
   }
 }

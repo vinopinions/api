@@ -4,6 +4,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -37,6 +39,30 @@ export class User {
 
   @Column()
   passwordHash: string;
+
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'friends',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'friendId', referencedColumnName: 'id' },
+  })
+  friends: User[];
+
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'sent_friend_requests',
+    joinColumn: { name: 'senderId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'receiverId', referencedColumnName: 'id' },
+  })
+  sentFriendRequests: User[];
+
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'received_friend_requests',
+    joinColumn: { name: 'receiverId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'senderId', referencedColumnName: 'id' },
+  })
+  receivedFriendRequests: User[];
 
   @ApiProperty({
     readOnly: true,

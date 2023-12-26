@@ -19,7 +19,11 @@ export class StoresService {
   }
 
   findAll() {
-    return this.storeRepository.find();
+    return this.storeRepository.find({
+      relations: {
+        wines: true,
+      },
+    });
   }
 
   findOneById(id: string): Promise<Store | null> {

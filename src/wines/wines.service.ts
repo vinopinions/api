@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { WinemakersService } from './../winemakers/winemakers.service';
-import { Wine } from './entities/wine.entity';
 import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
+import { WinemakersService } from './../winemakers/winemakers.service';
+import { Wine } from './entities/wine.entity';
 
 @Injectable()
 export class WinesService {
@@ -23,21 +23,28 @@ export class WinesService {
     name: string;
     year: number;
     winemakerId: string;
-    storeId: string;
+    storeIds: string[];
     grapeVariety: string;
     heritage: string;
   }): Promise<Wine> {
-    const winemaker: Winemaker | null = await this.winemakersService.find(
-      data.winemakerId,
-    );
-    const store: Store | null = await this.storesService.find(data.storeId);
-
+    const winemaker: Winemaker | null =
+      await this.winemakersService.findOneById(data.winemakerId);
     if (!winemaker) throw new BadRequestException('Winemaker not found');
-    if (!store) throw new BadRequestException('Store not found');
+
+    const stores: Store[] = await Promise.all(
+      (data.storeIds ?? []).map(async (storeId: string) => {
+        const store: Store | null =
+          await this.storesService.findOneById(storeId);
+        if (!store)
+          throw new BadRequestException(`Store with id ${storeId} not found`);
+
+        return store;
+      }),
+    );
 
     const wine: Wine = this.wineRepository.create(data);
     wine.winemaker = winemaker;
-    wine.stores = [store];
+    wine.stores = stores;
     return this.wineRepository.save(wine);
   }
 
@@ -46,7 +53,13 @@ export class WinesService {
   }
 
   findOneById(id: string): Promise<Wine | null> {
-    return this.wineRepository.findOne({ where: { id } });
+    return this.wineRepository.findOne({
+      where: { id },
+      relations: {
+        winemaker: true,
+        stores: true,
+      },
+    });
   }
 
   async remove(id: string): Promise<Wine> {

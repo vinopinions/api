@@ -66,6 +66,7 @@ export class UsersService {
   async sendFriendRequest(sender: User, receiver: User) {
     const receiverWithRelation = await this.findOneById(receiver.id, {
       receivedFriendRequests: true,
+      friends: true,
     });
     if (
       receiverWithRelation.receivedFriendRequests.find(
@@ -75,6 +76,9 @@ export class UsersService {
       throw new ConflictException(
         'The user already sent a friend request to that user',
       );
+
+    if (receiverWithRelation.friends.find((user) => user.id == sender.id))
+      throw new ConflictException('The user is already friends with that user');
 
     const senderWithRelation = await this.findOneById(sender.id, {
       sentFriendRequests: true,

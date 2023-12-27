@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/auth.guard';
@@ -31,18 +32,46 @@ export class UsersController {
 
   @HttpCode(HttpStatus.OK)
   @Get(':name/friends')
-  async findFriends(@Param('name') name: string) {
+  async getFriends(@Param('name') name: string) {
     const user: User = await this.usersService.findOneByUsername(name);
     return this.usersService.getFriends(user);
   }
 
   @HttpCode(HttpStatus.OK)
-  @Post(':name/friends')
+  @Post(':name/friends/friend-requests')
   async sendFriendRequest(
     @Req() request: AuthenticatedRequest,
     @Param('name') name: string,
   ) {
     const user: User = await this.usersService.findOneByUsername(name);
     return this.usersService.sendFriendRequest(request.user, user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':name/friends/friend-requests/incoming')
+  async getIncomingFriendRequest(
+    @Req() request: AuthenticatedRequest,
+    @Param('name') name: string,
+  ) {
+    const requester: User = await this.usersService.findOneByUsername(name);
+    if (requester.id !== request.user.id)
+      throw new UnauthorizedException(
+        'You can not view another users friend requests',
+      );
+    return this.usersService.getReceivedFriendRequests(request.user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':name/friends/friend-requests/outgoing')
+  async getOutgoingFriendRequests(
+    @Req() request: AuthenticatedRequest,
+    @Param('name') name: string,
+  ) {
+    const requester: User = await this.usersService.findOneByUsername(name);
+    if (requester.id !== request.user.id)
+      throw new UnauthorizedException(
+        'You can not view another users friend requests',
+      );
+    return this.usersService.getSentFriendRequests(request.user);
   }
 }

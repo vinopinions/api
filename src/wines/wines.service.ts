@@ -10,6 +10,7 @@ import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
 import { Wine } from './entities/wine.entity';
+import { AddStoreToWineDto } from './dtos/add-store-to-wine.dto';
 
 @Injectable()
 export class WinesService {
@@ -66,5 +67,32 @@ export class WinesService {
     const Wine: Wine | null = await this.findOneById(id);
     if (Wine === null) throw new NotFoundException();
     return this.wineRepository.remove(Wine);
+  }
+
+  async addStores(
+    id: string,
+    addStoresToWineDto: AddStoreToWineDto,
+  ): Promise<Wine> {
+    const wine = await this.wineRepository.findOneOrFail({
+      where: { id },
+      relations: ['stores'],
+    });
+
+    if (!wine) throw new NotFoundException('Wine not found.');
+
+    const { storeIds } = addStoresToWineDto;
+    if (storeIds && storeIds.length > 0) {
+      const stores: Store[] = await Promise.all(
+        storeIds.map(async (storeId: string) => {
+          const store: Store | null =
+            await this.storesService.findOneById(storeId);
+          if (!store)
+            throw new BadRequestException(`Store with id ${storeId} not found`);
+          return store;
+        }),
+      );
+      wine.stores = [...wine.stores, ...stores];
+    }
+    return this.wineRepository.save(wine);
   }
 }

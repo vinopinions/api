@@ -6,10 +6,12 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { WinesService } from './wines.service';
+import { AddStoreToWineDto } from './dtos/add-store-to-wine.dto';
 
 @Controller('wines')
 @ApiTags('wines')
@@ -32,5 +34,14 @@ export class WinesController {
   @Post()
   create(@Body() createWineDto: CreateWineDto) {
     return this.wineService.create(createWineDto);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Put(':id')
+  addStores(
+    @Param('id') id: string,
+    @Body() addStoreToWineDto: AddStoreToWineDto,
+  ) {
+    return this.wineService.addStores(id, addStoreToWineDto);
   }
 }

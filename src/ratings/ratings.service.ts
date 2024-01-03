@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { WinesService } from '../wines/wines.service';
 import { Wine } from '../wines/entities/wine.entity';
 import { validate } from 'class-validator';
+import { CreateRatingDto } from './dtos/create-rating.dto';
 
 @Injectable()
 export class RatingsService {
@@ -17,14 +18,8 @@ export class RatingsService {
     private wineService: WinesService,
   ) {}
 
-  async create(data: {
-    stars: number;
-    text: string;
-    wineId: string;
-  }): Promise<Rating> {
+  async create(data: CreateRatingDto): Promise<Rating> {
     const wine: Wine | null = await this.wineService.findOneById(data.wineId);
-
-    if (!wine) throw new BadRequestException('Wine not found');
 
     const rating: Rating = this.ratingRepository.create(data);
     rating.wine = wine;
@@ -39,18 +34,19 @@ export class RatingsService {
     return this.ratingRepository.find();
   }
 
-  findOneById(id: string): Promise<Rating | null> {
-    return this.ratingRepository.findOne({
+  async findOneById(id: string): Promise<Rating> {
+    const rating: Rating | null = await this.ratingRepository.findOne({
       where: { id },
       relations: {
         wine: true,
       },
     });
+    if (!rating) throw new NotFoundException('Rating not found');
+    return rating;
   }
 
   async remove(id: string): Promise<Rating> {
-    const rating: Rating | null = await this.findOneById(id);
-    if (rating === null) throw new NotFoundException();
+    const rating: Rating = await this.findOneById(id);
     return this.ratingRepository.remove(rating);
   }
 }

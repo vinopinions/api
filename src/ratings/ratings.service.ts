@@ -8,6 +8,7 @@ import { Rating } from './entities/rating.entity';
 import { Repository } from 'typeorm';
 import { WinesService } from '../wines/wines.service';
 import { Wine } from '../wines/entities/wine.entity';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class RatingsService {
@@ -16,13 +17,21 @@ export class RatingsService {
     private wineService: WinesService,
   ) {}
 
-  async create(data: { text: string; wineId: string }): Promise<Rating> {
+  async create(data: {
+    stars: number;
+    text: string;
+    wineId: string;
+  }): Promise<Rating> {
     const wine: Wine | null = await this.wineService.findOneById(data.wineId);
 
     if (!wine) throw new BadRequestException('Wine not found');
 
     const rating: Rating = this.ratingRepository.create(data);
     rating.wine = wine;
+
+    const validationErrors = await validate(rating);
+    if (validationErrors.length > 0)
+      throw new BadRequestException(validationErrors.map((e) => e.constraints));
     return this.ratingRepository.save(rating);
   }
 

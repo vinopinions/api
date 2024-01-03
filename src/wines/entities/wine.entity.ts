@@ -7,11 +7,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Winemaker } from '../../winemakers/entities/winemaker.entity';
 import { Store } from '../../stores/entities/store.entity';
+import { Rating } from '../../ratings/entities/rating.entity';
 
 @Entity()
 export class Wine {
@@ -97,6 +99,9 @@ export class Wine {
     },
   })
   stores: Store[];
+
+  @OneToMany(() => Rating, (rating) => rating.wine)
+  ratings: Rating[];
 
   @ApiProperty({
     readOnly: true,

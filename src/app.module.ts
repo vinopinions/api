@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { WinesModule } from './wines/wines.module';
 import { WinemakersModule } from './winemakers/winemakers.module';
 import { StoresModule } from './stores/stores.module';
+import { RatingsModule } from './ratings/ratings.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { StoresModule } from './stores/stores.module';
     WinesModule,
     WinemakersModule,
     StoresModule,
+    RatingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Store } from '../stores/entities/store.entity';
@@ -72,8 +68,6 @@ export class WinesService {
       relations: ['stores'],
     });
 
-    if (!wine) throw new NotFoundException('Wine not found.');
-
     if (!updatedWine.storeIds || updatedWine.storeIds.length < 0)
       wine.stores = [];
     else {
@@ -81,8 +75,6 @@ export class WinesService {
         updatedWine.storeIds.map(async (storeId: string) => {
           const store: Store | null =
             await this.storesService.findOneById(storeId);
-          if (!store)
-            throw new BadRequestException(`Store with id ${storeId} not found`);
           return store;
         }),
       );

@@ -30,15 +30,11 @@ export class WinesService {
   }): Promise<Wine> {
     const winemaker: Winemaker | null =
       await this.winemakersService.findOneById(data.winemakerId);
-    if (!winemaker) throw new BadRequestException('Winemaker not found');
 
     const stores: Store[] = await Promise.all(
       (data.storeIds ?? []).map(async (storeId: string) => {
         const store: Store | null =
           await this.storesService.findOneById(storeId);
-        if (!store)
-          throw new BadRequestException(`Store with id ${storeId} not found`);
-
         return store;
       }),
     );
@@ -53,19 +49,20 @@ export class WinesService {
     return this.wineRepository.find();
   }
 
-  findOneById(id: string): Promise<Wine | null> {
-    return this.wineRepository.findOne({
+  async findOneById(id: string): Promise<Wine> {
+    const wine: Wine | null = await this.wineRepository.findOne({
       where: { id },
       relations: {
         winemaker: true,
         stores: true,
       },
     });
+    if (!wine) throw new NotFoundException('Wine not found');
+    return wine;
   }
 
   async remove(id: string): Promise<Wine> {
-    const Wine: Wine | null = await this.findOneById(id);
-    if (Wine === null) throw new NotFoundException();
+    const Wine: Wine = await this.findOneById(id);
     return this.wineRepository.remove(Wine);
   }
 

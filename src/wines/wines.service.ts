@@ -10,7 +10,7 @@ import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
 import { Wine } from './entities/wine.entity';
-import { AddStoreToWineDto } from './dtos/add-store-to-wine.dto';
+import { CreateWineDto } from './dtos/create-wine.dto';
 
 @Injectable()
 export class WinesService {
@@ -69,10 +69,7 @@ export class WinesService {
     return this.wineRepository.remove(Wine);
   }
 
-  async addStores(
-    id: string,
-    addStoresToWineDto: AddStoreToWineDto,
-  ): Promise<Wine> {
+  async update(id: string, updatedWine: CreateWineDto): Promise<Wine> {
     const wine = await this.wineRepository.findOneOrFail({
       where: { id },
       relations: ['stores'],
@@ -80,18 +77,22 @@ export class WinesService {
 
     if (!wine) throw new NotFoundException('Wine not found.');
 
-    const { storeIds } = addStoresToWineDto;
-    if (storeIds && storeIds.length > 0) {
+    if (updatedWine.storeIds && updatedWine.storeIds.length > 0) {
       const stores: Store[] = await Promise.all(
-        storeIds.map(async (storeId: string) => {
+        updatedWine.storeIds.map(async (storeId: string) => {
           const store: Store | null =
             await this.storesService.findOneById(storeId);
           if (!store)
             throw new BadRequestException(`Store with id ${storeId} not found`);
+          if (wine.stores.find((s) => s.id == store.id))
+            throw new BadRequestException(
+              `Store with id ${store.id} already added to wine`,
+            );
           return store;
         }),
       );
       wine.stores = [...wine.stores, ...stores];
+      Object.assign(wine, updatedWine);
     }
     return this.wineRepository.save(wine);
   }

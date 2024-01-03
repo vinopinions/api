@@ -11,7 +11,6 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { WinesService } from './wines.service';
-import { AddStoreToWineDto } from './dtos/add-store-to-wine.dto';
 
 @Controller('wines')
 @ApiTags('wines')
@@ -38,10 +37,7 @@ export class WinesController {
 
   @HttpCode(HttpStatus.OK)
   @Put(':id')
-  addStores(
-    @Param('id') id: string,
-    @Body() addStoreToWineDto: AddStoreToWineDto,
-  ) {
-    return this.wineService.addStores(id, addStoreToWineDto);
+  addStores(@Param('id') id: string, @Body() updatedWine: CreateWineDto) {
+    return this.wineService.update(id, updatedWine);
   }
 }

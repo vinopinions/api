@@ -74,23 +74,21 @@ export class WinesService {
 
     if (!wine) throw new NotFoundException('Wine not found.');
 
-    if (updatedWine.storeIds && updatedWine.storeIds.length > 0) {
+    if (!updatedWine.storeIds || updatedWine.storeIds.length < 0)
+      wine.stores = [];
+    else {
       const stores: Store[] = await Promise.all(
         updatedWine.storeIds.map(async (storeId: string) => {
           const store: Store | null =
             await this.storesService.findOneById(storeId);
           if (!store)
             throw new BadRequestException(`Store with id ${storeId} not found`);
-          if (wine.stores.find((s) => s.id == store.id))
-            throw new BadRequestException(
-              `Store with id ${store.id} already added to wine`,
-            );
           return store;
         }),
       );
-      wine.stores = [...wine.stores, ...stores];
-      Object.assign(wine, updatedWine);
+      wine.stores = stores;
     }
+
     return this.wineRepository.save(wine);
   }
 }

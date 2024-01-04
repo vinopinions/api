@@ -11,11 +11,16 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { WinesService } from './wines.service';
+import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
+import { RatingsService } from '../ratings/ratings.service';
 
 @Controller('wines')
 @ApiTags('wines')
 export class WinesController {
-  constructor(private wineService: WinesService) {}
+  constructor(
+    private wineService: WinesService,
+    private ratingsService: RatingsService,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Get(':id')
@@ -39,5 +44,20 @@ export class WinesController {
   @Put(':id')
   addStores(@Param('id') id: string, @Body() updatedWine: CreateWineDto) {
     return this.wineService.update(id, updatedWine);
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post(':wineId/ratings')
+  createRating(
+    @Param('wineId') wineId: string,
+    @Body() createRatingDto: CreateRatingDto,
+  ) {
+    return this.ratingsService.create({ ...createRatingDto, wineId });
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':wineId/ratings')
+  getRatingsForWines(@Param('wineId') wineId: string) {
+    return this.ratingsService.getByWineId(wineId);
   }
 }

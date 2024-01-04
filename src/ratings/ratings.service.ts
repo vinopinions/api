@@ -49,4 +49,9 @@ export class RatingsService {
     const rating: Rating = await this.findOneById(id);
     return this.ratingRepository.remove(rating);
   }
+
+  async getByWineId(id: string): Promise<Rating[]> {
+    const wine: Wine = await this.wineService.findOneById(id);
+    return wine.ratings;
+  }
 }

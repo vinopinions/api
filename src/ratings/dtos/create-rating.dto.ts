@@ -8,4 +8,6 @@ export class CreateRatingDto extends PickType(Rating, [
 ] as const) {
   @IsNotEmpty()
   wineId: string;
+
+  userId: string;
 }

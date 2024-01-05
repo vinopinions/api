@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Wine } from '../../wines/entities/wine.entity';
 import { IsInt, Max, Min } from 'class-validator';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class Rating {
@@ -25,6 +26,9 @@ export class Rating {
 
   @ManyToOne(() => Wine, (wine) => wine.ratings)
   wine: Wine;
+
+  @ManyToOne(() => User, (user) => user.ratings)
+  user: User;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -29,8 +29,12 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  findOneById(id: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { id } });
+  async findOneById(id: string): Promise<User> {
+    const user: User | null = await this.userRepository.findOne({
+      where: { id },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
   findOneByName(name: string): Promise<User | null> {
@@ -43,7 +47,7 @@ export class UsersService {
 
   async remove(id: string): Promise<User> {
     const user: User | null = await this.findOneById(id);
-    if (user === null) throw new NotFoundException();
+    if (!user) throw new NotFoundException();
     return this.userRepository.remove(user);
   }
 }

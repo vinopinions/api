@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { Rating } from '../ratings/entities/rating.entity';
 
 @Injectable()
 export class UsersService {
@@ -32,6 +33,7 @@ export class UsersService {
   async findOneById(id: string): Promise<User> {
     const user: User | null = await this.userRepository.findOne({
       where: { id },
+      relations: ['ratings'],
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
@@ -46,8 +48,12 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<User> {
-    const user: User | null = await this.findOneById(id);
-    if (!user) throw new NotFoundException();
+    const user: User = await this.findOneById(id);
     return this.userRepository.remove(user);
+  }
+
+  async getRatings(id: string): Promise<Rating[]> {
+    const user: User = await this.findOneById(id);
+    return user.ratings;
   }
 }

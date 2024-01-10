@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -72,5 +73,79 @@ export class UsersService {
     });
 
     return userWithRelation.friends;
+  }
+
+  /**
+   *
+   * @param addingUser the user who wants to add the friend
+   * @param toBeAddedUser the user who should be added as a friend
+   */
+  async addFriend(addingUser: User, toBeAddedUser: User) {
+    const addingUserWithRelation = await this.findOneById(addingUser.id, {
+      friends: true,
+    });
+    const toBeAddedUserWithRelation = await this.findOneById(toBeAddedUser.id, {
+      friends: true,
+    });
+
+    if (addingUserWithRelation.friends.includes(toBeAddedUser))
+      throw new NotFoundException('You already friends');
+
+    // add toBeAddedUser to addingUser's friends
+    addingUserWithRelation.friends.push(toBeAddedUser);
+
+    if (toBeAddedUserWithRelation.friends.includes(addingUser))
+      throw new InternalServerErrorException(
+        'User was already in one friend list but not the other',
+      );
+
+    // add addingUser to toBeAddedUser's friends
+    toBeAddedUserWithRelation.friends.push(addingUser);
+    // Save changes to the database
+    await this.userRepository.save([
+      addingUserWithRelation,
+      toBeAddedUserWithRelation,
+    ]);
+  }
+
+  /**
+   *
+   * @param removingUser the user who wants to remove the friend
+   * @param toBeRemovedUser the user who should be removed as a friend
+   */
+  async removeFriend(removingUser: User, toBeRemovedUser: User) {
+    const removingUserWithRelation = await this.findOneById(removingUser.id, {
+      friends: true,
+    });
+    const toBeRemovedUserWithRelation = await this.findOneById(
+      toBeRemovedUser.id,
+      {
+        friends: true,
+      },
+    );
+
+    if (!removingUserWithRelation.friends.includes(toBeRemovedUser))
+      throw new NotFoundException('This user is not your friend');
+
+    // remove toBeRemovedUser from removingUser's friends
+    removingUserWithRelation.friends = removingUserWithRelation.friends.filter(
+      (user) => user.id !== toBeRemovedUser.id,
+    );
+
+    if (!toBeRemovedUserWithRelation.friends.includes(removingUser))
+      throw new InternalServerErrorException(
+        'User were not in both of each others friend lists',
+      );
+
+    // remove removingUser from toBeRemovedUser's friends
+    toBeRemovedUserWithRelation.friends =
+      toBeRemovedUserWithRelation.friends.filter(
+        (user) => user.id !== removingUser.id,
+      );
+    // Save changes to the database
+    await this.userRepository.save([
+      removingUserWithRelation,
+      toBeRemovedUserWithRelation,
+    ]);
   }
 }

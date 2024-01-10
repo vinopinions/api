@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -15,42 +15,77 @@ export class FriendRequestsService {
 
   /**
    * Rules:
-   *    1. A user can not receive 2 friend requests from the same sender
-   *    2. A user can not send a friend request to a user he is already friends with
-   *    3. A user can not send a friend request to a user that has sent him a friend request already
+   *    1. A user can not send himself a friend request
+   *    2. A user can not receive 2 friend requests from the same sender
+   *    3. A user can not send a friend request to a user he is already friends with
+   *    4. A user can not send a friend request to a user that has sent him a friend request already
    *
    * @param sender user who sends the friend request
    * @param receiver user that should receive the friend request
    */
   async sendFriendRequest(sender: User, receiver: User) {
     // 1. Rule
-    const receiverFriendRequests = await this.friendRequestRepository.find({
+    if (sender.id == receiver.id)
+      throw new ConflictException('You can not send yourself a friend request');
+
+    // 2. Rule
+    const receiverReceivedFriendRequests =
+      await this.friendRequestRepository.find({
+        where: {
+          receiver: {
+            id: receiver.id,
+          },
+        },
+        relations: {
+          sender: true,
+        },
+      });
+
+    // check if the sender has already sent a request to the receiver
+    if (
+      receiverReceivedFriendRequests.find(
+        (request) => request.sender.id == sender.id,
+      )
+    )
+      throw new ConflictException(
+        'You already sent a friend request to that user',
+      );
+
+    // 3. Rule
+    const receiverFriends = await this.usersService.getFriends(receiver);
+
+    if (receiverFriends.includes(sender))
+      throw new ConflictException('You are already friends with that user');
+
+    // 4. Rule
+    const receiverSentFriendRequests = await this.friendRequestRepository.find({
       where: {
-        receiver,
+        sender: {
+          id: receiver.id,
+        },
+      },
+      relations: {
+        receiver: true,
       },
     });
 
-    console.log(receiverFriendRequests);
+    // check if the sender has already sent a request to the receiver
+    if (
+      receiverSentFriendRequests.find(
+        (request) => request.receiver.id == sender.id,
+      )
+    )
+      throw new ConflictException(
+        'The user already sent a friend request to you. Accept that.',
+      );
 
-    //     if (
-    //       receiverWithRelation.receivedFriendRequests.find(
-    //         (user) => user.id == sender.id,
-    //       )
-    //     )
-    //       throw new ConflictException(
-    //         'The user already sent a friend request to that user',
-    //       );
+    // Add friend request
+    const friendRequest = this.friendRequestRepository.create({
+      sender,
+      receiver,
+    });
 
-    //     if (receiverWithRelation.friends.find((user) => user.id == sender.id))
-    //       throw new ConflictException('The user is already friends with that user');
-
-    //     const senderWithRelation = await this.findOneById(sender.id, {
-    //       sentFriendRequests: true,
-    //     });
-
-    //     senderWithRelation.sentFriendRequests.push(receiver);
-    //     receiverWithRelation.receivedFriendRequests.push(sender);
-    //     this.userRepository.save([senderWithRelation, receiverWithRelation]);
+    await this.friendRequestRepository.save(friendRequest);
   }
 
   /**

@@ -53,7 +53,10 @@ export class UsersService {
       where,
       relations,
     });
-    if (!user) throw new NotFoundException(`User with name ${name} not found`);
+    if (!user)
+      throw new NotFoundException(
+        `User with ${JSON.stringify(where)} not found`,
+      );
     return user;
   }
 

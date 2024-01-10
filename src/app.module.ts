@@ -4,10 +4,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
-import { UsersModule } from './users/users.module';
-import { WinesModule } from './wines/wines.module';
-import { WinemakersModule } from './winemakers/winemakers.module';
+import { FriendRequestsModule } from './friend-requests/friend-requests.module';
 import { StoresModule } from './stores/stores.module';
+import { UsersModule } from './users/users.module';
+import { WinemakersModule } from './winemakers/winemakers.module';
+import { WinesModule } from './wines/wines.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { StoresModule } from './stores/stores.module';
     WinesModule,
     WinemakersModule,
     StoresModule,
+    FriendRequestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

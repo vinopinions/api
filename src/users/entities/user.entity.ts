@@ -48,22 +48,6 @@ export class User {
   })
   friends: User[];
 
-  @ManyToMany(() => User)
-  @JoinTable({
-    name: 'sent_friend_requests',
-    joinColumn: { name: 'senderId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'receiverId', referencedColumnName: 'id' },
-  })
-  sentFriendRequests: User[];
-
-  @ManyToMany(() => User)
-  @JoinTable({
-    name: 'received_friend_requests',
-    joinColumn: { name: 'receiverId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'senderId', referencedColumnName: 'id' },
-  })
-  receivedFriendRequests: User[];
-
   @ApiProperty({
     readOnly: true,
     example: new Date(),

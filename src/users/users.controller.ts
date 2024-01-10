@@ -10,13 +10,17 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/auth.guard';
+import { FriendRequestsService } from '../friend-requests/friend-requests.service';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private friendRequestsService: FriendRequestsService,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Get(':name')
@@ -44,7 +48,7 @@ export class UsersController {
     @Param('name') name: string,
   ) {
     const user: User = await this.usersService.findOneByUsername(name);
-    return this.usersService.sendFriendRequest(request.user, user);
+    return this.friendRequestsService.sendFriendRequest(request.user, user);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -58,7 +62,7 @@ export class UsersController {
       throw new UnauthorizedException(
         'You can not view another users friend requests',
       );
-    return this.usersService.getReceivedFriendRequests(request.user);
+    return this.friendRequestsService.getReceivedFriendRequests(request.user);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -72,6 +76,6 @@ export class UsersController {
       throw new UnauthorizedException(
         'You can not view another users friend requests',
       );
-    return this.usersService.getSentFriendRequests(request.user);
+    return this.friendRequestsService.getSentFriendRequests(request.user);
   }
 }

@@ -1,9 +1,13 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import { FriendRequest } from './entities/friend-request.entity';
+import { FriendRequest } from './../friends/entities/friend-request.entity';
 
 @Injectable()
 export class FriendRequestsService {
@@ -94,25 +98,27 @@ export class FriendRequestsService {
    * @param toAcceptUser the user who should be accepted as a friend
    */
   async acceptFriendRequest(acceptingUser: User, toAcceptUser: User) {
-    //     if (!acceptingUser.receivedFriendRequests.includes(toAcceptUser))
-    //       throw new NotFoundException(
-    //         'This user did not send you a friend request',
-    //       );
-    //     // Remove friend request from the acceptingUser's list of received requests
-    //     acceptingUser.receivedFriendRequests =
-    //       acceptingUser.receivedFriendRequests.filter(
-    //         (user) => user.id !== toAcceptUser.id,
-    //       );
-    //     // Remove the acceptingUser from the toAcceptUser's list of sent friend requests
-    //     toAcceptUser.sentFriendRequests = toAcceptUser.sentFriendRequests.filter(
-    //       (user) => user.id !== acceptingUser.id,
-    //     );
-    //     // Add the sender to the receiver's list of friends
-    //     acceptingUser.friends = [...acceptingUser.friends, toAcceptUser];
-    //     // Add the receiver to the sender's list of friends
-    //     toAcceptUser.friends = [...toAcceptUser.friends, acceptingUser];
-    //     // Save changes to the database
-    //     await this.userRepository.save([acceptingUser, toAcceptUser]);
+    const friendRequest = await this.friendRequestRepository.findOne({
+      where: {
+        sender: {
+          id: toAcceptUser.id,
+        },
+        receiver: {
+          id: acceptingUser,
+        },
+      },
+    });
+
+    if (!friendRequest)
+      throw new NotFoundException(
+        'This user did not send you a friend request',
+      );
+
+    // remove friend request
+    await this.friendRequestRepository.remove(friendRequest);
+
+    // add as friends
+    await this.usersService.addFriend(acceptingUser, toAcceptUser);
   }
 
   /**
@@ -136,26 +142,6 @@ export class FriendRequestsService {
     //     );
     //     // Save changes to the database
     //     await this.userRepository.save([decliningUser, toDeclineUser]);
-  }
-
-  /**
-   *
-   * @param acceptingUser the user who received the friend request
-   * @param toAcceptUser the user who should be accepted as a friend
-   */
-  async removeFriend(removingUser: User, toRemoveUser: User) {
-    // if (!removingUser.friends.includes(toRemoveUser))
-    //   throw new NotFoundException('This user is not your friend');
-    // // remove toRemoveUser from removingUser's friends
-    // removingUser.friends = removingUser.friends.filter(
-    //   (user) => user.id !== toRemoveUser.id,
-    // );
-    // // remove removingUser from toRemoveUser's friends
-    // toRemoveUser.friends = toRemoveUser.friends.filter(
-    //   (user) => user.id !== removingUser.id,
-    // );
-    // // Save changes to the database
-    // await this.userRepository.save([removingUser, toRemoveUser]);
   }
 
   async getReceivedFriendRequests(user: User): Promise<FriendRequest[]> {

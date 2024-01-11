@@ -146,6 +146,31 @@ export class FriendRequestsService {
     await this.friendRequestRepository.remove(friendRequest);
   }
 
+  /**
+   *
+   * @param acceptingUser the user who sent the friend request
+   * @param toAcceptUser the user who's friend request should be revoked
+   */
+  async revokeFriendRequest(revokingUser: User, toRevokeUser: User) {
+    const friendRequest = await this.friendRequestRepository.findOne({
+      where: {
+        sender: {
+          id: revokingUser.id,
+        },
+        receiver: {
+          id: toRevokeUser.id,
+        },
+      },
+    });
+
+    if (!friendRequest)
+      throw new NotFoundException(
+        'You did not send a friend request to that user',
+      );
+
+    await this.friendRequestRepository.remove(friendRequest);
+  }
+
   async getReceivedFriendRequests(user: User): Promise<FriendRequest[]> {
     return this.friendRequestRepository.find({
       where: {

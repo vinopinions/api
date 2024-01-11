@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import { FriendRequest } from './../friends/entities/friend-request.entity';
+import { FriendRequest } from './entities/friend-request.entity';
 
 @Injectable()
 export class FriendRequestsService {
@@ -104,7 +104,7 @@ export class FriendRequestsService {
           id: toAcceptUser.id,
         },
         receiver: {
-          id: acceptingUser,
+          id: acceptingUser.id,
         },
       },
     });
@@ -124,24 +124,26 @@ export class FriendRequestsService {
   /**
    *
    * @param acceptingUser the user who received the friend request
-   * @param toAcceptUser the user who should be accepted as a friend
+   * @param toAcceptUser the user who should be declined as a friend
    */
   async declineFriendRequest(decliningUser: User, toDeclineUser: User) {
-    //     if (!decliningUser.receivedFriendRequests.includes(toDeclineUser))
-    //       throw new NotFoundException(
-    //         'This user did not send you a friend request',
-    //       );
-    //     // Remove friend request from the decliningUser's list of received requests
-    //     decliningUser.receivedFriendRequests =
-    //       decliningUser.receivedFriendRequests.filter(
-    //         (user) => user.id !== toDeclineUser.id,
-    //       );
-    //     // Remove the decliningUser from the toDeclineUser's list of sent friend requests
-    //     toDeclineUser.sentFriendRequests = toDeclineUser.sentFriendRequests.filter(
-    //       (user) => user.id !== decliningUser.id,
-    //     );
-    //     // Save changes to the database
-    //     await this.userRepository.save([decliningUser, toDeclineUser]);
+    const friendRequest = await this.friendRequestRepository.findOne({
+      where: {
+        sender: {
+          id: toDeclineUser.id,
+        },
+        receiver: {
+          id: decliningUser.id,
+        },
+      },
+    });
+
+    if (!friendRequest)
+      throw new NotFoundException(
+        'This user did not send you a friend request',
+      );
+
+    await this.friendRequestRepository.remove(friendRequest);
   }
 
   async getReceivedFriendRequests(user: User): Promise<FriendRequest[]> {

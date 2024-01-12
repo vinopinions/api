@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Store } from '../stores/entities/store.entity';
@@ -10,6 +6,7 @@ import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
 import { Wine } from './entities/wine.entity';
+import { CreateWineDto } from './dtos/create-wine.dto';
 
 @Injectable()
 export class WinesService {
@@ -29,15 +26,11 @@ export class WinesService {
   }): Promise<Wine> {
     const winemaker: Winemaker | null =
       await this.winemakersService.findOneById(data.winemakerId);
-    if (!winemaker) throw new BadRequestException('Winemaker not found');
 
     const stores: Store[] = await Promise.all(
       (data.storeIds ?? []).map(async (storeId: string) => {
         const store: Store | null =
           await this.storesService.findOneById(storeId);
-        if (!store)
-          throw new BadRequestException(`Store with id ${storeId} not found`);
-
         return store;
       }),
     );
@@ -52,19 +45,42 @@ export class WinesService {
     return this.wineRepository.find();
   }
 
-  findOneById(id: string): Promise<Wine | null> {
-    return this.wineRepository.findOne({
+  async findOneById(id: string): Promise<Wine> {
+    const wine: Wine | null = await this.wineRepository.findOne({
       where: { id },
       relations: {
         winemaker: true,
         stores: true,
       },
     });
+    if (!wine) throw new NotFoundException('Wine not found');
+    return wine;
   }
 
   async remove(id: string): Promise<Wine> {
-    const Wine: Wine | null = await this.findOneById(id);
-    if (Wine === null) throw new NotFoundException();
+    const Wine: Wine = await this.findOneById(id);
     return this.wineRepository.remove(Wine);
+  }
+
+  async update(id: string, updatedWine: CreateWineDto): Promise<Wine> {
+    const wine = await this.wineRepository.findOneOrFail({
+      where: { id },
+      relations: ['stores'],
+    });
+
+    if (!updatedWine.storeIds || updatedWine.storeIds.length < 0)
+      wine.stores = [];
+    else {
+      const stores: Store[] = await Promise.all(
+        updatedWine.storeIds.map(async (storeId: string) => {
+          const store: Store | null =
+            await this.storesService.findOneById(storeId);
+          return store;
+        }),
+      );
+      wine.stores = stores;
+    }
+
+    return this.wineRepository.save(wine);
   }
 }

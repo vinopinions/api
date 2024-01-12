@@ -26,18 +26,19 @@ export class StoresService {
     });
   }
 
-  findOneById(id: string): Promise<Store | null> {
-    return this.storeRepository.findOne({
+  async findOneById(id: string): Promise<Store> {
+    const store: Store | null = await this.storeRepository.findOne({
       where: { id },
       relations: {
         wines: true,
       },
     });
+    if (!store) throw new NotFoundException('Store not found');
+    return store;
   }
 
   async remove(id: string): Promise<Store> {
     const store: Store | null = await this.findOneById(id);
-    if (store == null) throw new NotFoundException();
     return this.storeRepository.remove(store);
   }
 }

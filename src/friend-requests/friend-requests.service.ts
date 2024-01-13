@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { FriendRequest } from './entities/friend-request.entity';
@@ -17,15 +17,23 @@ export class FriendRequestsService {
     private friendRequestRepository: Repository<FriendRequest>,
   ) {}
 
+  async findOne(
+    options: FindOneOptions<FriendRequest>,
+  ): Promise<FriendRequest> {
+    const friendRequest = await this.friendRequestRepository.findOne(options);
+    if (!friendRequest)
+      throw new NotFoundException(
+        `Friend with ${JSON.stringify(options.where)} not found`,
+      );
+    return friendRequest;
+  }
+
   /**
    * Rules:
    *    1. A user can not send himself a friend request
    *    2. A user can not receive 2 friend requests from the same sender
    *    3. A user can not send a friend request to a user he is already friends with
    *    4. A user can not send a friend request to a user that has sent him a friend request already
-   *
-   * @param sender user who sends the friend request
-   * @param receiver user that should receive the friend request
    */
   async sendFriendRequest(sender: User, receiver: User) {
     // 1. Rule
@@ -33,24 +41,20 @@ export class FriendRequestsService {
       throw new ConflictException('You can not send yourself a friend request');
 
     // 2. Rule
-    const receiverReceivedFriendRequests =
-      await this.friendRequestRepository.find({
+    const possibleAlreadyExistingFriendRequest =
+      await this.friendRequestRepository.findOne({
         where: {
           receiver: {
             id: receiver.id,
           },
-        },
-        relations: {
-          sender: true,
+          sender: {
+            id: sender.id,
+          },
         },
       });
 
     // check if the sender has already sent a request to the receiver
-    if (
-      receiverReceivedFriendRequests.find(
-        (request) => request.sender.id == sender.id,
-      )
-    )
+    if (possibleAlreadyExistingFriendRequest)
       throw new ConflictException(
         'You already sent a friend request to that user',
       );
@@ -62,23 +66,20 @@ export class FriendRequestsService {
       throw new ConflictException('You are already friends with that user');
 
     // 4. Rule
-    const receiverSentFriendRequests = await this.friendRequestRepository.find({
-      where: {
-        sender: {
-          id: receiver.id,
+    const possibleAlreadyExistingFriendRequest2 =
+      await this.friendRequestRepository.findOne({
+        where: {
+          sender: {
+            id: receiver.id,
+          },
+          receiver: {
+            id: sender.id,
+          },
         },
-      },
-      relations: {
-        receiver: true,
-      },
-    });
+      });
 
     // check if the sender has already sent a request to the receiver
-    if (
-      receiverSentFriendRequests.find(
-        (request) => request.receiver.id == sender.id,
-      )
-    )
+    if (possibleAlreadyExistingFriendRequest2)
       throw new ConflictException(
         'The user already sent a friend request to you. Accept that.',
       );
@@ -92,56 +93,35 @@ export class FriendRequestsService {
     await this.friendRequestRepository.save(friendRequest);
   }
 
-  /**
-   *
-   * @param acceptingUser the user who received the friend request
-   * @param toAcceptUser the user who should be accepted as a friend
-   */
-  async acceptFriendRequest(acceptingUser: User, toAcceptUser: User) {
-    const friendRequest = await this.friendRequestRepository.findOne({
+  async acceptFriendRequest(id: string, acceptingUser: User) {
+    const friendRequest: FriendRequest = await this.findOne({
       where: {
-        sender: {
-          id: toAcceptUser.id,
-        },
-        receiver: {
-          id: acceptingUser.id,
-        },
+        id,
+        receiver: acceptingUser,
+      },
+      relations: {
+        sender: true,
+        receiver: true,
       },
     });
-
-    if (!friendRequest)
-      throw new NotFoundException(
-        'This user did not send you a friend request',
-      );
 
     // remove friend request
     await this.friendRequestRepository.remove(friendRequest);
 
     // add as friends
-    await this.usersService.addFriend(acceptingUser, toAcceptUser);
+    await this.usersService.addFriend(acceptingUser, friendRequest.sender);
   }
 
-  /**
-   *
-   * @param acceptingUser the user who received the friend request
-   * @param toAcceptUser the user who should be declined as a friend
-   */
-  async declineFriendRequest(decliningUser: User, toDeclineUser: User) {
-    const friendRequest = await this.friendRequestRepository.findOne({
+  async declineFriendRequest(id: string, decliningUser: User) {
+    const friendRequest: FriendRequest = await this.findOne({
       where: {
-        sender: {
-          id: toDeclineUser.id,
-        },
-        receiver: {
-          id: decliningUser.id,
-        },
+        id,
+        receiver: decliningUser,
+      },
+      relations: {
+        receiver: true,
       },
     });
-
-    if (!friendRequest)
-      throw new NotFoundException(
-        'This user did not send you a friend request',
-      );
 
     await this.friendRequestRepository.remove(friendRequest);
   }
@@ -151,22 +131,13 @@ export class FriendRequestsService {
    * @param acceptingUser the user who sent the friend request
    * @param toAcceptUser the user who's friend request should be revoked
    */
-  async revokeFriendRequest(revokingUser: User, toRevokeUser: User) {
-    const friendRequest = await this.friendRequestRepository.findOne({
+  async revokeFriendRequest(id: string, revokingUser: User) {
+    const friendRequest: FriendRequest = await this.findOne({
       where: {
-        sender: {
-          id: revokingUser.id,
-        },
-        receiver: {
-          id: toRevokeUser.id,
-        },
+        id,
+        sender: revokingUser,
       },
     });
-
-    if (!friendRequest)
-      throw new NotFoundException(
-        'You did not send a friend request to that user',
-      );
 
     await this.friendRequestRepository.remove(friendRequest);
   }

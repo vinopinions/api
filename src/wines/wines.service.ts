@@ -51,6 +51,7 @@ export class WinesService {
       relations: {
         winemaker: true,
         stores: true,
+        ratings: true,
       },
     });
     if (!wine) throw new NotFoundException('Wine not found');

@@ -18,4 +18,10 @@ export class UsersController {
   findAll() {
     return this.usersService.findAll();
   }
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':id/ratings')
+  getRatings(@Param('id') id: string) {
+    return this.usersService.getRatings(id);
+  }
 }

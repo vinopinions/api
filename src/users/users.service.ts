@@ -5,7 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
+import { Rating } from '../ratings/entities/rating.entity';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -30,46 +31,26 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  async findOneById(
-    id: string,
-    relations?: FindOptionsRelations<User>,
-  ): Promise<User> {
-    const user = await this.findOne({ id }, relations);
-    if (!user) throw new NotFoundException(`User with name ${name} not found`);
-    return user;
-  }
-
-  findOneByUsername(
-    username: string,
-    relations?: FindOptionsRelations<User>,
-  ): Promise<User> {
-    return this.findOne({ username }, relations);
-  }
-
-  async findOne(
-    where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
-    relations?: FindOptionsRelations<User>,
-  ): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where,
-      relations,
-    });
+  async findOne(options: FindOneOptions<User>): Promise<User> {
+    const user = await this.userRepository.findOne(options);
     if (!user)
       throw new NotFoundException(
-        `User with ${JSON.stringify(where)} not found`,
+        `User with ${JSON.stringify(options.where)} not found`,
       );
     return user;
   }
 
   async remove(id: string): Promise<User> {
-    const user: User | null = await this.findOneById(id);
-    if (user === null) throw new NotFoundException();
+    const user: User = await this.findOne({ where: { id } });
     return this.userRepository.remove(user);
   }
 
   async getFriends(user: User): Promise<User[]> {
-    const userWithRelation = await this.findOneById(user.id, {
-      friends: true,
+    const userWithRelation = await this.findOne({
+      where: { id: user.id },
+      relations: {
+        friends: true,
+      },
     });
 
     return userWithRelation.friends;
@@ -81,11 +62,17 @@ export class UsersService {
    * @param toBeAddedUser the user who should be added as a friend
    */
   async addFriend(addingUser: User, toBeAddedUser: User) {
-    const addingUserWithRelation = await this.findOneById(addingUser.id, {
-      friends: true,
+    const addingUserWithRelation = await this.findOne({
+      where: { id: addingUser.id },
+      relations: {
+        friends: true,
+      },
     });
-    const toBeAddedUserWithRelation = await this.findOneById(toBeAddedUser.id, {
-      friends: true,
+    const toBeAddedUserWithRelation = await this.findOne({
+      where: { id: toBeAddedUser.id },
+      relations: {
+        friends: true,
+      },
     });
 
     if (addingUserWithRelation.friends.includes(toBeAddedUser))
@@ -114,15 +101,20 @@ export class UsersService {
    * @param toBeRemovedUser the user who should be removed as a friend
    */
   async removeFriend(removingUser: User, toBeRemovedUser: User) {
-    const removingUserWithRelation = await this.findOneById(removingUser.id, {
-      friends: true,
-    });
-    const toBeRemovedUserWithRelation = await this.findOneById(
-      toBeRemovedUser.id,
-      {
+    const removingUserWithRelation = await this.findOne({
+      where: { id: removingUser.id },
+      relations: {
         friends: true,
       },
-    );
+    });
+    const toBeRemovedUserWithRelation = await this.findOne({
+      where: {
+        id: toBeRemovedUser.id,
+      },
+      relations: {
+        friends: true,
+      },
+    });
 
     if (!removingUserWithRelation.friends.includes(toBeRemovedUser))
       throw new NotFoundException('This user is not your friend');
@@ -147,5 +139,12 @@ export class UsersService {
       removingUserWithRelation,
       toBeRemovedUserWithRelation,
     ]);
+  }
+  async getRatings(id: string): Promise<Rating[]> {
+    const user: User = await this.findOne({
+      where: { id },
+      relations: { ratings: true },
+    });
+    return user.ratings;
   }
 }

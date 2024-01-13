@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { FriendRequestsModule } from './friend-requests/friend-requests.module';
+import { RatingsModule } from './ratings/ratings.module';
 import { StoresModule } from './stores/stores.module';
 import { UsersModule } from './users/users.module';
 import { WinemakersModule } from './winemakers/winemakers.module';
@@ -20,6 +21,7 @@ import { WinesModule } from './wines/wines.module';
     WinemakersModule,
     StoresModule,
     FriendRequestsModule,
+    RatingsModule,
   ],
 })
 export class AppModule {}

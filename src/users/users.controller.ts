@@ -26,4 +26,9 @@ export class UsersController {
     const user: User = await this.usersService.findOneByUsername(name);
     return this.usersService.getFriends(user);
   }
+
+  @Get(':id/ratings')
+  getRatings(@Param('id') id: string) {
+    return this.usersService.getRatings(id);
+  }
 }

@@ -6,9 +6,11 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Rating } from '../../ratings/entities/rating.entity';
 
 @Entity()
 export class User {
@@ -47,6 +49,8 @@ export class User {
     inverseJoinColumn: { name: 'friendId', referencedColumnName: 'id' },
   })
   friends: User[];
+  @OneToMany(() => Rating, (rating: Rating) => rating.user)
+  ratings: Rating[];
 
   @ApiProperty({
     readOnly: true,

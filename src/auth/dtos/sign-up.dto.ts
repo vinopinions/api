@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { IsStrongPassword } from 'class-validator';
+import { IsString } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
 
 export class SignUpDto extends PickType(User, ['username'] as const) {
@@ -8,6 +8,6 @@ export class SignUpDto extends PickType(User, ['username'] as const) {
     description: 'password of the user',
     type: String,
   })
-  @IsStrongPassword()
+  @IsString()
   password: string;
 }

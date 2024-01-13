@@ -23,7 +23,7 @@ export class FriendRequestsService {
     const friendRequest = await this.friendRequestRepository.findOne(options);
     if (!friendRequest)
       throw new NotFoundException(
-        `Friend with ${JSON.stringify(options.where)} not found`,
+        `FriendRequest with ${JSON.stringify(options.where)} not found`,
       );
     return friendRequest;
   }
@@ -97,7 +97,9 @@ export class FriendRequestsService {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
-        receiver: acceptingUser,
+        receiver: {
+          id: acceptingUser.id,
+        },
       },
       relations: {
         sender: true,
@@ -116,14 +118,16 @@ export class FriendRequestsService {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
-        receiver: decliningUser,
+        receiver: {
+          id: decliningUser.id,
+        },
       },
       relations: {
         receiver: true,
       },
     });
 
-    await this.friendRequestRepository.remove(friendRequest);
+    return await this.friendRequestRepository.remove(friendRequest);
   }
 
   /**
@@ -135,7 +139,9 @@ export class FriendRequestsService {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
-        sender: revokingUser,
+        sender: {
+          id: revokingUser.id,
+        },
       },
     });
 
@@ -145,7 +151,13 @@ export class FriendRequestsService {
   async getReceivedFriendRequests(user: User): Promise<FriendRequest[]> {
     return this.friendRequestRepository.find({
       where: {
-        receiver: user,
+        receiver: {
+          id: user.id,
+        },
+      },
+      relations: {
+        sender: true,
+        receiver: true,
       },
     });
   }
@@ -153,7 +165,13 @@ export class FriendRequestsService {
   async getSentFriendRequests(user: User): Promise<FriendRequest[]> {
     return this.friendRequestRepository.find({
       where: {
-        sender: user,
+        sender: {
+          id: user.id,
+        },
+      },
+      relations: {
+        sender: true,
+        receiver: true,
       },
     });
   }

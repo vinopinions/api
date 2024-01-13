@@ -23,7 +23,6 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @Get(':name/friends')
   async getFriends(@Param('name') name: string) {
-    console.log(name);
     const user: User = await this.usersService.findOneByUsername(name);
     return this.usersService.getFriends(user);
   }

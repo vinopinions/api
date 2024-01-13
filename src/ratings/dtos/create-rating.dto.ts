@@ -1,13 +1,13 @@
 import { PickType } from '@nestjs/swagger';
 import { Rating } from '../entities/rating.entity';
-import { IsNotEmpty } from 'class-validator';
+import { IsUUID } from 'class-validator';
 
 export class CreateRatingDto extends PickType(Rating, [
   'stars',
   'text',
 ] as const) {
-  @IsNotEmpty()
+  @IsUUID()
   wineId: string;
-
+  @IsUUID()
   userId: string;
 }

@@ -60,4 +60,10 @@ export class WinesController {
   getRatingsForWines(@Param('wineId') wineId: string) {
     return this.ratingsService.getByWineId(wineId);
   }
+
+  @HttpCode(HttpStatus.OK)
+  @Put(':id')
+  addStores(@Param('id') id: string, @Body() updatedWine: CreateWineDto) {
+    return this.wineService.update(id, updatedWine);
+  }
 }

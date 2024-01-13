@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class SendFriendRequestDto {
   @ApiProperty({
@@ -7,6 +7,6 @@ export class SendFriendRequestDto {
     description: 'name of the user you want to sent a friend request to',
     type: String,
   })
-  @IsUUID()
+  @IsString()
   to: string;
 }

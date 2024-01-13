@@ -37,11 +37,18 @@ export class FriendRequestsController {
     return this.friendRequestsService.sendFriendRequest(request.user, user);
   }
 
-  @ApiOperation({ summary: 'Revoke a friend request sent by you' })
+  @ApiOperation({ summary: 'Accept a sent friend request sent to you' })
   @HttpCode(HttpStatus.OK)
-  @Delete(':id/revoke')
-  async revoke(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
-    this.friendRequestsService.revokeFriendRequest(id, request.user);
+  @Post(':id/accept')
+  async accept(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    this.friendRequestsService.acceptFriendRequest(id, request.user);
+  }
+
+  @ApiOperation({ summary: 'Decline a sent friend request sent to you' })
+  @HttpCode(HttpStatus.OK)
+  @Post(':id/decline')
+  async decline(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    this.friendRequestsService.declineFriendRequest(id, request.user);
   }
 
   @ApiOperation({ summary: 'Get all friend requests sent to you' })
@@ -58,17 +65,10 @@ export class FriendRequestsController {
     return this.friendRequestsService.getSentFriendRequests(request.user);
   }
 
-  @ApiOperation({ summary: 'Decline a sent friend request sent to you' })
+  @ApiOperation({ summary: 'Revoke a friend request sent by you' })
   @HttpCode(HttpStatus.OK)
-  @Post(':id/decline')
-  async decline(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
-    this.friendRequestsService.declineFriendRequest(id, request.user);
-  }
-
-  @ApiOperation({ summary: 'Accept a sent friend request sent to you' })
-  @HttpCode(HttpStatus.OK)
-  @Post(':id/accept')
-  async accept(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
-    this.friendRequestsService.acceptFriendRequest(id, request.user);
+  @Delete(':id/revoke')
+  async revoke(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    this.friendRequestsService.revokeFriendRequest(id, request.user);
   }
 }

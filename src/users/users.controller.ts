@@ -9,15 +9,15 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @HttpCode(HttpStatus.OK)
-  @Get(':name')
-  findByName(@Param('name') name: string) {
-    return this.usersService.findOneByUsername(name);
-  }
-
-  @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':name')
+  findByName(@Param('name') name: string) {
+    return this.usersService.findOneByUsername(name);
   }
 
   @HttpCode(HttpStatus.OK)

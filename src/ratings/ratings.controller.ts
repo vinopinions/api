@@ -24,7 +24,7 @@ export class RatingsController {
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.ratingsService.findAll();
+    return this.ratingsService.findMany();
   }
 
   @HttpCode(HttpStatus.CREATED)

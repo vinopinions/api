@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { Store } from './entities/store.entity';
 
 @Injectable()
@@ -18,14 +18,9 @@ export class StoresService {
     return this.storeRepository.save(store);
   }
 
-  findAll() {
-    return this.storeRepository.find({
-      relations: {
-        wines: true,
-      },
-    });
+  findMany(options?: FindManyOptions<Store>) {
+    return this.storeRepository.find(options);
   }
-
   async findOne(options: FindOneOptions<Store>): Promise<Store> {
     const Rating = await this.storeRepository.findOne(options);
     if (!Rating)

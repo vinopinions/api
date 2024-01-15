@@ -25,7 +25,7 @@ export class StoresController {
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.storesService.findAll();
+    return this.storesService.findMany();
   }
 
   @HttpCode(HttpStatus.CREATED)

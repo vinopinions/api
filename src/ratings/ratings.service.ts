@@ -43,7 +43,7 @@ export class RatingsService {
     return this.ratingRepository.save(rating);
   }
 
-  findAll(options?: FindManyOptions<Rating>) {
+  findMany(options?: FindManyOptions<Rating>) {
     return this.ratingRepository.find(options);
   }
 

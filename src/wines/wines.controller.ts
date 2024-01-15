@@ -31,7 +31,7 @@ export class WinesController {
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.wineService.findAll();
+    return this.wineService.findMany();
   }
 
   @HttpCode(HttpStatus.CREATED)

@@ -25,7 +25,7 @@ export class WinemakersController {
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.winemakersService.findAll();
+    return this.winemakersService.findMany();
   }
 
   @HttpCode(HttpStatus.CREATED)

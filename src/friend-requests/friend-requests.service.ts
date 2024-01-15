@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { FriendRequest } from './entities/friend-request.entity';
@@ -26,6 +26,10 @@ export class FriendRequestsService {
         `FriendRequest with ${JSON.stringify(options.where)} not found`,
       );
     return friendRequest;
+  }
+
+  findMany(options?: FindManyOptions<FriendRequest>) {
+    return this.friendRequestRepository.find(options);
   }
 
   /**

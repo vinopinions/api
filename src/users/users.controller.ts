@@ -11,7 +11,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.usersService.findAll();
+    return this.usersService.findMany();
   }
 
   @HttpCode(HttpStatus.OK)

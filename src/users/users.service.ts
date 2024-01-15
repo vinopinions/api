@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { Rating } from '../ratings/entities/rating.entity';
 import { User } from './entities/user.entity';
 
@@ -27,8 +27,8 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  findAll() {
-    return this.userRepository.find();
+  findMany(options?: FindManyOptions<User>) {
+    return this.userRepository.find(options);
   }
 
   async findOne(options: FindOneOptions<User>): Promise<User> {

@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from './auth.guard';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dtos/sign-in.dto';
@@ -10,6 +10,7 @@ import { SignUpDto } from './dtos/sign-up.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiOperation({ summary: 'log in' })
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('login')
@@ -17,6 +18,7 @@ export class AuthController {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
+  @ApiOperation({ summary: 'sign up' })
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('signup')

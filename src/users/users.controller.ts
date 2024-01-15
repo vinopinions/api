@@ -1,4 +1,11 @@
-import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -33,6 +40,27 @@ export class UsersController {
       },
     });
     return this.usersService.getFriends(user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Delete(':name/friends/:friendName')
+  async removeFriend(
+    @Param('name') username: string,
+    @Param('friendName') friendUsername: string,
+  ) {
+    const removingUser: User = await this.usersService.findOne({
+      where: {
+        username,
+      },
+    });
+
+    const toBeRemovedUser: User = await this.usersService.findOne({
+      where: {
+        username: friendUsername,
+      },
+    });
+
+    return await this.usersService.removeFriend(removingUser, toBeRemovedUser);
   }
 
   @Get(':id/ratings')

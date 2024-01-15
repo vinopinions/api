@@ -9,10 +9,10 @@ import {
   Put,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateWineDto } from './dtos/create-wine.dto';
-import { WinesService } from './wines.service';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
 import { RatingsService } from '../ratings/ratings.service';
+import { CreateWineDto } from './dtos/create-wine.dto';
+import { WinesService } from './wines.service';
 
 @Controller('wines')
 @ApiTags('wines')
@@ -25,7 +25,7 @@ export class WinesController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
-    return this.wineService.findOneById(id);
+    return this.wineService.findOne({ where: { id } });
   }
 
   @HttpCode(HttpStatus.OK)

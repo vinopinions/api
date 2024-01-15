@@ -16,14 +16,22 @@ export class UsersController {
 
   @HttpCode(HttpStatus.OK)
   @Get(':name')
-  findByName(@Param('name') name: string) {
-    return this.usersService.findOneByUsername(name);
+  findByName(@Param('name') username: string) {
+    return this.usersService.findOne({
+      where: {
+        username,
+      },
+    });
   }
 
   @HttpCode(HttpStatus.OK)
   @Get(':name/friends')
-  async getFriends(@Param('name') name: string) {
-    const user: User = await this.usersService.findOneByUsername(name);
+  async getFriends(@Param('name') username: string) {
+    const user: User = await this.usersService.findOne({
+      where: {
+        username,
+      },
+    });
     return this.usersService.getFriends(user);
   }
 

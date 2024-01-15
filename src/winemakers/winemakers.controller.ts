@@ -19,7 +19,7 @@ export class WinemakersController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
-    return this.winemakersService.findOneById(id);
+    return this.winemakersService.findOne({ where: { id } });
   }
 
   @HttpCode(HttpStatus.OK)

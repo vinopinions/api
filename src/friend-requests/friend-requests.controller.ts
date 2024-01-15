@@ -32,9 +32,9 @@ export class FriendRequestsController {
     @Req() request: AuthenticatedRequest,
     @Body() sendFriendRequestDto: SendFriendRequestDto,
   ) {
-    const user: User = await this.usersService.findOneByUsername(
-      sendFriendRequestDto.to,
-    );
+    const user: User = await this.usersService.findOne({
+      where: { username: sendFriendRequestDto.to },
+    });
     return await this.friendRequestsService.sendFriendRequest(
       request.user,
       user,

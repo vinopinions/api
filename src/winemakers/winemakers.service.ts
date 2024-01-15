@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { Winemaker } from './entities/winemaker.entity';
 
 @Injectable()
@@ -27,16 +27,12 @@ export class WinemakersService {
     return this.winemakersRepository.save(user);
   }
 
-  async findOneById(id: string): Promise<Winemaker> {
-    const winemaker: Winemaker | null = await this.winemakersRepository.findOne(
-      {
-        where: { id },
-        relations: {
-          wines: true,
-        },
-      },
-    );
-    if (!winemaker) throw new NotFoundException('Winemaker not found');
+  async findOne(options: FindOneOptions<Winemaker>): Promise<Winemaker> {
+    const winemaker = await this.winemakersRepository.findOne(options);
+    if (!winemaker)
+      throw new NotFoundException(
+        `Winemaker with ${JSON.stringify(options.where)} not found`,
+      );
     return winemaker;
   }
 

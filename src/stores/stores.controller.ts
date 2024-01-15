@@ -19,7 +19,7 @@ export class StoresController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
-    return this.storesService.findOneById(id);
+    return this.storesService.findOne({ where: { id } });
   }
 
   @HttpCode(HttpStatus.OK)

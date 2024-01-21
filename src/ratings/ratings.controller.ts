@@ -8,8 +8,8 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { RatingsService } from './ratings.service';
 import { CreateRatingDto } from './dtos/create-rating.dto';
+import { RatingsService } from './ratings.service';
 
 @Controller('ratings')
 export class RatingsController {
@@ -18,13 +18,13 @@ export class RatingsController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
-    return this.ratingsService.findOneById(id);
+    return this.ratingsService.findOne({ where: { id } });
   }
 
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.ratingsService.findAll();
+    return this.ratingsService.findMany();
   }
 
   @HttpCode(HttpStatus.CREATED)

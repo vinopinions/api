@@ -19,7 +19,7 @@ import { AuthService } from './auth.service';
           algorithms: ['RS256'],
         },
         signOptions: {
-          expiresIn: '1h',
+          expiresIn: '24h',
           issuer: configService.get('AUTH_SERVICE_DOMAIN'),
           algorithm: 'RS256',
         },

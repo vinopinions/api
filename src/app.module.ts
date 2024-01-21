@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
-import { UsersModule } from './users/users.module';
-import { WinesModule } from './wines/wines.module';
-import { WinemakersModule } from './winemakers/winemakers.module';
-import { StoresModule } from './stores/stores.module';
+import { FriendRequestsModule } from './friend-requests/friend-requests.module';
 import { RatingsModule } from './ratings/ratings.module';
+import { StoresModule } from './stores/stores.module';
+import { UsersModule } from './users/users.module';
+import { WinemakersModule } from './winemakers/winemakers.module';
+import { WinesModule } from './wines/wines.module';
 
 @Module({
   imports: [
@@ -21,9 +20,8 @@ import { RatingsModule } from './ratings/ratings.module';
     WinesModule,
     WinemakersModule,
     StoresModule,
+    FriendRequestsModule,
     RatingsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

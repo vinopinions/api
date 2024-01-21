@@ -4,6 +4,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -40,6 +42,13 @@ export class User {
   @Column()
   passwordHash: string;
 
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'friends',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'friendId', referencedColumnName: 'id' },
+  })
+  friends: User[];
   @OneToMany(() => Rating, (rating: Rating) => rating.user)
   ratings: Rating[];
 

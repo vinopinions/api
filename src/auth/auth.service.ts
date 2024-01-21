@@ -23,7 +23,7 @@ export class AuthService {
       throw new BadRequestException("'username' has to be defined");
     if (!password)
       throw new BadRequestException("'password' has to be defined");
-    const user = await this.usersService.findOneByUsername(username);
+    const user = await this.usersService.findOne({ where: { username } });
 
     if (!user) throw new UnauthorizedException();
 
@@ -42,10 +42,14 @@ export class AuthService {
     if (!password)
       throw new BadRequestException("'password' has to be defined");
 
-    if (await this.usersService.findOneByUsername(username))
-      throw new ConflictException();
-    const hash: string = await bcrypt.hash(password, 12);
+    // Weird setup but since findOneByUsername throws an exception when no user is found it makes sense
+    try {
+      if (await this.usersService.findOne({ where: { username } }))
+        throw new ConflictException();
+    } catch (NotFoundException) {
+      const hash: string = await bcrypt.hash(password, 12);
 
-    this.usersService.create(username, hash);
+      this.usersService.create(username, hash);
+    }
   }
 }

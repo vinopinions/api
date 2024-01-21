@@ -20,14 +20,14 @@ export class StoresController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
-    return this.storesService.findOneById(id);
+    return this.storesService.findOne({ where: { id } });
   }
 
   @ApiOperation({ summary: 'get all stores' })
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.storesService.findAll();
+    return this.storesService.findMany();
   }
 
   @ApiOperation({ summary: 'create a store' })

@@ -20,14 +20,14 @@ export class WinemakersController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
-    return this.winemakersService.findOneById(id);
+    return this.winemakersService.findOne({ where: { id } });
   }
 
   @ApiOperation({ summary: 'get all winemakers' })
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.winemakersService.findAll();
+    return this.winemakersService.findMany();
   }
 
   @ApiOperation({ summary: 'create a winemaker' })

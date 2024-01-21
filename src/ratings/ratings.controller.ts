@@ -21,14 +21,14 @@ export class RatingsController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
-    return this.ratingsService.findOneById(id);
+    return this.ratingsService.findOne({ where: { id } });
   }
 
   @ApiOperation({ summary: 'get all ratings' })
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
-    return this.ratingsService.findAll();
+    return this.ratingsService.findMany();
   }
 
   @ApiOperation({ summary: 'create a rating' })

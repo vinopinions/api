@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
+import { SignInResponseDto } from './dtos/sign-in-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -15,10 +16,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(
-    username: string,
-    password: string,
-  ): Promise<{ access_token: string }> {
+  async signIn(username: string, password: string): Promise<SignInResponseDto> {
     if (!username)
       throw new BadRequestException("'username' has to be defined");
     if (!password)

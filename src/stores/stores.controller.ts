@@ -7,30 +7,60 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { CreateStoreDto } from './dtos/create-store.dto';
+import { Store } from './entities/store.entity';
 import { StoresService } from './stores.service';
 
 @Controller('stores')
 @ApiTags('stores')
+@ApiUnauthorizedResponse({
+  description: 'Not logged in',
+})
 export class StoresController {
   constructor(private storesService: StoresService) {}
 
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  findById(@Param('id') id: string) {
+  @ApiOkResponse({
+    description: 'Store has been found',
+    type: Store,
+  })
+  @ApiNotFoundResponse({
+    description: 'Store has not been found',
+  })
+  findById(@Param('id') id: string): Promise<Store> {
     return this.storesService.findOne({ where: { id } });
   }
 
   @HttpCode(HttpStatus.OK)
   @Get()
-  findAll() {
+  @ApiOkResponse({
+    description: 'Stores have been found',
+    type: Store,
+    isArray: true,
+  })
+  findAll(): Promise<Store[]> {
     return this.storesService.findMany();
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  create(@Body() createStoreDto: CreateStoreDto) {
+  @ApiCreatedResponse({
+    description: 'Store has been created',
+    type: Store,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data',
+  })
+  create(@Body() createStoreDto: CreateStoreDto): Promise<Store> {
     return this.storesService.create(
       createStoreDto.name,
       createStoreDto.address,

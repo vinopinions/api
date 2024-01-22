@@ -12,7 +12,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Rating } from 'src/ratings/entities/rating.entity';
+import { Rating } from '../ratings/entities/rating.entity';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 

@@ -9,29 +9,32 @@ env:
   POSTGRES_HOST: localhost
   POSTGRES_PORT: 5432
   NODE_ENV: test
+  NODE_VERSION: 20.11.0
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    container: node:$NODE_VERSION-alpine
     services:
       postgres:
-        image: postgres:latest
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
 
       - name: Install dependencies
         run: yarn --ignore-scripts --non-interactive
 
       - name: Run E2E Tests
         run: yarn test:e2e
+        env:
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432

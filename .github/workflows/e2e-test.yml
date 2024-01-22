@@ -1,0 +1,37 @@
+name: test e2e
+
+on: [pull_request]
+
+env:
+  POSTGRES_DB: test
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: password
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+  NODE_ENV: test
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - $POSTGRES_PORT:POSTGRES_PORT
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: yarn --ignore-scripts --non-interactive
+
+      - name: Run E2E Tests
+        run: yarn test:e2e

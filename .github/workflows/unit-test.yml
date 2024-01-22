@@ -1,23 +1,30 @@
-name: test
+name: test unit
 on:
   pull_request:
-  workflow_call:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: node:lts-slim
-
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.11.0
+
       - name: Install dependencies
         run: yarn --ignore-scripts --non-interactive
-      # - name: Test formatting
-      #  run: yarn format:check
-      # - name: Test linting
-      #  run: yarn lint:check
-      - name: Test tests
+
+      - name: Test formatting
+        run: yarn format:check
+
+      - name: Test linting
+        run: yarn lint:check
+
+      - name: Run tests
         run: yarn test
+
       # - name: Test coverage
       #   run: yarn test:cov

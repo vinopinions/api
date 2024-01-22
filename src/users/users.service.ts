@@ -140,9 +140,9 @@ export class UsersService {
       toBeRemovedUserWithRelation,
     ]);
   }
-  async getRatings(id: string): Promise<Rating[]> {
+  async getRatings(username: string): Promise<Rating[]> {
     const user: User = await this.findOne({
-      where: { id },
+      where: { username },
       relations: { ratings: true },
     });
     return user.ratings;

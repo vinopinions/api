@@ -7,12 +7,13 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateWineMakerDto } from './dtos/create-winemaker.dto';
 import { WinemakersService } from './winemakers.service';
 
 @Controller('winemakers')
 @ApiTags('winemakers')
+@ApiBearerAuth()
 export class WinemakersController {
   constructor(private winemakersService: WinemakersService) {}
 

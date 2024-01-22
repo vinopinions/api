@@ -7,12 +7,13 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateStoreDto } from './dtos/create-store.dto';
 import { StoresService } from './stores.service';
 
 @Controller('stores')
 @ApiTags('stores')
+@ApiBearerAuth()
 export class StoresController {
   constructor(private storesService: StoresService) {}
 

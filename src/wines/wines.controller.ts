@@ -62,12 +62,12 @@ export class WinesController {
   @Post()
   @ApiCreatedResponse({
     description: 'Wine has been created',
-    type: Rating,
+    type: Wine,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  create(@Body() createWineDto: CreateWineDto) {
+  create(@Body() createWineDto: CreateWineDto): Promise<Wine> {
     return this.wineService.create(createWineDto);
   }
 

@@ -14,7 +14,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: node:${{ env.NODE_VERSION }}-alpine
+    container: node:${{ NODE_VERSION }}-alpine
     services:
       postgres:
         image: postgres

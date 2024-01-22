@@ -10,6 +10,7 @@ jobs:
       postgres:
         image: postgres
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
@@ -27,6 +28,8 @@ jobs:
       - name: Run E2E Tests
         run: yarn test:e2e
         env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           POSTGRES_HOST: postgres
           POSTGRES_PORT: 5432
           NODE_ENV: test

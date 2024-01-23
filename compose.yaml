@@ -1,20 +1,21 @@
 version: '3'
 services:
-  api:
+  server:
     container_name: vinopinionsapi-local
     build:
-      dockerfile: ./Dockerfile
+      context: .
     ports:
       - 3000:3000
     env_file:
       - .env
     depends_on:
-      - postgres
+      db:
+        condition: service_healthy
     networks:
-      - vinopinionsapi-local-internal
+      - internal
       - server
-  postgres:
-    container_name: vinopinionsapi-local-db
+  db:
+    container_name: local-db
     image: postgres
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -22,12 +23,17 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_PORT=${POSTGRES_PORT}
     volumes:
-      - vinopinionsapi-local-db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready']
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
-      - vinopinionsapi-local-internal
+      - internal
 networks:
   server:
     external: true
-  vinopinionsapi-local-internal:
+  internal:
 volumes:
-  vinopinionsapi-local-db-data:
+  db-data:

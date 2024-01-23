@@ -18,8 +18,11 @@ import { Rating } from '../ratings/entities/rating.entity';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
-@Controller('users')
-@ApiTags('users')
+const USERS_ENDPOINT_NAME = 'users';
+export const USERS_ENDPOINT = `/${USERS_ENDPOINT_NAME}`;
+
+@Controller(USERS_ENDPOINT_NAME)
+@ApiTags(USERS_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })

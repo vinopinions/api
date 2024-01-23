@@ -1,13 +1,13 @@
 import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
 import {
   AUTH_LOGIN_ENDPOINT,
   AUTH_SIGNUP_ENDPOINT,
-} from 'src/auth/auth.controller';
-import { SignInDto } from 'src/auth/dtos/sign-in.dto';
-import { SignUpDto } from 'src/auth/dtos/sign-up.dto';
-import request from 'supertest';
+} from '../src/auth/auth.controller';
+import { SignInDto } from '../src/auth/dtos/sign-in.dto';
+import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
 import { clearDatabase } from './utils';
 

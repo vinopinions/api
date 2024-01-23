@@ -6,8 +6,5 @@ export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const tableNames = entityManager.connection.entityMetadatas
     .map((entity) => `"${entity.tableName}"`)
     .join(', ');
-
-  console.log(tableNames);
-
   await entityManager.query(`truncate ${tableNames} restart identity cascade;`);
 };

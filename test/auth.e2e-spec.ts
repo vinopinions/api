@@ -1,15 +1,15 @@
 import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import {
+  AUTH_LOGIN_ENDPOINT,
+  AUTH_SIGNUP_ENDPOINT,
+} from 'src/auth/auth.controller';
 import { SignInDto } from 'src/auth/dtos/sign-in.dto';
 import { SignUpDto } from 'src/auth/dtos/sign-up.dto';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { clearDatabase } from './utils';
-
-const AUTH_ENDPOINT = '/auth';
-const LOGIN_ENDPOINT = AUTH_ENDPOINT + '/login';
-const SIGNUP_ENDPOINT = AUTH_ENDPOINT + '/signup';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -31,16 +31,16 @@ describe('AuthController (e2e)', () => {
     await app.close();
   });
 
-  describe(SIGNUP_ENDPOINT + ' (POST)', () => {
+  describe(AUTH_SIGNUP_ENDPOINT + ' (POST)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
-        .post(SIGNUP_ENDPOINT)
+        .post(AUTH_SIGNUP_ENDPOINT)
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with no data`, () => {
       return request(app.getHttpServer())
-        .post(SIGNUP_ENDPOINT)
+        .post(AUTH_SIGNUP_ENDPOINT)
         .expect(HttpStatus.BAD_REQUEST);
     });
 
@@ -50,7 +50,7 @@ describe('AuthController (e2e)', () => {
         password: false,
       };
       return request(app.getHttpServer())
-        .post(SIGNUP_ENDPOINT)
+        .post(AUTH_SIGNUP_ENDPOINT)
         .send(validData)
         .expect(HttpStatus.BAD_REQUEST);
     });
@@ -61,7 +61,7 @@ describe('AuthController (e2e)', () => {
         password: faker.internet.password(),
       };
       return request(app.getHttpServer())
-        .post(SIGNUP_ENDPOINT)
+        .post(AUTH_SIGNUP_ENDPOINT)
         .send(validData)
         .expect(HttpStatus.CREATED);
     });
@@ -71,25 +71,27 @@ describe('AuthController (e2e)', () => {
         username: faker.internet.userName(),
         password: faker.internet.password(),
       };
-      await request(app.getHttpServer()).post(SIGNUP_ENDPOINT).send(validData);
+      await request(app.getHttpServer())
+        .post(AUTH_SIGNUP_ENDPOINT)
+        .send(validData);
 
       return request(app.getHttpServer())
-        .post(SIGNUP_ENDPOINT)
+        .post(AUTH_SIGNUP_ENDPOINT)
         .send(validData)
         .expect(HttpStatus.CONFLICT);
     });
   });
 
-  describe(LOGIN_ENDPOINT + ' (POST)', () => {
+  describe(AUTH_LOGIN_ENDPOINT + ' (POST)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
-        .post(LOGIN_ENDPOINT)
+        .post(AUTH_LOGIN_ENDPOINT)
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with no data`, () => {
       return request(app.getHttpServer())
-        .post(LOGIN_ENDPOINT)
+        .post(AUTH_LOGIN_ENDPOINT)
         .expect(HttpStatus.BAD_REQUEST);
     });
 
@@ -99,7 +101,7 @@ describe('AuthController (e2e)', () => {
         password: false,
       };
       return request(app.getHttpServer())
-        .post(LOGIN_ENDPOINT)
+        .post(AUTH_LOGIN_ENDPOINT)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST);
     });
@@ -110,7 +112,7 @@ describe('AuthController (e2e)', () => {
         password: faker.internet.password(),
       };
       return request(app.getHttpServer())
-        .post(LOGIN_ENDPOINT)
+        .post(AUTH_LOGIN_ENDPOINT)
         .send(validData)
         .expect(HttpStatus.UNAUTHORIZED);
     });
@@ -121,10 +123,12 @@ describe('AuthController (e2e)', () => {
         password: faker.internet.password(),
       };
 
-      await request(app.getHttpServer()).post(SIGNUP_ENDPOINT).send(validData);
+      await request(app.getHttpServer())
+        .post(AUTH_SIGNUP_ENDPOINT)
+        .send(validData);
 
       return request(app.getHttpServer())
-        .post(LOGIN_ENDPOINT)
+        .post(AUTH_LOGIN_ENDPOINT)
         .send(validData)
         .expect(HttpStatus.CREATED)
         .expect((res) => expect(res.body).toHaveProperty('access_token'));

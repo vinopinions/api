@@ -10,6 +10,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+<<<<<<< HEAD
 import {
   ApiConflictResponse,
   ApiNotFoundResponse,
@@ -18,6 +19,10 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+=======
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/users/entities/user.entity';
+>>>>>>> developer
 import { AuthenticatedRequest } from '../auth/auth.guard';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
@@ -27,9 +32,13 @@ import { FriendRequestsService } from './friend-requests.service';
 
 @Controller('friend-requests')
 @ApiTags('friend requests')
+<<<<<<< HEAD
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
+=======
+@ApiBearerAuth()
+>>>>>>> developer
 export class FriendRequestsController {
   constructor(
     private friendRequestsService: FriendRequestsService,

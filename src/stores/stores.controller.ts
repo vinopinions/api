@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -25,6 +26,7 @@ import { StoresService } from './stores.service';
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
+@ApiBearerAuth()
 export class StoresController {
   constructor(private storesService: StoresService) {}
 

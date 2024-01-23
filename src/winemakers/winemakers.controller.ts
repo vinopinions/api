@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -25,6 +26,7 @@ import { WinemakersService } from './winemakers.service';
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
+@ApiBearerAuth()
 export class WinemakersController {
   constructor(private winemakersService: WinemakersService) {}
 
@@ -42,15 +44,12 @@ export class WinemakersController {
     return this.winemakersService.findOne({ where: { id } });
   }
 
-<<<<<<< HEAD
   @ApiOkResponse({
     description: 'Winemakers have been found',
     type: Winemaker,
     isArray: true,
   })
-=======
   @ApiOperation({ summary: 'get all winemakers' })
->>>>>>> developer
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll(): Promise<Winemaker[]> {

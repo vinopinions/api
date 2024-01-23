@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -29,6 +30,7 @@ import { WinesService } from './wines.service';
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
+@ApiBearerAuth()
 export class WinesController {
   constructor(
     private wineService: WinesService,
@@ -78,7 +80,6 @@ export class WinesController {
   @ApiOperation({ summary: 'update a wine' })
   @HttpCode(HttpStatus.OK)
   @Put(':id')
-<<<<<<< HEAD
   @ApiCreatedResponse({
     description: 'Store has been added to the wine',
     type: Wine,
@@ -89,13 +90,7 @@ export class WinesController {
   @ApiNotFoundResponse({
     description: 'Wine or store has not been found',
   })
-  addStores(
-    @Param('id') id: string,
-    @Body() updatedWine: CreateWineDto,
-  ): Promise<Wine> {
-=======
   update(@Param('id') id: string, @Body() updatedWine: CreateWineDto) {
->>>>>>> developer
     return this.wineService.update(id, updatedWine);
   }
 
@@ -119,7 +114,6 @@ export class WinesController {
     return this.ratingsService.create({ ...createRatingDto, wineId });
   }
 
-<<<<<<< HEAD
   @ApiOkResponse({
     description: 'Ratings for the wine have been found',
     type: Rating,
@@ -128,9 +122,7 @@ export class WinesController {
   @ApiNotFoundResponse({
     description: 'Wine has not been found',
   })
-=======
   @ApiOperation({ summary: 'get all ratings of a wine' })
->>>>>>> developer
   @HttpCode(HttpStatus.OK)
   @Get(':wineId/ratings')
   getRatingsForWines(@Param('wineId') wineId: string): Promise<Rating[]> {

@@ -8,6 +8,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
+<<<<<<< HEAD
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -17,15 +18,23 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+=======
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+>>>>>>> developer
 import { CreateRatingDto } from './dtos/create-rating.dto';
 import { Rating } from './entities/rating.entity';
 import { RatingsService } from './ratings.service';
 
 @ApiTags('ratings')
 @Controller('ratings')
+<<<<<<< HEAD
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
+=======
+@ApiTags('ratings')
+@ApiBearerAuth()
+>>>>>>> developer
 export class RatingsController {
   constructor(private ratingsService: RatingsService) {}
 

@@ -7,6 +7,7 @@ import {
   Param,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -22,6 +23,7 @@ import { UsersService } from './users.service';
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
+@ApiBearerAuth()
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
@@ -103,20 +105,14 @@ export class UsersController {
     return await this.usersService.removeFriend(removingUser, toBeRemovedUser);
   }
 
-<<<<<<< HEAD
   @Get(':name/ratings')
   @ApiOkResponse({
     description: 'Ratings have been found',
     type: Rating,
     isArray: true,
   })
+  @ApiOperation({ summary: 'get ratings by a user' })
   getRatings(@Param('name') username: string): Promise<Rating[]> {
     return this.usersService.getRatings(username);
-=======
-  @ApiOperation({ summary: 'get ratings by a user' })
-  @Get(':id/ratings')
-  getRatings(@Param('id') id: string) {
-    return this.usersService.getRatings(id);
->>>>>>> developer
   }
 }

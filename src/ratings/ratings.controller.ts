@@ -8,12 +8,14 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateRatingDto } from './dtos/create-rating.dto';
 import { RatingsService } from './ratings.service';
 
 @ApiTags('ratings')
 @Controller('ratings')
+@ApiTags('ratings')
+@ApiBearerAuth()
 export class RatingsController {
   constructor(private ratingsService: RatingsService) {}
 

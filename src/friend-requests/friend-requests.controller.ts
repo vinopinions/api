@@ -10,7 +10,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/users/entities/user.entity';
 import { AuthenticatedRequest } from '../auth/auth.guard';
 import { UsersService } from '../users/users.service';
@@ -19,6 +19,7 @@ import { FriendRequestsService } from './friend-requests.service';
 
 @Controller('friend-requests')
 @ApiTags('friend requests')
+@ApiBearerAuth()
 export class FriendRequestsController {
   constructor(
     private friendRequestsService: FriendRequestsService,

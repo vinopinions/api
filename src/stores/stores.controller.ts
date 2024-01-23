@@ -7,7 +7,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateStoreDto } from './dtos/create-store.dto';
 import { StoresService } from './stores.service';
 
@@ -17,18 +17,21 @@ import { StoresService } from './stores.service';
 export class StoresController {
   constructor(private storesService: StoresService) {}
 
+  @ApiOperation({ summary: 'get store by id' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.storesService.findOne({ where: { id } });
   }
 
+  @ApiOperation({ summary: 'get all stores' })
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
     return this.storesService.findMany();
   }
 
+  @ApiOperation({ summary: 'create a store' })
   @HttpCode(HttpStatus.CREATED)
   @Post()
   create(@Body() createStoreDto: CreateStoreDto) {

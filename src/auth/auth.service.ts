@@ -20,15 +20,16 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<{ access_token: string }> {
-    console.log({ username, password });
     if (!username)
       throw new BadRequestException("'username' has to be defined");
     if (!password)
       throw new BadRequestException("'password' has to be defined");
-    const user = await this.usersService.findOne({ where: { username } });
-    console.log({ user });
-    if (!user) throw new UnauthorizedException();
-
+    let user = null;
+    try {
+      user = await this.usersService.findOne({ where: { username } });
+    } catch (NotFoundException) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
     const correct: boolean = await bcrypt.compare(password, user.passwordHash);
     if (!correct) throw new UnauthorizedException();
 

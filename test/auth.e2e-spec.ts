@@ -5,6 +5,7 @@ import { SignInDto } from 'src/auth/dtos/sign-in.dto';
 import { SignUpDto } from 'src/auth/dtos/sign-up.dto';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
+import { clearDatabase } from './utils';
 
 const AUTH_ENDPOINT = '/auth';
 const LOGIN_ENDPOINT = AUTH_ENDPOINT + '/login';
@@ -20,6 +21,10 @@ describe('AuthController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterEach(async () => {
+    await clearDatabase(app);
   });
 
   afterAll(async () => {
@@ -101,13 +106,28 @@ describe('AuthController (e2e)', () => {
 
     it(`should return ${HttpStatus.UNAUTHORIZED} with valid data but no signup before`, () => {
       const validData: SignInDto = {
-        username: '123',
-        password: 'false',
+        username: faker.internet.userName(),
+        password: faker.internet.password(),
       };
       return request(app.getHttpServer())
         .post(LOGIN_ENDPOINT)
         .send(validData)
         .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it(`should return ${HttpStatus.CREATED} and access_token with valid data and signup before`, async () => {
+      const validData: SignInDto = {
+        username: faker.internet.userName(),
+        password: faker.internet.password(),
+      };
+
+      await request(app.getHttpServer()).post(SIGNUP_ENDPOINT).send(validData);
+
+      return request(app.getHttpServer())
+        .post(LOGIN_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.CREATED)
+        .expect((res) => expect(res.body).toHaveProperty('access_token'));
     });
   });
 });

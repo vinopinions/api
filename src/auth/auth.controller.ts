@@ -3,7 +3,6 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCreatedResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -19,23 +18,26 @@ import { SignUpDto } from './dtos/sign-up.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiOperation({ summary: 'log in' })
   @Public()
   @Post('login')
+  @ApiOperation({ summary: 'log in' })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials',
   })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     description: 'Login successful',
     type: SignInResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data',
   })
   signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
-  @ApiOperation({ summary: 'sign up' })
   @Public()
   @Post('signup')
+  @ApiOperation({ summary: 'sign up' })
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
@@ -44,6 +46,9 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'A new user has been created',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data',
   })
   signUp(@Body() signUpDto: SignUpDto) {
     return this.authService.signUp(signUpDto.username, signUpDto.password);

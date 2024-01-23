@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { User } from 'src/users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -19,12 +20,13 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<{ access_token: string }> {
+    console.log({ username, password });
     if (!username)
       throw new BadRequestException("'username' has to be defined");
     if (!password)
       throw new BadRequestException("'password' has to be defined");
     const user = await this.usersService.findOne({ where: { username } });
-
+    console.log({ user });
     if (!user) throw new UnauthorizedException();
 
     const correct: boolean = await bcrypt.compare(password, user.passwordHash);
@@ -36,7 +38,7 @@ export class AuthService {
     };
   }
 
-  async signUp(username: string, password: string) {
+  async signUp(username: string, password: string): Promise<User> {
     if (!username)
       throw new BadRequestException("'username' has to be defined");
     if (!password)
@@ -49,7 +51,8 @@ export class AuthService {
     } catch (NotFoundException) {
       const hash: string = await bcrypt.hash(password, 12);
 
-      this.usersService.create(username, hash);
+      return await this.usersService.create(username, hash);
     }
+    throw new ConflictException();
   }
 }

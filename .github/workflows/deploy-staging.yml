@@ -1,0 +1,29 @@
+name: deploy staging
+on:
+  push:
+    branches:
+      - developer
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Login to ghcr
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Build and push image'
+        run: |
+          shortSha=$(git rev-parse --short ${{ github.sha }})
+          docker build . --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha --tag ghcr.io/layla-oskar-schule/vinopinionsapi:staging
+          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:staging
+          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha

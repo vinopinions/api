@@ -2,14 +2,15 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  InternalServerErrorException,
   SetMetadata,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
+import { User } from '../users/entities/user.entity';
+import { UsersService } from '../users/users.service';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -32,24 +33,27 @@ export class AuthGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
-
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException();
     }
-    let id: number;
+    let id: string;
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: 'TEMP',
-      });
+      const payload = await this.jwtService.verifyAsync(token);
+
+      // this only happens when the token is valid but no sub is present
+      if (!payload.sub) {
+        throw new InternalServerErrorException();
+      }
+
       id = payload.sub;
-    } catch {
+    } catch (e) {
       throw new UnauthorizedException();
     }
-    const user: User | undefined = await this.usersService.findOneById(id);
-
-    console.log(user);
+    const user: User | null = await this.usersService.findOne({
+      where: { id },
+    });
 
     if (!user) throw new UnauthorizedException();
 

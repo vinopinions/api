@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import { Matches } from 'class-validator';
 import {
   Column,
@@ -40,6 +41,7 @@ export class User {
   username: string;
 
   @Column()
+  @Exclude()
   passwordHash: string;
 
   @ManyToMany(() => User)

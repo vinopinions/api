@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from '../users/entities/user.entity';
 import { Public } from './auth.guard';
 import { AuthService } from './auth.service';
@@ -11,12 +11,14 @@ import { SignUpDto } from './dtos/sign-up.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiOperation({ summary: 'log in' })
   @Public()
   @Post('login')
   signIn(@Body() signInDto: SignInDto): Promise<{ access_token: string }> {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
+  @ApiOperation({ summary: 'sign up' })
   @Public()
   @Post('signup')
   signUp(@Body() signUpDto: SignUpDto): Promise<User> {

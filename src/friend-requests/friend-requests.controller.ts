@@ -10,7 +10,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/users/entities/user.entity';
 import { AuthenticatedRequest } from '../auth/auth.guard';
 import { UsersService } from '../users/users.service';
@@ -19,13 +19,14 @@ import { FriendRequestsService } from './friend-requests.service';
 
 @Controller('friend-requests')
 @ApiTags('friend requests')
+@ApiBearerAuth()
 export class FriendRequestsController {
   constructor(
     private friendRequestsService: FriendRequestsService,
     private usersService: UsersService,
   ) {}
 
-  @ApiOperation({ summary: 'Send a friend request' })
+  @ApiOperation({ summary: 'send a friend request' })
   @HttpCode(HttpStatus.OK)
   @Post('send')
   async send(
@@ -41,7 +42,7 @@ export class FriendRequestsController {
     );
   }
 
-  @ApiOperation({ summary: 'Accept a sent friend request sent to you' })
+  @ApiOperation({ summary: 'accept a sent friend request sent to you' })
   @HttpCode(HttpStatus.OK)
   @Post(':id/accept')
   async accept(
@@ -51,7 +52,7 @@ export class FriendRequestsController {
     await this.friendRequestsService.acceptFriendRequest(id, request.user);
   }
 
-  @ApiOperation({ summary: 'Decline a sent friend request sent to you' })
+  @ApiOperation({ summary: 'decline a sent friend request sent to you' })
   @HttpCode(HttpStatus.OK)
   @Post(':id/decline')
   async decline(
@@ -61,7 +62,7 @@ export class FriendRequestsController {
     await this.friendRequestsService.declineFriendRequest(id, request.user);
   }
 
-  @ApiOperation({ summary: 'Get all friend requests sent to you' })
+  @ApiOperation({ summary: 'get all friend requests sent to you' })
   @HttpCode(HttpStatus.OK)
   @Get('incoming')
   async getIncoming(@Req() request: AuthenticatedRequest) {
@@ -70,14 +71,14 @@ export class FriendRequestsController {
     );
   }
 
-  @ApiOperation({ summary: 'Get all friend requests sent by you' })
+  @ApiOperation({ summary: 'get all friend requests sent by you' })
   @HttpCode(HttpStatus.OK)
   @Get('outgoing')
   async getOutgoing(@Req() request: AuthenticatedRequest) {
     return await this.friendRequestsService.getSentFriendRequests(request.user);
   }
 
-  @ApiOperation({ summary: 'Revoke a friend request sent by you' })
+  @ApiOperation({ summary: 'revoke a friend request sent by you' })
   @HttpCode(HttpStatus.OK)
   @Delete(':id/revoke')
   async revoke(@Req() request: AuthenticatedRequest, @Param('id') id: string) {

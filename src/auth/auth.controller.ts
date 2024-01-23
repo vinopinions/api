@@ -1,8 +1,16 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { User } from '../users/entities/user.entity';
+import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Public } from './auth.guard';
 import { AuthService } from './auth.service';
+import { SignInResponseDto } from './dtos/sign-in-response.dto';
 import { SignInDto } from './dtos/sign-in.dto';
 import { SignUpDto } from './dtos/sign-up.dto';
 
@@ -14,14 +22,30 @@ export class AuthController {
   @ApiOperation({ summary: 'log in' })
   @Public()
   @Post('login')
-  signIn(@Body() signInDto: SignInDto): Promise<{ access_token: string }> {
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentials',
+  })
+  @ApiOkResponse({
+    description: 'Login successful',
+    type: SignInResponseDto,
+  })
+  signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
   @ApiOperation({ summary: 'sign up' })
   @Public()
   @Post('signup')
-  signUp(@Body() signUpDto: SignUpDto): Promise<User> {
+  @ApiBadRequestResponse({
+    description: 'Invalid data',
+  })
+  @ApiConflictResponse({
+    description: 'Username is already taken',
+  })
+  @ApiCreatedResponse({
+    description: 'A new user has been created',
+  })
+  signUp(@Body() signUpDto: SignUpDto) {
     return this.authService.signUp(signUpDto.username, signUpDto.password);
   }
 }

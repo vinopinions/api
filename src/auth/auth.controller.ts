@@ -1,16 +1,13 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-<<<<<<< HEAD
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-=======
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
->>>>>>> developer
 import { Public } from './auth.guard';
 import { AuthService } from './auth.service';
 import { SignInResponseDto } from './dtos/sign-in-response.dto';

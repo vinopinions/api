@@ -9,6 +9,7 @@ import {
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -24,6 +25,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @ApiOperation({ summary: 'get all user' })
   @HttpCode(HttpStatus.OK)
   @Get()
   @ApiOkResponse({
@@ -35,6 +37,7 @@ export class UsersController {
     return this.usersService.findMany();
   }
 
+  @ApiOperation({ summary: 'get information about a user' })
   @HttpCode(HttpStatus.OK)
   @Get(':name')
   @ApiOkResponse({
@@ -52,6 +55,7 @@ export class UsersController {
     });
   }
 
+  @ApiOperation({ summary: 'get friends of a user' })
   @HttpCode(HttpStatus.OK)
   @Get(':name/friends')
   @ApiOkResponse({
@@ -71,6 +75,7 @@ export class UsersController {
     return this.usersService.getFriends(user);
   }
 
+  @ApiOperation({ summary: 'remove a friend' })
   @HttpCode(HttpStatus.OK)
   @Delete(':name/friends/:friendName')
   @ApiOkResponse({
@@ -98,6 +103,7 @@ export class UsersController {
     return await this.usersService.removeFriend(removingUser, toBeRemovedUser);
   }
 
+<<<<<<< HEAD
   @Get(':name/ratings')
   @ApiOkResponse({
     description: 'Ratings have been found',
@@ -106,5 +112,11 @@ export class UsersController {
   })
   getRatings(@Param('name') username: string): Promise<Rating[]> {
     return this.usersService.getRatings(username);
+=======
+  @ApiOperation({ summary: 'get ratings by a user' })
+  @Get(':id/ratings')
+  getRatings(@Param('id') id: string) {
+    return this.usersService.getRatings(id);
+>>>>>>> developer
   }
 }

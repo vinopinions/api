@@ -12,6 +12,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -27,6 +28,7 @@ import { StoresService } from './stores.service';
 export class StoresController {
   constructor(private storesService: StoresService) {}
 
+  @ApiOperation({ summary: 'get store by id' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   @ApiOkResponse({
@@ -40,6 +42,7 @@ export class StoresController {
     return this.storesService.findOne({ where: { id } });
   }
 
+  @ApiOperation({ summary: 'get all stores' })
   @HttpCode(HttpStatus.OK)
   @Get()
   @ApiOkResponse({
@@ -51,6 +54,7 @@ export class StoresController {
     return this.storesService.findMany();
   }
 
+  @ApiOperation({ summary: 'create a store' })
   @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiCreatedResponse({

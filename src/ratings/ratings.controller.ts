@@ -13,12 +13,15 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CreateRatingDto } from './dtos/create-rating.dto';
 import { Rating } from './entities/rating.entity';
 import { RatingsService } from './ratings.service';
 
+@ApiTags('ratings')
 @Controller('ratings')
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
@@ -26,6 +29,7 @@ import { RatingsService } from './ratings.service';
 export class RatingsController {
   constructor(private ratingsService: RatingsService) {}
 
+  @ApiOperation({ summary: 'get rating by id' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   @ApiOkResponse({
@@ -39,6 +43,7 @@ export class RatingsController {
     return this.ratingsService.findOne({ where: { id } });
   }
 
+  @ApiOperation({ summary: 'get all ratings' })
   @HttpCode(HttpStatus.OK)
   @Get()
   @ApiOkResponse({
@@ -50,6 +55,7 @@ export class RatingsController {
     return this.ratingsService.findMany();
   }
 
+  @ApiOperation({ summary: 'create a rating' })
   @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiCreatedResponse({
@@ -63,6 +69,7 @@ export class RatingsController {
     return this.ratingsService.create(createRatingDto);
   }
 
+  @ApiOperation({ summary: 'delete a rating' })
   @HttpCode(HttpStatus.OK)
   @Delete(':id')
   @ApiOkResponse({

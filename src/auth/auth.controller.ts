@@ -1,4 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+<<<<<<< HEAD
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -7,6 +8,9 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+=======
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+>>>>>>> developer
 import { Public } from './auth.guard';
 import { AuthService } from './auth.service';
 import { SignInResponseDto } from './dtos/sign-in-response.dto';
@@ -18,6 +22,7 @@ import { SignUpDto } from './dtos/sign-up.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiOperation({ summary: 'log in' })
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('login')
@@ -32,6 +37,7 @@ export class AuthController {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
+  @ApiOperation({ summary: 'sign up' })
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('signup')

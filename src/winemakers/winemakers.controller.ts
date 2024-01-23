@@ -12,6 +12,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -27,6 +28,7 @@ import { WinemakersService } from './winemakers.service';
 export class WinemakersController {
   constructor(private winemakersService: WinemakersService) {}
 
+  @ApiOperation({ summary: 'get winemaker by id' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   @ApiOkResponse({
@@ -40,17 +42,22 @@ export class WinemakersController {
     return this.winemakersService.findOne({ where: { id } });
   }
 
+<<<<<<< HEAD
   @ApiOkResponse({
     description: 'Winemakers have been found',
     type: Winemaker,
     isArray: true,
   })
+=======
+  @ApiOperation({ summary: 'get all winemakers' })
+>>>>>>> developer
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll(): Promise<Winemaker[]> {
     return this.winemakersService.findMany();
   }
 
+  @ApiOperation({ summary: 'create a winemaker' })
   @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiCreatedResponse({

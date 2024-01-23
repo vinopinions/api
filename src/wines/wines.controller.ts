@@ -13,6 +13,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -34,6 +35,7 @@ export class WinesController {
     private ratingsService: RatingsService,
   ) {}
 
+  @ApiOperation({ summary: 'get wine by id' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   @ApiOkResponse({
@@ -47,6 +49,7 @@ export class WinesController {
     return this.wineService.findOne({ where: { id } });
   }
 
+  @ApiOperation({ summary: 'get all wines' })
   @HttpCode(HttpStatus.OK)
   @Get()
   @ApiOkResponse({
@@ -58,6 +61,7 @@ export class WinesController {
     return this.wineService.findMany();
   }
 
+  @ApiOperation({ summary: 'create a wine' })
   @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiCreatedResponse({
@@ -71,8 +75,10 @@ export class WinesController {
     return this.wineService.create(createWineDto);
   }
 
+  @ApiOperation({ summary: 'update a wine' })
   @HttpCode(HttpStatus.OK)
   @Put(':id')
+<<<<<<< HEAD
   @ApiCreatedResponse({
     description: 'Store has been added to the wine',
     type: Wine,
@@ -87,9 +93,13 @@ export class WinesController {
     @Param('id') id: string,
     @Body() updatedWine: CreateWineDto,
   ): Promise<Wine> {
+=======
+  update(@Param('id') id: string, @Body() updatedWine: CreateWineDto) {
+>>>>>>> developer
     return this.wineService.update(id, updatedWine);
   }
 
+  @ApiOperation({ summary: 'rate a wine' })
   @HttpCode(HttpStatus.CREATED)
   @Post(':wineId/ratings')
   @ApiCreatedResponse({
@@ -109,6 +119,7 @@ export class WinesController {
     return this.ratingsService.create({ ...createRatingDto, wineId });
   }
 
+<<<<<<< HEAD
   @ApiOkResponse({
     description: 'Ratings for the wine have been found',
     type: Rating,
@@ -117,6 +128,9 @@ export class WinesController {
   @ApiNotFoundResponse({
     description: 'Wine has not been found',
   })
+=======
+  @ApiOperation({ summary: 'get all ratings of a wine' })
+>>>>>>> developer
   @HttpCode(HttpStatus.OK)
   @Get(':wineId/ratings')
   getRatingsForWines(@Param('wineId') wineId: string): Promise<Rating[]> {

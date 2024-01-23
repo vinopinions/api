@@ -1,6 +1,11 @@
 name: test unit
+
 on:
   pull_request:
+    branches:
+      - developer
+      - master
+  workflow_call:
 
 jobs:
   test:

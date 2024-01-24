@@ -7,8 +7,8 @@ import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { Wine } from './entities/wine.entity';
-import { Rating } from 'src/ratings/entities/rating.entity';
-import { RatingsService } from 'src/ratings/ratings.service';
+import { RatingsService } from '../ratings/ratings.service';
+import { Rating } from '../ratings/entities/rating.entity';
 
 @Injectable()
 export class WinesService {

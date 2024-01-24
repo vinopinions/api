@@ -57,7 +57,7 @@ export class WinesController {
   @ApiNotFoundResponse({
     description: 'Wine has not been found',
   })
-  findById(@Param('id') id: string) {
+  findById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.wineService.findOne({ where: { id } });
   }
 
@@ -100,7 +100,10 @@ export class WinesController {
   @ApiNotFoundResponse({
     description: 'Wine or store has not been found',
   })
-  update(@Param('id') id: string, @Body() updatedWine: CreateWineDto) {
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updatedWine: CreateWineDto,
+  ) {
     return this.wineService.update(id, updatedWine);
   }
 

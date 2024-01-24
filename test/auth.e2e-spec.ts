@@ -6,6 +6,7 @@ import {
   AUTH_LOGIN_ENDPOINT,
   AUTH_SIGNUP_ENDPOINT,
 } from '../src/auth/auth.controller';
+import { AuthService } from '../src/auth/auth.service';
 import { SignInDto } from '../src/auth/dtos/sign-in.dto';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
@@ -13,6 +14,7 @@ import { clearDatabase } from './utils';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
+  let authService: AuthService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -21,6 +23,7 @@ describe('AuthController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+    authService = app.get<AuthService>(AuthService);
   });
 
   afterEach(async () => {
@@ -45,13 +48,13 @@ describe('AuthController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, () => {
-      const validData = {
+      const invalidData = {
         username: 123,
         password: false,
       };
       return request(app.getHttpServer())
         .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData)
+        .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST);
     });
 
@@ -71,9 +74,7 @@ describe('AuthController (e2e)', () => {
         username: faker.internet.userName(),
         password: faker.internet.password(),
       };
-      await request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData);
+      await authService.signUp(validData.username, validData.password);
 
       return request(app.getHttpServer())
         .post(AUTH_SIGNUP_ENDPOINT)

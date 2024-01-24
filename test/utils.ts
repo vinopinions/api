@@ -1,11 +1,7 @@
 import { faker } from '@faker-js/faker';
-import { HttpStatus, INestApplication } from '@nestjs/common';
-import {
-  AUTH_LOGIN_ENDPOINT,
-  AUTH_SIGNUP_ENDPOINT,
-} from 'src/auth/auth.controller';
-import request from 'supertest';
+import { INestApplication } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
+import { AuthService } from '../src/auth/auth.service';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get<EntityManager>(EntityManager);
@@ -26,25 +22,22 @@ export const login = async (
     password: string;
   };
 }> => {
+  const authService = app.get<AuthService>(AuthService);
+
   const accountData = {
     username: faker.internet.userName(),
     password: faker.internet.password(),
   };
 
-  const signUpResponse = await request(app.getHttpServer())
-    .post(AUTH_SIGNUP_ENDPOINT)
-    .send(accountData);
-  if (!(signUpResponse.status == HttpStatus.CREATED))
-    throw Error(`Signup request returned ${signUpResponse.status}`);
+  await authService.signUp(accountData.username, accountData.password);
 
-  const logInResponse = await request(app.getHttpServer())
-    .post(AUTH_LOGIN_ENDPOINT)
-    .send(accountData);
-  if (!(logInResponse.status == HttpStatus.CREATED))
-    throw Error(`Login request returned ${logInResponse.status}`);
+  const { access_token } = await authService.signIn(
+    accountData.username,
+    accountData.password,
+  );
   return {
     authHeader: {
-      Authorization: `Bearer ${logInResponse.body.access_token}`,
+      Authorization: `Bearer ${access_token}`,
     },
     accountData,
   };

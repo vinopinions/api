@@ -141,8 +141,10 @@ export class WinesController {
   })
   @ApiOperation({ summary: 'get all ratings of a wine' })
   @HttpCode(HttpStatus.OK)
-  @Get(WINES_ID_RATINGS_NAME)
-  getRatingsForWines(@Param('wineId') wineId: string): Promise<Rating[]> {
-    return this.ratingsService.findMany({ where: { id: wineId } });
+  @Get(':wineId/ratings')
+  getRatingsForWines(
+    @Param('wineId', new ParseUUIDPipe()) wineId: string,
+  ): Promise<Rating[]> {
+    return this.wineService.getRatingsForWine(wineId);
   }
 }

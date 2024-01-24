@@ -26,7 +26,7 @@ import { Rating } from './../ratings/entities/rating.entity';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { Wine } from './entities/wine.entity';
 import { WinesService } from './wines.service';
-import { AuthenticatedRequest } from 'src/auth/auth.guard';
+import { AuthenticatedRequest } from '../auth/auth.guard';
 
 @Controller('wines')
 @ApiTags('wines')

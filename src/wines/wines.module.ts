@@ -9,8 +9,8 @@ import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersModule } from '../winemakers/winemakers.module';
 import { Rating } from '../ratings/entities/rating.entity';
 import { User } from '../users/entities/user.entity';
-import { UsersModule } from 'src/users/users.module';
-import { RatingsModule } from 'src/ratings/ratings.module';
+import { UsersModule } from '../users/users.module';
+import { RatingsModule } from '../ratings/ratings.module';
 
 @Module({
   imports: [

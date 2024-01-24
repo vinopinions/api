@@ -17,28 +17,28 @@ export const login = async (
   authHeader: {
     Authorization: string;
   };
-  accountData: {
+  userData: {
     username: string;
     password: string;
   };
 }> => {
   const authService = app.get<AuthService>(AuthService);
 
-  const accountData = {
+  const userData = {
     username: faker.internet.userName(),
     password: faker.internet.password(),
   };
 
-  await authService.signUp(accountData.username, accountData.password);
+  await authService.signUp(userData.username, userData.password);
 
   const { access_token } = await authService.signIn(
-    accountData.username,
-    accountData.password,
+    userData.username,
+    userData.password,
   );
   return {
     authHeader: {
       Authorization: `Bearer ${access_token}`,
     },
-    accountData,
+    userData,
   };
 };

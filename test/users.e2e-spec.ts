@@ -4,7 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AuthService } from '../src/auth/auth.service';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
-import { USERS_ENDPOINT } from '../src/users/users.controller';
+import {
+  USERS_ENDPOINT,
+  USERS_NAME_ENDPOINT,
+} from '../src/users/users.controller';
 import { AppModule } from './../src/app.module';
 import { clearDatabase, login } from './utils';
 
@@ -12,6 +15,7 @@ describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let authHeader: object;
   let authService: AuthService;
+  let userData: { username: string; password: string };
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -23,6 +27,7 @@ describe('UsersController (e2e)', () => {
     authService = app.get<AuthService>(AuthService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
+    userData = loginData.userData;
   });
 
   afterEach(async () => {
@@ -82,6 +87,27 @@ describe('UsersController (e2e)', () => {
           expect(Array.isArray(res.body)).toBe(true);
           expect((res.body as Array<any>).length).toBe(10);
         });
+    });
+  });
+
+  describe(USERS_NAME_ENDPOINT + ' (GET)', () => {
+    it('should exist', () => {
+      return request(app.getHttpServer())
+        .get(USERS_NAME_ENDPOINT)
+        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(USERS_NAME_ENDPOINT)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(USERS_ENDPOINT.replace(':name', userData.username))
+        .set(authHeader)
+        .expect(HttpStatus.OK);
     });
   });
 });

@@ -20,6 +20,8 @@ import { UsersService } from './users.service';
 
 const USERS_ENDPOINT_NAME = 'users';
 export const USERS_ENDPOINT = `/${USERS_ENDPOINT_NAME}`;
+const USERS_NAME_ENDPOINT_NAME = ':name';
+export const USERS_NAME_ENDPOINT = `/${USERS_ENDPOINT_NAME}/${USERS_NAME_ENDPOINT_NAME}`;
 
 @Controller(USERS_ENDPOINT_NAME)
 @ApiTags(USERS_ENDPOINT_NAME)
@@ -44,7 +46,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'get information about a user' })
   @HttpCode(HttpStatus.OK)
-  @Get(':name')
+  @Get(USERS_NAME_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'User has been found',
     type: User,

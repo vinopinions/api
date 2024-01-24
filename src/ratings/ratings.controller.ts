@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -37,7 +38,7 @@ export class RatingsController {
   @ApiNotFoundResponse({
     description: 'Rating has not been found',
   })
-  findById(@Param('id') id: string): Promise<Rating> {
+  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Rating> {
     return this.ratingsService.findOne({ where: { id } });
   }
 
@@ -63,7 +64,7 @@ export class RatingsController {
   @ApiNotFoundResponse({
     description: 'Rating has not been found',
   })
-  delete(@Param('id') id: string): Promise<Rating> {
+  delete(@Param('id', new ParseUUIDPipe()) id: string): Promise<Rating> {
     return this.ratingsService.remove(id);
   }
 }

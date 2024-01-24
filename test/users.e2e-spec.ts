@@ -1,14 +1,9 @@
-import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import {
-  AUTH_LOGIN_ENDPOINT,
-  AUTH_SIGNUP_ENDPOINT,
-} from '../src/auth/auth.controller';
 import { USERS_ENDPOINT } from '../src/users/users.controller';
 import { AppModule } from './../src/app.module';
-import { clearDatabase } from './utils';
+import { clearDatabase, login } from './utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -21,23 +16,8 @@ describe('UsersController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    const accountData = {
-      username: faker.internet.userName(),
-      password: faker.internet.password(),
-    };
-
-    const signUpResponse = await request(app.getHttpServer())
-      .post(AUTH_SIGNUP_ENDPOINT)
-      .send(accountData);
-    if (!(signUpResponse.status == HttpStatus.CREATED)) return;
-
-    const logInResponse = await request(app.getHttpServer())
-      .post(AUTH_LOGIN_ENDPOINT)
-      .send(accountData);
-    if (!(logInResponse.status == HttpStatus.CREATED)) return;
-    authHeader = {
-      Authorization: `Bearer ${logInResponse.body.access_token}`,
-    };
+    const loginData = await login(app);
+    authHeader = loginData.authHeader;
   });
 
   afterEach(async () => {

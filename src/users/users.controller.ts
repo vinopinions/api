@@ -21,7 +21,9 @@ import { UsersService } from './users.service';
 const USERS_ENDPOINT_NAME = 'users';
 export const USERS_ENDPOINT = `/${USERS_ENDPOINT_NAME}`;
 const USERS_NAME_ENDPOINT_NAME = ':name';
-export const USERS_NAME_ENDPOINT = `/${USERS_ENDPOINT_NAME}/${USERS_NAME_ENDPOINT_NAME}`;
+export const USERS_NAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_NAME_ENDPOINT_NAME}`;
+const USERS_NAME_FRIENDS_ENDPOINT_NAME = `${USERS_NAME_ENDPOINT_NAME}/friends`;
+export const USERS_NAME_FRIENDS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_NAME_FRIENDS_ENDPOINT_NAME}`;
 
 @Controller(USERS_ENDPOINT_NAME)
 @ApiTags(USERS_ENDPOINT_NAME)
@@ -64,7 +66,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'get friends of a user' })
   @HttpCode(HttpStatus.OK)
-  @Get(':name/friends')
+  @Get(USERS_NAME_FRIENDS_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'Friends for the user have been found',
     type: User,

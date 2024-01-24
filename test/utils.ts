@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { AuthService } from '../src/auth/auth.service';
+import { User } from '../src/users/entities/user.entity';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get<EntityManager>(EntityManager);
@@ -17,10 +18,7 @@ export const login = async (
   authHeader: {
     Authorization: string;
   };
-  userData: {
-    username: string;
-    password: string;
-  };
+  user: User;
 }> => {
   const authService = app.get<AuthService>(AuthService);
 
@@ -29,7 +27,10 @@ export const login = async (
     password: faker.internet.password(),
   };
 
-  await authService.signUp(userData.username, userData.password);
+  const user: User = await authService.signUp(
+    userData.username,
+    userData.password,
+  );
 
   const { access_token } = await authService.signIn(
     userData.username,
@@ -39,6 +40,6 @@ export const login = async (
     authHeader: {
       Authorization: `Bearer ${access_token}`,
     },
-    userData,
+    user,
   };
 };

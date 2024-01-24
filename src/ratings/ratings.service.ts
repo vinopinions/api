@@ -7,9 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
 import { Wine } from '../wines/entities/wine.entity';
-import { WinesService } from '../wines/wines.service';
 import { CreateRatingDto } from './dtos/create-rating.dto';
 import { Rating } from './entities/rating.entity';
 
@@ -17,22 +15,9 @@ import { Rating } from './entities/rating.entity';
 export class RatingsService {
   constructor(
     @InjectRepository(Rating) private ratingRepository: Repository<Rating>,
-    private wineService: WinesService,
-    private usersService: UsersService,
   ) {}
 
-  async create(data: CreateRatingDto): Promise<Rating> {
-    const wine: Wine = await this.wineService.findOne({
-      where: {
-        id: data.wineId,
-      },
-    });
-    const user: User = await this.usersService.findOne({
-      where: {
-        id: data.userId,
-      },
-    });
-
+  async create(data: CreateRatingDto, user: User, wine: Wine): Promise<Rating> {
     const rating: Rating = this.ratingRepository.create(data);
     rating.wine = wine;
     rating.user = user;
@@ -63,10 +48,5 @@ export class RatingsService {
       },
     });
     return this.ratingRepository.remove(rating);
-  }
-
-  async getByWineId(id: string): Promise<Rating[]> {
-    const wine: Wine = await this.wineService.findOne({ where: { id } });
-    return wine.ratings;
   }
 }

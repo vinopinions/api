@@ -8,11 +8,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { Rating } from '../ratings/entities/rating.entity';
 import { User } from './entities/user.entity';
+import { RatingsService } from 'src/ratings/ratings.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private ratingsService: RatingsService,
   ) {}
 
   async create(username: string, passwordHash: string): Promise<User> {
@@ -143,8 +145,14 @@ export class UsersService {
   async getRatings(username: string): Promise<Rating[]> {
     const user: User = await this.findOne({
       where: { username },
-      relations: { ratings: true },
     });
-    return user.ratings;
+
+    return this.ratingsService.findMany({
+      where: { user: { id: user.id } },
+      relations: {
+        wine: true,
+        user: true,
+      },
+    });
   }
 }

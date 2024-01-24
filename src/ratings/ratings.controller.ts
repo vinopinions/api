@@ -1,24 +1,19 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
-  Post,
 } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CreateRatingDto } from './dtos/create-rating.dto';
 import { Rating } from './entities/rating.entity';
 import { RatingsService } from './ratings.service';
 
@@ -56,20 +51,6 @@ export class RatingsController {
   })
   findAll(): Promise<Rating[]> {
     return this.ratingsService.findMany();
-  }
-
-  @ApiOperation({ summary: 'create a rating' })
-  @HttpCode(HttpStatus.CREATED)
-  @Post()
-  @ApiCreatedResponse({
-    description: 'Rating has been created',
-    type: Rating,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid data',
-  })
-  create(@Body() createRatingDto: CreateRatingDto): Promise<Rating> {
-    return this.ratingsService.create(createRatingDto);
   }
 
   @ApiOperation({ summary: 'delete a rating' })

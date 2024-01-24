@@ -5,8 +5,10 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -24,6 +26,7 @@ import { Rating } from './../ratings/entities/rating.entity';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { Wine } from './entities/wine.entity';
 import { WinesService } from './wines.service';
+import { AuthenticatedRequest } from 'src/auth/auth.guard';
 
 @Controller('wines')
 @ApiTags('wines')
@@ -107,11 +110,15 @@ export class WinesController {
   @ApiNotFoundResponse({
     description: 'Wine has not been found',
   })
-  createRating(
+  async createRating(
     @Param('wineId') wineId: string,
     @Body() createRatingDto: CreateRatingDto,
+    @Req() request: AuthenticatedRequest,
   ): Promise<Rating> {
-    return this.ratingsService.create({ ...createRatingDto, wineId });
+    const wine: Wine = await this.wineService.findOne({
+      where: { id: wineId },
+    });
+    return this.ratingsService.create(createRatingDto, request.user, wine);
   }
 
   @ApiOkResponse({
@@ -125,7 +132,9 @@ export class WinesController {
   @ApiOperation({ summary: 'get all ratings of a wine' })
   @HttpCode(HttpStatus.OK)
   @Get(':wineId/ratings')
-  getRatingsForWines(@Param('wineId') wineId: string): Promise<Rating[]> {
-    return this.ratingsService.getByWineId(wineId);
+  getRatingsForWines(
+    @Param('wineId', new ParseUUIDPipe()) wineId: string,
+  ): Promise<Rating[]> {
+    return this.wineService.getRatingsForWine(wineId);
   }
 }

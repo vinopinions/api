@@ -5,29 +5,23 @@ import { WinesController } from './wines.controller';
 import { WinesService } from './wines.service';
 import { Store } from '../stores/entities/store.entity';
 import { StoresModule } from '../stores/stores.module';
-import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersModule } from '../winemakers/winemakers.module';
-import { WinemakersService } from '../winemakers/winemakers.service';
-import { RatingsService } from '../ratings/ratings.service';
 import { Rating } from '../ratings/entities/rating.entity';
 import { User } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
+import { UsersModule } from 'src/users/users.module';
+import { RatingsModule } from 'src/ratings/ratings.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Wine, Winemaker, Store, Rating, User]),
     WinemakersModule,
     StoresModule,
+    UsersModule,
+    RatingsModule,
   ],
   controllers: [WinesController],
-  providers: [
-    WinesService,
-    WinemakersService,
-    StoresService,
-    RatingsService,
-    UsersService,
-  ],
+  providers: [WinesService],
   exports: [WinesService],
 })
 export class WinesModule {}

@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
 } from '@nestjs/common';
 import {
@@ -40,7 +41,7 @@ export class WinemakersController {
   @ApiNotFoundResponse({
     description: 'Winemaker has not been found',
   })
-  findById(@Param('id') id: string): Promise<Winemaker> {
+  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Winemaker> {
     return this.winemakersService.findOne({ where: { id } });
   }
 

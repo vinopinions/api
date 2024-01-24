@@ -7,6 +7,8 @@ import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { Wine } from './entities/wine.entity';
+import { RatingsService } from '../ratings/ratings.service';
+import { Rating } from '../ratings/entities/rating.entity';
 
 @Injectable()
 export class WinesService {
@@ -14,6 +16,7 @@ export class WinesService {
     @InjectRepository(Wine) private wineRepository: Repository<Wine>,
     private winemakersService: WinemakersService,
     private storesService: StoresService,
+    private ratingsService: RatingsService,
   ) {}
 
   async create(data: {
@@ -82,5 +85,15 @@ export class WinesService {
     }
 
     return this.wineRepository.save(wine);
+  }
+
+  async getRatingsForWine(wineId: string): Promise<Rating[]> {
+    return await this.ratingsService.findMany({
+      where: { wine: { id: wineId } },
+      relations: {
+        user: true,
+        wine: true,
+      },
+    });
   }
 }

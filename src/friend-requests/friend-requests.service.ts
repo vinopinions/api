@@ -39,7 +39,10 @@ export class FriendRequestsService {
    *    3. A user can not send a friend request to a user he is already friends with
    *    4. A user can not send a friend request to a user that has sent him a friend request already
    */
-  async sendFriendRequest(sender: User, receiver: User) {
+  async sendFriendRequest(
+    sender: User,
+    receiver: User,
+  ): Promise<FriendRequest> {
     // 1. Rule
     if (sender.id == receiver.id)
       throw new ConflictException('You can not send yourself a friend request');
@@ -94,7 +97,7 @@ export class FriendRequestsService {
       receiver,
     });
 
-    await this.friendRequestRepository.save(friendRequest);
+    return await this.friendRequestRepository.save(friendRequest);
   }
 
   async acceptFriendRequest(id: string, acceptingUser: User) {

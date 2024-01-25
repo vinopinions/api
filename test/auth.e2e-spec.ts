@@ -28,9 +28,6 @@ describe('AuthController (e2e)', () => {
 
   afterEach(async () => {
     await clearDatabase(app);
-  });
-
-  afterAll(async () => {
     await app.close();
   });
 

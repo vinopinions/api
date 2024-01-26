@@ -30,7 +30,7 @@ jobs:
         with:
           clean: true
           ref: ${{ github.event.pull_request.head.sha }}
-      - run: ls -la
+      - run: cat ./src/users/users.module.ts
       - name: Install dependencies
         run: yarn --ignore-scripts --non-interactive
 

@@ -121,9 +121,7 @@ describe('AuthController (e2e)', () => {
         password: faker.internet.password(),
       };
 
-      await request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData);
+      await authService.signUp(validData.username, validData.password);
 
       return request(app.getHttpServer())
         .post(AUTH_LOGIN_ENDPOINT)

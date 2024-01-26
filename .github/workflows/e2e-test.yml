@@ -27,7 +27,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
+        with:
+          clean: true
       - name: Install dependencies
         run: yarn --ignore-scripts --non-interactive
 

@@ -10,14 +10,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container: node:20.11.0-alpine
+    environment: test
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
         with:
-          node-version: 20.11.0
+          clean: true
 
       - name: Install dependencies
         run: yarn --ignore-scripts --non-interactive

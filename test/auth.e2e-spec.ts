@@ -11,6 +11,7 @@ import { SignInDto } from '../src/auth/dtos/sign-in.dto';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
 import { clearDatabase } from './utils';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -24,6 +25,9 @@ describe('AuthController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     authService = app.get<AuthService>(AuthService);
+    const configService = app.get<ConfigService>(ConfigService);
+    console.log(configService.get('JWT_PRIVATE_KEY'));
+    console.log(configService.get('JWT_PUBLIC_KEY'));
   });
 
   afterEach(async () => {

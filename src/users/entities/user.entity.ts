@@ -31,12 +31,12 @@ export class User {
     type: String,
     minLength: 3,
     maxLength: 20,
-    pattern: '/^[a-zA-Z0-9_]{3,20}$/',
+    pattern: '/^[a-zA-Z0-9_.]{3,20}$/',
   })
   @Column({ unique: true })
   @Matches(/^[a-zA-Z0-9_]{3,20}$/, {
     message:
-      'username must can be 3-20 characters long and can only include letters or underscores, but no spaces',
+      'username must can be 3-20 characters long and can only include letters, underscores and dots, but no spaces',
   })
   username: string;
 

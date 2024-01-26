@@ -1,24 +1,20 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
-  Post,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CreateRatingDto } from './dtos/create-rating.dto';
 import { Rating } from './entities/rating.entity';
 import { RatingsService } from './ratings.service';
 
@@ -42,7 +38,7 @@ export class RatingsController {
   @ApiNotFoundResponse({
     description: 'Rating has not been found',
   })
-  findById(@Param('id') id: string): Promise<Rating> {
+  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Rating> {
     return this.ratingsService.findOne({ where: { id } });
   }
 
@@ -58,20 +54,6 @@ export class RatingsController {
     return this.ratingsService.findMany();
   }
 
-  @ApiOperation({ summary: 'create a rating' })
-  @HttpCode(HttpStatus.CREATED)
-  @Post()
-  @ApiCreatedResponse({
-    description: 'Rating has been created',
-    type: Rating,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid data',
-  })
-  create(@Body() createRatingDto: CreateRatingDto): Promise<Rating> {
-    return this.ratingsService.create(createRatingDto);
-  }
-
   @ApiOperation({ summary: 'delete a rating' })
   @HttpCode(HttpStatus.OK)
   @Delete(':id')
@@ -82,7 +64,7 @@ export class RatingsController {
   @ApiNotFoundResponse({
     description: 'Rating has not been found',
   })
-  delete(@Param('id') id: string): Promise<Rating> {
+  delete(@Param('id', new ParseUUIDPipe()) id: string): Promise<Rating> {
     return this.ratingsService.remove(id);
   }
 }

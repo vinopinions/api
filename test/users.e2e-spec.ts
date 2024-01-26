@@ -175,7 +175,7 @@ describe('UsersController (e2e)', () => {
         });
     });
 
-    it(`should return ${HttpStatus.OK} and not passwordHash with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and no passwordHash with authorization`, async () => {
       return request(app.getHttpServer())
         .get(USERS_NAME_ENDPOINT.replace(':name', user.username))
         .set(authHeader)

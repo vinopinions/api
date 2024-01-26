@@ -291,7 +291,7 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
     });
 
-    it(`should return ${HttpStatus.NOT_FOUND} when deleting user does not exist`, async () => {
+    it(`should return ${HttpStatus.NOT_FOUND} when deleting user that does not exist`, async () => {
       return request(app.getHttpServer())
         .delete(
           USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(

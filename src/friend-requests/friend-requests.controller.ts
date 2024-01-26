@@ -25,7 +25,6 @@ import { UsersService } from '../users/users.service';
 import { SendFriendRequestDto } from './dtos/send-friend-request.dto';
 import { FriendRequest } from './entities/friend-request.entity';
 import { FriendRequestsService } from './friend-requests.service';
-import { User } from '../users/entities/user.entity';
 
 @Controller('friend-requests')
 @ApiTags('friend requests')

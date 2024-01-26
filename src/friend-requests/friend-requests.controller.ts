@@ -19,8 +19,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { User } from 'src/users/entities/user.entity';
 import { AuthenticatedRequest } from '../auth/auth.guard';
+import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { SendFriendRequestDto } from './dtos/send-friend-request.dto';
 import { FriendRequest } from './entities/friend-request.entity';

@@ -43,3 +43,10 @@ export const login = async (
     user,
   };
 };
+
+/**
+ * .expect(logResponse)
+ */
+export const logResponse = (res: Response) => {
+  console.log(JSON.stringify(res.body, null, 2));
+};

@@ -10,6 +10,7 @@ import {
   USERS_ENDPOINT,
   USERS_NAME_ENDPOINT,
   USERS_NAME_FRIENDS_ENDPOINT,
+  USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT,
 } from '../src/users/users.controller';
 import { AppModule } from './../src/app.module';
 import { clearDatabase, login } from './utils';
@@ -39,9 +40,6 @@ describe('UsersController (e2e)', () => {
 
   afterEach(async () => {
     await clearDatabase(app);
-  });
-
-  afterAll(async () => {
     await app.close();
   });
 
@@ -147,13 +145,13 @@ describe('UsersController (e2e)', () => {
   describe(USERS_NAME_ENDPOINT + ' (GET)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
-        .get(USERS_NAME_ENDPOINT)
+        .get(USERS_NAME_ENDPOINT.replace(':name', faker.internet.userName()))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
-        .get(USERS_NAME_ENDPOINT)
+        .get(USERS_NAME_ENDPOINT.replace(':name', faker.internet.userName()))
         .expect(HttpStatus.UNAUTHORIZED);
     });
 
@@ -270,78 +268,107 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe(USERS_NAME_FRIENDS_ENDPOINT + ' (GET)', () => {
+  describe(USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT + ' (DELETE)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT)
+        .delete(
+          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+            ':name',
+            faker.internet.userName(),
+          ).replace(':friendName', faker.internet.userName()),
+        )
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT)
+        .delete(
+          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+            ':name',
+            faker.internet.userName(),
+          ).replace(':friendName', faker.internet.userName()),
+        )
         .expect(HttpStatus.UNAUTHORIZED);
     });
 
-    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+    it(`should return ${HttpStatus.NOT_FOUND} when deleting user does not exist`, async () => {
       return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT.replace(':name', user.username))
-        .set(authHeader)
-        .expect(HttpStatus.OK);
-    });
-
-    it(`should return ${HttpStatus.OK} and empty array with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT.replace(':name', user.username))
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(0);
-        });
-    });
-
-    it(`should return ${HttpStatus.OK} and array of 3 users with authorization`, async () => {
-      for (let i = 0; i < 3; i++) {
-        const userData: SignUpDto = {
-          username: faker.internet.userName(),
-          password: faker.internet.password(),
-        };
-        const createdUser: User = await authService.signUp(
-          userData.username,
-          userData.password,
-        );
-        const friendRequest = await friendRequestsService.sendFriendRequest(
-          createdUser,
-          user,
-        );
-        await friendRequestsService.acceptFriendRequest(friendRequest.id, user);
-      }
-
-      return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT.replace(':name', user.username))
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(3);
-          (body as Array<any>).forEach((item) => {
-            expect(item.id).toBeDefined();
-            expect(item.username).toBeDefined();
-            expect(item.createdAt).toBeDefined();
-            expect(item.updatedAt).toBeDefined();
-          });
-        });
-    });
-
-    it(`should return ${HttpStatus.NOT_FOUND} with random username as parameter with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
+        .delete(
+          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             ':name',
             faker.internet.userName(),
-          ),
+          ).replace(':friendName', faker.internet.userName()),
         )
         .set(authHeader)
         .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when to be deleted user does not exist`, async () => {
+      return request(app.getHttpServer())
+        .delete(
+          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+            ':name',
+            user.username,
+          ).replace(':friendName', faker.internet.userName()),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when to be deleted user exists but is not friends with user`, async () => {
+      const toBeDeletedUser: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+
+      return request(app.getHttpServer())
+        .delete(
+          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+            ':name',
+            user.username,
+          ).replace(':friendName', toBeDeletedUser.username),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} when trying to delete another users friends`, async () => {
+      const otherUser: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+
+      return request(app.getHttpServer())
+        .delete(
+          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+            ':name',
+            otherUser.username,
+          ).replace(':friendName', faker.internet.userName()),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it(`should return ${HttpStatus.OK} when deleting a present friendship`, async () => {
+      const createdUser: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+      const friendRequest = await friendRequestsService.sendFriendRequest(
+        createdUser,
+        user,
+      );
+      await friendRequestsService.acceptFriendRequest(friendRequest.id, user);
+
+      return request(app.getHttpServer())
+        .delete(
+          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+            ':name',
+            user.username,
+          ).replace(':friendName', createdUser.username),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.OK);
     });
   });
 });

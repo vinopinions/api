@@ -116,7 +116,11 @@ export class UsersService {
       },
     });
 
-    if (!removingUserWithRelation.friends.includes(toBeRemovedUser))
+    if (
+      !removingUserWithRelation.friends.find(
+        (user) => user.id == toBeRemovedUser.id,
+      )
+    )
       throw new NotFoundException('This user is not your friend');
 
     // remove toBeRemovedUser from removingUser's friends
@@ -124,7 +128,11 @@ export class UsersService {
       (user) => user.id !== toBeRemovedUser.id,
     );
 
-    if (!toBeRemovedUserWithRelation.friends.includes(removingUser))
+    if (
+      !toBeRemovedUserWithRelation.friends.find(
+        (user) => user.id == removingUser.id,
+      )
+    )
       throw new InternalServerErrorException(
         'User were not in both of each others friend lists',
       );

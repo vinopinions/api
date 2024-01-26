@@ -44,7 +44,10 @@ export class AuthService {
       throw new BadRequestException("'username' has to be defined");
     if (!password)
       throw new BadRequestException("'password' has to be defined");
-
+    // console.log('FindMany: ' + (await this.usersService.findMany()));
+    // console.log(
+    //   'FindOne: ' + (await this.usersService.findOne({ where: { username } })),
+    // );
     // Weird setup but since findOneByUsername throws an exception when no user is found it makes sense
     try {
       if (await this.usersService.findOne({ where: { username } }))

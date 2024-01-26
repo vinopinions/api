@@ -27,10 +27,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          clean: true
-          ref: ${{ github.event.pull_request.head.sha }}
-      - run: cat ./src/users/users.module.ts
+
       - name: Install dependencies
         run: yarn --ignore-scripts --non-interactive
 

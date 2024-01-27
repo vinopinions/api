@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import {
@@ -24,6 +25,9 @@ describe('AuthController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     authService = app.get<AuthService>(AuthService);
+    const configService = app.get<ConfigService>(ConfigService);
+    console.log(configService.get<string>('JWT_PRIVATE_KEY')?.length);
+    console.log(configService.get<string>('JWT_PUBLIC_KEY')?.length);
   });
 
   afterEach(async () => {

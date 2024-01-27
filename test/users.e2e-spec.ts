@@ -13,7 +13,7 @@ import {
   USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT,
 } from '../src/users/users.controller';
 import { AppModule } from './../src/app.module';
-import { clearDatabase, login } from './utils';
+import { clearDatabase, logResponse, login } from './utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -60,7 +60,8 @@ describe('UsersController (e2e)', () => {
       return request(app.getHttpServer())
         .get(USERS_ENDPOINT)
         .set(authHeader)
-        .expect(HttpStatus.OK);
+        .expect(HttpStatus.OK)
+        .expect(logResponse);
     });
 
     it(`should return ${HttpStatus.OK} and  array with length of one with authorization`, async () => {

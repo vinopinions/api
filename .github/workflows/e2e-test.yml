@@ -42,4 +42,4 @@ jobs:
           NODE_ENV: test
           AUTH_SERVICE_DOMAIN: 'test.vinopinions.spots.host'
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-          JWT_PUBLIC_KEY: ${{ env.JWT_PUBLIC_KEY }}
+          JWT_PUBLIC_KEY: ${{ vars.JWT_PUBLIC_KEY }}

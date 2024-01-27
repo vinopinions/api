@@ -60,8 +60,8 @@ describe('UsersController (e2e)', () => {
       return request(app.getHttpServer())
         .get(USERS_ENDPOINT)
         .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(logResponse);
+        .expect(logResponse)
+        .expect(HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.OK} and  array with length of one with authorization`, async () => {

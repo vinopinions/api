@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Modify tag version
         run: VERSION=${{ github.ref_name }} && echo "PROJ_VERSION=${VERSION:1}" >> $GITHUB_ENV
       - name: Login to ghcr

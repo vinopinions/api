@@ -49,13 +49,11 @@ export class AuthGuard implements CanActivate {
 
       id = payload.sub;
     } catch (e) {
-      console.log('HERE: ' + e);
       throw new UnauthorizedException();
     }
     const user: User | null = await this.usersService.findOne({
       where: { id },
     });
-    console.log('USER: ' + user);
 
     if (!user) throw new UnauthorizedException();
 

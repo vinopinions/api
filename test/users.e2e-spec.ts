@@ -63,7 +63,7 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and  array with length of one with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and  array with length of 1 with authorization`, async () => {
       return request(app.getHttpServer())
         .get(USERS_ENDPOINT)
         .set(authHeader)

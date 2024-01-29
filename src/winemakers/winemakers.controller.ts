@@ -22,8 +22,11 @@ import { CreateWineMakerDto } from './dtos/create-winemaker.dto';
 import { Winemaker } from './entities/winemaker.entity';
 import { WinemakersService } from './winemakers.service';
 
-@Controller('winemakers')
-@ApiTags('winemakers')
+const WINEMAKERS_ENDPOINT_NAME = 'winemakers';
+export const WINEMAKERS_ENDPOINT = `/${WINEMAKERS_ENDPOINT_NAME}`;
+
+@Controller(WINEMAKERS_ENDPOINT_NAME)
+@ApiTags(WINEMAKERS_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })

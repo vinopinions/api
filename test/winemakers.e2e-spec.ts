@@ -1,15 +1,16 @@
-import { INestApplication } from '@nestjs/common';
+import { faker } from '@faker-js/faker';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '../src/auth/auth.service';
-import { User } from '../src/users/entities/user.entity';
+import request from 'supertest';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { AppModule } from './../src/app.module';
+import { WINEMAKERS_ENDPOINT } from './../src/winemakers/winemakers.controller';
 import { clearDatabase, login } from './utils';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
   let authHeader: object;
-  let authService: AuthService;
-  let user: User;
+  let winemakersService: WinemakersService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -18,7 +19,7 @@ describe('WinemakersController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    authService = app.get<AuthService>(AuthService);
+    winemakersService = app.get<WinemakersService>(WinemakersService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
   });
@@ -26,5 +27,84 @@ describe('WinemakersController (e2e)', () => {
   afterEach(async () => {
     await clearDatabase(app);
     await app.close();
+  });
+
+  describe(WINEMAKERS_ENDPOINT + ' (GET)', () => {
+    it('should exist', () => {
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ENDPOINT)
+        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ENDPOINT)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK);
+    });
+
+    it(`should return ${HttpStatus.OK} and  array with length of 0 with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ENDPOINT)
+        .set(authHeader)
+
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(Array.isArray(res.body)).toBe(true);
+          expect((res.body as Array<any>).length).toBe(0);
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
+      for (let i = 0; i < 10; i++) {
+        const name = faker.person.fullName();
+        await winemakersService.create(name);
+      }
+
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(Array.isArray(res.body)).toBe(true);
+          expect((res.body as Array<any>).length).toBe(10);
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} and 10 valid winemakers with authorization`, async () => {
+      for (let i = 0; i < 10; i++) {
+        const name = faker.person.fullName();
+        await winemakersService.create(name);
+      }
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect(({ body }) => {
+          expect((body as Array<any>).length).toBe(10);
+          (body as Array<any>).forEach((item) => {
+            expect(item.id).toBeDefined();
+            expect(item.name).toBeDefined();
+            expect(item.createdAt).toBeDefined();
+            expect(item.updatedAt).toBeDefined();
+          });
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} and a winemaker with no relations with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.wines).toBeUndefined();
+        });
+    });
   });
 });

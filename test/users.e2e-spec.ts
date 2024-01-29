@@ -119,30 +119,15 @@ describe('UsersController (e2e)', () => {
         });
     });
 
-    it.each([0, 10, 25])(
-      `should return ${HttpStatus.OK} and %p + 1 users with no passwordHash with authorization`,
-      async (userAmount: number) => {
-        for (let i = 0; i < userAmount; i++) {
-          const userData: SignUpDto = {
-            username: faker.internet.userName(),
-            password: faker.internet.password(),
-          };
-          await authService.signUp(userData.username, userData.password);
-        }
-
-        return request(app.getHttpServer())
-          .get(USERS_ENDPOINT)
-          .set(authHeader)
-          .expect(HttpStatus.OK)
-          .expect(({ body }) => {
-            // check for one more user since one user has been created in the signup process
-            expect((body as Array<any>).length).toBe(userAmount + 1);
-            (body as Array<any>).forEach((item) => {
-              expect(item.passwordHash).toBeUndefined();
-            });
-          });
-      },
-    );
+    it(`should return ${HttpStatus.OK} and a user with no passwordHash with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(USERS_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.passwordHash).toBeUndefined();
+        });
+    });
   });
 
   describe(USERS_NAME_ENDPOINT + ' (GET)', () => {

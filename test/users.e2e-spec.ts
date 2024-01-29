@@ -119,27 +119,30 @@ describe('UsersController (e2e)', () => {
         });
     });
 
-    it(`should return ${HttpStatus.OK} and no passwordHash with authorization`, async () => {
-      // create 9 users since one is already created while login
-      for (let i = 0; i < 9; i++) {
-        const userData: SignUpDto = {
-          username: faker.internet.userName(),
-          password: faker.internet.password(),
-        };
-        await authService.signUp(userData.username, userData.password);
-      }
+    it.each([0, 10, 25])(
+      `should return ${HttpStatus.OK} and %p + 1 users with no passwordHash with authorization`,
+      async (userAmount: number) => {
+        for (let i = 0; i < userAmount; i++) {
+          const userData: SignUpDto = {
+            username: faker.internet.userName(),
+            password: faker.internet.password(),
+          };
+          await authService.signUp(userData.username, userData.password);
+        }
 
-      return request(app.getHttpServer())
-        .get(USERS_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(10);
-          (body as Array<any>).forEach((item) => {
-            expect(item.passwordHash).toBeUndefined();
+        return request(app.getHttpServer())
+          .get(USERS_ENDPOINT)
+          .set(authHeader)
+          .expect(HttpStatus.OK)
+          .expect(({ body }) => {
+            // check for one more user since one user has been created in the signup process
+            expect((body as Array<any>).length).toBe(userAmount + 1);
+            (body as Array<any>).forEach((item) => {
+              expect(item.passwordHash).toBeUndefined();
+            });
           });
-        });
-    });
+      },
+    );
   });
 
   describe(USERS_NAME_ENDPOINT + ' (GET)', () => {

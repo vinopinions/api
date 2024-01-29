@@ -1,0 +1,42 @@
+name: 'CodeQL'
+
+on:
+  push:
+    branches: ['developer', 'master']
+  pull_request:
+    branches: ['developer', 'master']
+  schedule:
+    - cron: '0 8 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript-typescript']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - run: yarn --ignore-scripts --non-interactive --frozen-lockfile
+
+      - run: yarn build
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{matrix.language}}'

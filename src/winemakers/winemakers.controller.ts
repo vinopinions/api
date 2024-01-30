@@ -24,6 +24,8 @@ import { WinemakersService } from './winemakers.service';
 
 const WINEMAKERS_ENDPOINT_NAME = 'winemakers';
 export const WINEMAKERS_ENDPOINT = `/${WINEMAKERS_ENDPOINT_NAME}`;
+const WINEMAKERS_ID_ENDPOINT_NAME = ':id';
+export const WINEMAKERS_ID_ENDPOINT = `${WINEMAKERS_ENDPOINT}/${WINEMAKERS_ID_ENDPOINT_NAME}`;
 
 @Controller(WINEMAKERS_ENDPOINT_NAME)
 @ApiTags(WINEMAKERS_ENDPOINT_NAME)
@@ -33,20 +35,6 @@ export const WINEMAKERS_ENDPOINT = `/${WINEMAKERS_ENDPOINT_NAME}`;
 @ApiBearerAuth()
 export class WinemakersController {
   constructor(private winemakersService: WinemakersService) {}
-
-  @ApiOperation({ summary: 'get winemaker by id' })
-  @HttpCode(HttpStatus.OK)
-  @Get(':id')
-  @ApiOkResponse({
-    description: 'Winemaker has been found',
-    type: Winemaker,
-  })
-  @ApiNotFoundResponse({
-    description: 'Winemaker has not been found',
-  })
-  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Winemaker> {
-    return this.winemakersService.findOne({ where: { id } });
-  }
 
   @ApiOkResponse({
     description: 'Winemakers have been found',
@@ -58,6 +46,20 @@ export class WinemakersController {
   @Get()
   findAll(): Promise<Winemaker[]> {
     return this.winemakersService.findMany();
+  }
+
+  @ApiOperation({ summary: 'get winemaker by id' })
+  @HttpCode(HttpStatus.OK)
+  @Get(WINEMAKERS_ID_ENDPOINT_NAME)
+  @ApiOkResponse({
+    description: 'Winemaker has been found',
+    type: Winemaker,
+  })
+  @ApiNotFoundResponse({
+    description: 'Winemaker has not been found',
+  })
+  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Winemaker> {
+    return this.winemakersService.findOne({ where: { id } });
   }
 
   @ApiOperation({ summary: 'create a winemaker' })

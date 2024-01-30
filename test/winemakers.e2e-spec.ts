@@ -8,7 +8,7 @@ import {
   WINEMAKERS_ENDPOINT,
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
-import { clearDatabase, logResponse, login } from './utils';
+import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
@@ -125,12 +125,18 @@ describe('WinemakersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
-      console.log(faker.string.uuid());
       return request(app.getHttpServer())
         .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
         .set(authHeader)
-        .expect(logResponse)
         .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.alphanumeric()))
+        .set(authHeader)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => isErrorResponse(res, 'uuid'));
     });
   });
 });

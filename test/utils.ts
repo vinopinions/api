@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
+import { Response } from 'supertest';
 import { EntityManager } from 'typeorm';
 import { AuthService } from '../src/auth/auth.service';
 import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
@@ -46,6 +47,13 @@ export const login = async (
     },
     userData,
   };
+};
+
+export const isErrorResponse = (res: Response, messageContains?: string) => {
+  expect(res.body).toHaveProperty('message');
+  expect(res.body!.message).toContain(messageContains);
+  expect(res.body).toHaveProperty('error');
+  expect(res.body).toHaveProperty('statusCode');
 };
 
 export const setupWineRatingTest = async (app: INestApplication) => {

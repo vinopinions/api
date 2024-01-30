@@ -11,7 +11,6 @@ import request from 'supertest';
 import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
 import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
 import { WinesService } from '../src/wines/wines.service';
-import { RatingsService } from '../src/ratings/ratings.service';
 
 describe('WinesController (e2e)', () => {
   let app: INestApplication;

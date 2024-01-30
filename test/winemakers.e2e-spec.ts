@@ -42,7 +42,8 @@ describe('WinemakersController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .get(WINEMAKERS_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
@@ -121,14 +122,16 @@ describe('WinemakersController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
       return request(app.getHttpServer())
         .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
         .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {

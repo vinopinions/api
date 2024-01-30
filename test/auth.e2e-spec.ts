@@ -10,7 +10,7 @@ import { AuthService } from '../src/auth/auth.service';
 import { SignInDto } from '../src/auth/dtos/sign-in.dto';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
-import { clearDatabase } from './utils';
+import { clearDatabase, isErrorResponse } from './utils';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -41,7 +41,8 @@ describe('AuthController (e2e)', () => {
     it(`should return ${HttpStatus.BAD_REQUEST} with no data`, () => {
       return request(app.getHttpServer())
         .post(AUTH_SIGNUP_ENDPOINT)
-        .expect(HttpStatus.BAD_REQUEST);
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, () => {
@@ -52,7 +53,8 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post(AUTH_SIGNUP_ENDPOINT)
         .send(invalidData)
-        .expect(HttpStatus.BAD_REQUEST);
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.CREATED} with valid data`, () => {
@@ -76,7 +78,8 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post(AUTH_SIGNUP_ENDPOINT)
         .send(validData)
-        .expect(HttpStatus.CONFLICT);
+        .expect(HttpStatus.CONFLICT)
+        .expect(isErrorResponse);
     });
   });
 
@@ -90,7 +93,8 @@ describe('AuthController (e2e)', () => {
     it(`should return ${HttpStatus.BAD_REQUEST} with no data`, () => {
       return request(app.getHttpServer())
         .post(AUTH_LOGIN_ENDPOINT)
-        .expect(HttpStatus.BAD_REQUEST);
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, () => {
@@ -101,7 +105,8 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post(AUTH_LOGIN_ENDPOINT)
         .send(invalidData)
-        .expect(HttpStatus.BAD_REQUEST);
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} with valid data but no signup before`, () => {
@@ -112,7 +117,8 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post(AUTH_LOGIN_ENDPOINT)
         .send(validData)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.CREATED} and access_token with valid data and signup before`, async () => {

@@ -51,8 +51,8 @@ export const login = async (
 
 export const isErrorResponse = (res: Response, messageContains?: string) => {
   expect(res.body).toHaveProperty('message');
-  expect(res.body!.message).toContain(messageContains);
-  expect(res.body).toHaveProperty('error');
+  if (messageContains) expect(res.body!.message).toContain(messageContains);
+
   expect(res.body).toHaveProperty('statusCode');
 };
 

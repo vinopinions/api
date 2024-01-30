@@ -4,8 +4,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { AppModule } from './../src/app.module';
-import { WINEMAKERS_ENDPOINT } from './../src/winemakers/winemakers.controller';
-import { clearDatabase, login } from './utils';
+import {
+  WINEMAKERS_ENDPOINT,
+  WINEMAKERS_ID_ENDPOINT,
+} from './../src/winemakers/winemakers.controller';
+import { clearDatabase, logResponse, login } from './utils';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
@@ -105,6 +108,29 @@ describe('WinemakersController (e2e)', () => {
         .expect((res) => {
           expect(res.body.wines).toBeUndefined();
         });
+    });
+  });
+
+  describe(WINEMAKERS_ID_ENDPOINT + ' (GET)', () => {
+    it('should exist', () => {
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
+      console.log(faker.string.uuid());
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .set(authHeader)
+        .expect(logResponse)
+        .expect(HttpStatus.NOT_FOUND);
     });
   });
 });

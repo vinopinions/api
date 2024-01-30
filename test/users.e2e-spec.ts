@@ -13,7 +13,7 @@ import {
   USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT,
 } from '../src/users/users.controller';
 import { AppModule } from './../src/app.module';
-import { clearDatabase, login } from './utils';
+import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -53,7 +53,8 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .get(USERS_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
@@ -140,7 +141,8 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .get(USERS_NAME_ENDPOINT.replace(':name', faker.internet.userName()))
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
@@ -177,7 +179,8 @@ describe('UsersController (e2e)', () => {
       return request(app.getHttpServer())
         .get(USERS_NAME_ENDPOINT.replace(':name', faker.internet.userName()))
         .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
     });
   });
 
@@ -191,7 +194,8 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .get(USERS_NAME_FRIENDS_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
@@ -252,7 +256,8 @@ describe('UsersController (e2e)', () => {
           ),
         )
         .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
     });
   });
 
@@ -276,7 +281,8 @@ describe('UsersController (e2e)', () => {
             faker.internet.userName(),
           ).replace(':friendName', faker.internet.userName()),
         )
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} when deleting user that does not exist`, async () => {
@@ -288,7 +294,8 @@ describe('UsersController (e2e)', () => {
           ).replace(':friendName', faker.internet.userName()),
         )
         .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} when to be deleted user does not exist`, async () => {
@@ -300,7 +307,8 @@ describe('UsersController (e2e)', () => {
           ).replace(':friendName', faker.internet.userName()),
         )
         .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} when to be deleted user exists but is not friends with user`, async () => {
@@ -317,7 +325,8 @@ describe('UsersController (e2e)', () => {
           ).replace(':friendName', toBeDeletedUser.username),
         )
         .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} when trying to delete another users friends`, async () => {
@@ -334,7 +343,8 @@ describe('UsersController (e2e)', () => {
           ).replace(':friendName', faker.internet.userName()),
         )
         .set(authHeader)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} when deleting a present friendship`, async () => {

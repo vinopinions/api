@@ -214,11 +214,11 @@ describe('UsersController (e2e)', () => {
           userData.username,
           userData.password,
         );
-        const friendRequest = await friendRequestsService.sendFriendRequest(
+        const friendRequest = await friendRequestsService.send(
           createdUser,
           user,
         );
-        await friendRequestsService.acceptFriendRequest(friendRequest.id, user);
+        await friendRequestsService.accept(friendRequest.id, user);
       }
 
       return request(app.getHttpServer())
@@ -341,11 +341,8 @@ describe('UsersController (e2e)', () => {
         faker.internet.userName(),
         faker.internet.password(),
       );
-      const friendRequest = await friendRequestsService.sendFriendRequest(
-        createdUser,
-        user,
-      );
-      await friendRequestsService.acceptFriendRequest(friendRequest.id, user);
+      const friendRequest = await friendRequestsService.send(createdUser, user);
+      await friendRequestsService.accept(friendRequest.id, user);
 
       return request(app.getHttpServer())
         .delete(

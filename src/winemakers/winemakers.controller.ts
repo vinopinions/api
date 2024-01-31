@@ -18,7 +18,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CreateWineMakerDto } from './dtos/create-winemaker.dto';
+import { CreateWinemakerDto } from './dtos/create-winemaker.dto';
 import { Winemaker } from './entities/winemaker.entity';
 import { WinemakersService } from './winemakers.service';
 
@@ -72,7 +72,7 @@ export class WinemakersController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  create(@Body() createWinemakersDto: CreateWineMakerDto) {
+  create(@Body() createWinemakersDto: CreateWinemakerDto) {
     return this.winemakersService.create(createWinemakersDto.name);
   }
 }

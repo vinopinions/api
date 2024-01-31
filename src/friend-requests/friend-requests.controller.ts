@@ -11,6 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
@@ -38,6 +39,8 @@ const FRIEND_REQUESTS_SEND_ENDPOINT_NAME = 'send';
 export const FRIEND_REQUESTS_SEND_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_SEND_ENDPOINT_NAME}`;
 const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME = ':id/accept';
 export const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME}`;
+const FRIEND_REQUESTS_ID_DECLINE_ENDPOINT_NAME = ':id/decline';
+export const FRIEND_REQUESTS_ID_DECLINE_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_DECLINE_ENDPOINT_NAME}`;
 
 @Controller(FRIEND_REQUESTS_ENDPOINT_NAME)
 @ApiTags(FRIEND_REQUESTS_ENDPOINT.replace('-', ' '))
@@ -108,6 +111,9 @@ export class FriendRequestsController {
   @ApiOkResponse({
     description: 'Friend request has been accepted',
   })
+  @ApiBadRequestResponse({
+    description: 'Invalid uuid',
+  })
   async accept(
     @Req() request: AuthenticatedRequest,
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -117,12 +123,18 @@ export class FriendRequestsController {
 
   @ApiOperation({ summary: 'decline a sent friend request sent to you' })
   @HttpCode(HttpStatus.OK)
-  @Post(':id/decline')
+  @Post(FRIEND_REQUESTS_ID_DECLINE_ENDPOINT_NAME)
   @ApiNotFoundResponse({
     description: 'This friend request could not be found',
   })
+  @ApiForbiddenResponse({
+    description: 'You can not decline another users friend request',
+  })
   @ApiOkResponse({
     description: 'Friend request has been declined',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid uuid',
   })
   async decline(
     @Req() request: AuthenticatedRequest,

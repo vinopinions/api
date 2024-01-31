@@ -125,15 +125,17 @@ export class FriendRequestsService {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
-        receiver: {
-          id: decliningUser.id,
-        },
       },
       relations: {
         receiver: true,
+        sender: true,
       },
     });
 
+    if (friendRequest.receiver.id !== decliningUser.id)
+      throw new ForbiddenException(
+        'You can not decline another users friend request',
+      );
     return await this.friendRequestRepository.remove(friendRequest);
   }
 

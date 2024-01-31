@@ -1,14 +1,18 @@
 import { faker } from '@faker-js/faker';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, isErrorResponse, login } from './utils';
+import { clearDatabase, isErrorResponse, logResponse, login } from './utils';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
-import { FRIEND_REQUESTS_SEND_ENDPOINT } from '../src/friend-requests/friend-requests.controller';
+import {
+  FRIEND_REQUESTS_INCOMING_ENDPOINT,
+  FRIEND_REQUESTS_SEND_ENDPOINT,
+} from '../src/friend-requests/friend-requests.controller';
 import request from 'supertest';
 import { User } from '../src/users/entities/user.entity';
 import { FriendRequestsService } from '../src/friend-requests/friend-requests.service';
 import { SendFriendRequestDto } from '../src/friend-requests/dtos/send-friend-request.dto';
 import { AuthService } from '../src/auth/auth.service';
+import { FriendRequest } from '../src/friend-requests/entities/friend-request.entity';
 
 describe('FriendRequestsController (e2e)', () => {
   let app: INestApplication;
@@ -36,6 +40,103 @@ describe('FriendRequestsController (e2e)', () => {
     await app.close();
   });
 
+  describe(FRIEND_REQUESTS_INCOMING_ENDPOINT + ' (GET)', () => {
+    it('should exist', () => {
+      return request(app.getHttpServer())
+        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
+        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK);
+    });
+
+    it(`should return ${HttpStatus.OK} and array with length of 1 with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(Array.isArray(res.body)).toBe(true);
+          expect((res.body as Array<any>).length).toBe(0);
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
+      for (let i = 0; i < 10; i++) {
+        const sender: User = await authService.signUp(
+          faker.internet.userName(),
+          faker.internet.password(),
+        );
+        await friendRequestsService.sendFriendRequest(sender, user);
+      }
+
+      return request(app.getHttpServer())
+        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(Array.isArray(res.body)).toBe(true);
+          expect((res.body as Array<any>).length).toBe(10);
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} a valid friend requests with authorization`, async () => {
+      const sender: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+      const friendRequest: FriendRequest =
+        await friendRequestsService.sendFriendRequest(sender, user);
+
+      return request(app.getHttpServer())
+        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect(({ body }) => {
+          expect((body as Array<any>).length).toBe(1);
+          (body as Array<any>).forEach((item) => {
+            expect(item.id).toEqual(friendRequest.id);
+            expect(item.sender.id).toEqual(friendRequest.sender.id);
+            expect(item.receiver.id).toEqual(friendRequest.receiver.id);
+            expect(item.createdAt).toEqual(
+              friendRequest.createdAt.toISOString(),
+            );
+          });
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} a valid friend requests that does not contain passwordHash for sender/receiver with authorization`, async () => {
+      const sender: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+      await friendRequestsService.sendFriendRequest(sender, user);
+
+      return request(app.getHttpServer())
+        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect(({ body }) => {
+          expect((body as Array<any>).length).toBe(1);
+          (body as Array<any>).forEach((item) => {
+            expect(item.sender.passwordHash).toBeUndefined();
+            expect(item.receiver.passwordHash).toBeUndefined();
+          });
+        });
+    });
+  });
+
   describe(FRIEND_REQUESTS_SEND_ENDPOINT + ' (POST)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
@@ -47,7 +148,6 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(FRIEND_REQUESTS_SEND_ENDPOINT)
         .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse)
         .expect(isErrorResponse);
     });
 

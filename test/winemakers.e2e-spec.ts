@@ -10,6 +10,7 @@ import {
 } from './../src/winemakers/winemakers.controller';
 import { clearDatabase, isErrorResponse, login } from './utils';
 import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
+import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
@@ -167,6 +168,83 @@ describe('WinemakersController (e2e)', () => {
         .get(WINEMAKERS_ID_ENDPOINT.replace(':id', winemaker.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
+        .expect(({ body }) => {
+          expect(body.wines).toBeUndefined();
+        });
+    });
+  });
+
+  describe(WINEMAKERS_ENDPOINT + ' (POST)', () => {
+    it('should exist', () => {
+      return request(app.getHttpServer())
+        .post(WINEMAKERS_ENDPOINT)
+        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      return request(app.getHttpServer())
+        .post(WINEMAKERS_ENDPOINT)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with no data and with authorization`, async () => {
+      return request(app.getHttpServer())
+        .post(WINEMAKERS_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data and with authorization`, async () => {
+      const invalidData = {
+        name: 123,
+      };
+      return request(app.getHttpServer())
+        .post(WINEMAKERS_ENDPOINT)
+        .send(invalidData)
+        .set(authHeader)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.CREATED} with valid data`, () => {
+      const validData: CreateWinemakerDto = {
+        name: faker.person.fullName(),
+      };
+      return request(app.getHttpServer())
+        .post(WINEMAKERS_ENDPOINT)
+        .send(validData)
+        .set(authHeader)
+        .expect(HttpStatus.CREATED);
+    });
+
+    it(`should return ${HttpStatus.CREATED} a valid winemaker with valid data`, () => {
+      const validData: CreateWinemakerDto = {
+        name: faker.person.fullName(),
+      };
+      return request(app.getHttpServer())
+        .post(WINEMAKERS_ENDPOINT)
+        .send(validData)
+        .set(authHeader)
+        .expect(HttpStatus.CREATED)
+        .expect(({ body }) => {
+          expect(body.id).toBeDefined();
+          expect(body.name).toBeDefined();
+          expect(body.createdAt).toBeDefined();
+          expect(body.updatedAt).toBeDefined();
+        });
+    });
+
+    it(`should return ${HttpStatus.CREATED} and no wines with authorization`, async () => {
+      const validData: CreateWinemakerDto = {
+        name: faker.person.fullName(),
+      };
+      return request(app.getHttpServer())
+        .post(WINEMAKERS_ENDPOINT)
+        .send(validData)
+        .set(authHeader)
+        .expect(HttpStatus.CREATED)
         .expect(({ body }) => {
           expect(body.wines).toBeUndefined();
         });

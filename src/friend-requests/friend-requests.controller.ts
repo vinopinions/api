@@ -13,6 +13,7 @@ import {
 import {
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -26,8 +27,13 @@ import { SendFriendRequestDto } from './dtos/send-friend-request.dto';
 import { FriendRequest } from './entities/friend-request.entity';
 import { FriendRequestsService } from './friend-requests.service';
 
-@Controller('friend-requests')
-@ApiTags('friend requests')
+const FRIEND_REQUESTS_ENDPOINT_NAME = 'friend-requests';
+export const FRIEND_REQUESTS_ENDPOINT = `/${FRIEND_REQUESTS_ENDPOINT_NAME}`;
+const FRIEND_REQUESTS_SEND_ENDPOINT_NAME = 'send';
+export const FRIEND_REQUESTS_SEND_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_SEND_ENDPOINT_NAME}`;
+
+@Controller(FRIEND_REQUESTS_ENDPOINT_NAME)
+@ApiTags(FRIEND_REQUESTS_ENDPOINT.replace('-', ' '))
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
@@ -39,15 +45,14 @@ export class FriendRequestsController {
   ) {}
 
   @ApiOperation({ summary: 'send a friend request' })
-  @HttpCode(HttpStatus.OK)
-  @Post('send')
+  @Post(FRIEND_REQUESTS_SEND_ENDPOINT_NAME)
   @ApiNotFoundResponse({
     description: 'User has not been found',
   })
   @ApiConflictResponse({
     description: 'A friend request already exists between the 2 users',
   })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     description: 'Sent a friend request',
   })
   async send(

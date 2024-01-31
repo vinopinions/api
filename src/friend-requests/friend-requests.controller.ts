@@ -29,6 +29,10 @@ import { FriendRequestsService } from './friend-requests.service';
 
 const FRIEND_REQUESTS_ENDPOINT_NAME = 'friend-requests';
 export const FRIEND_REQUESTS_ENDPOINT = `/${FRIEND_REQUESTS_ENDPOINT_NAME}`;
+const FRIEND_REQUESTS_INCOMING_ENDPOINT_NAME = 'incoming';
+export const FRIEND_REQUESTS_INCOMING_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_INCOMING_ENDPOINT_NAME}`;
+const FRIEND_REQUESTS_OUTGOING_ENDPOINT_NAME = 'outgoing';
+export const FRIEND_REQUESTS_OUTGOING_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_OUTGOING_ENDPOINT_NAME}`;
 const FRIEND_REQUESTS_SEND_ENDPOINT_NAME = 'send';
 export const FRIEND_REQUESTS_SEND_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_SEND_ENDPOINT_NAME}`;
 
@@ -44,6 +48,31 @@ export class FriendRequestsController {
     private usersService: UsersService,
   ) {}
 
+  @ApiOperation({ summary: 'get all friend requests sent to you' })
+  @Get(FRIEND_REQUESTS_INCOMING_ENDPOINT_NAME)
+  @ApiOkResponse({
+    description: 'Incoming friend requests have been found',
+    type: FriendRequest,
+    isArray: true,
+  })
+  async getIncoming(
+    @Req() request: AuthenticatedRequest,
+  ): Promise<FriendRequest[]> {
+    return await this.friendRequestsService.getReceivedFriendRequests(
+      request.user,
+    );
+  }
+
+  @ApiOperation({ summary: 'get all friend requests sent by you' })
+  @Get(FRIEND_REQUESTS_OUTGOING_ENDPOINT_NAME)
+  @ApiOkResponse({
+    description: 'Outgoing friend requests have been found',
+    type: FriendRequest,
+    isArray: true,
+  })
+  async getOutgoing(@Req() request: AuthenticatedRequest) {
+    return await this.friendRequestsService.getSentFriendRequests(request.user);
+  }
   @ApiOperation({ summary: 'send a friend request' })
   @Post(FRIEND_REQUESTS_SEND_ENDPOINT_NAME)
   @ApiNotFoundResponse({
@@ -101,34 +130,6 @@ export class FriendRequestsController {
       id,
       request.user,
     );
-  }
-
-  @ApiOperation({ summary: 'get all friend requests sent to you' })
-  @HttpCode(HttpStatus.OK)
-  @Get('incoming')
-  @ApiOkResponse({
-    description: 'Incoming friend requests have been found',
-    type: FriendRequest,
-    isArray: true,
-  })
-  async getIncoming(
-    @Req() request: AuthenticatedRequest,
-  ): Promise<FriendRequest[]> {
-    return await this.friendRequestsService.getReceivedFriendRequests(
-      request.user,
-    );
-  }
-
-  @ApiOperation({ summary: 'get all friend requests sent by you' })
-  @HttpCode(HttpStatus.OK)
-  @Get('outgoing')
-  @ApiOkResponse({
-    description: 'Outgoing friend requests have been found',
-    type: FriendRequest,
-    isArray: true,
-  })
-  async getOutgoing(@Req() request: AuthenticatedRequest) {
-    return await this.friendRequestsService.getSentFriendRequests(request.user);
   }
 
   @ApiOperation({ summary: 'revoke a friend request sent by you' })

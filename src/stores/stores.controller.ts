@@ -68,10 +68,6 @@ export class StoresController {
     description: 'Invalid data',
   })
   create(@Body() createStoreDto: CreateStoreDto): Promise<Store> {
-    return this.storesService.create(
-      createStoreDto.name,
-      createStoreDto.address,
-      createStoreDto.url,
-    );
+    return this.storesService.create(createStoreDto);
   }
 }

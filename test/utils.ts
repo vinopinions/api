@@ -2,6 +2,11 @@ import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { AuthService } from '../src/auth/auth.service';
+import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { StoresService } from '../src/stores/stores.service';
+import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
+import { WinesService } from '../src/wines/wines.service';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get<EntityManager>(EntityManager);
@@ -41,4 +46,28 @@ export const login = async (
     },
     userData,
   };
+};
+
+export const setupWineRatingTest = async (app: INestApplication) => {
+  const winemakersService = app.get<WinemakersService>(WinemakersService);
+  const storesService = app.get<StoresService>(StoresService);
+  const winesService = app.get<WinesService>(WinesService);
+
+  const winemakerId = (await winemakersService.create('Winemaker')).id;
+
+  const store: CreateStoreDto = {
+    name: 'Store',
+  };
+  const storeId = (await storesService.create(store)).id;
+
+  const wine: CreateWineDto = {
+    name: 'Wine',
+    grapeVariety: 'Grape',
+    heritage: 'Region',
+    year: 2020,
+    storeIds: [storeId],
+    winemakerId: winemakerId,
+  };
+  const wineId = (await winesService.create(wine)).id;
+  return { wineId, storeId, winemakerId };
 };

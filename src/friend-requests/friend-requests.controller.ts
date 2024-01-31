@@ -14,6 +14,7 @@ import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -35,6 +36,8 @@ const FRIEND_REQUESTS_OUTGOING_ENDPOINT_NAME = 'outgoing';
 export const FRIEND_REQUESTS_OUTGOING_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_OUTGOING_ENDPOINT_NAME}`;
 const FRIEND_REQUESTS_SEND_ENDPOINT_NAME = 'send';
 export const FRIEND_REQUESTS_SEND_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_SEND_ENDPOINT_NAME}`;
+const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME = ':id/accept';
+export const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME}`;
 
 @Controller(FRIEND_REQUESTS_ENDPOINT_NAME)
 @ApiTags(FRIEND_REQUESTS_ENDPOINT.replace('-', ' '))
@@ -58,9 +61,7 @@ export class FriendRequestsController {
   async getIncoming(
     @Req() request: AuthenticatedRequest,
   ): Promise<FriendRequest[]> {
-    return await this.friendRequestsService.getReceivedFriendRequests(
-      request.user,
-    );
+    return await this.friendRequestsService.getReceived(request.user);
   }
 
   @ApiOperation({ summary: 'get all friend requests sent by you' })
@@ -71,8 +72,9 @@ export class FriendRequestsController {
     isArray: true,
   })
   async getOutgoing(@Req() request: AuthenticatedRequest) {
-    return await this.friendRequestsService.getSentFriendRequests(request.user);
+    return await this.friendRequestsService.getSent(request.user);
   }
+
   @ApiOperation({ summary: 'send a friend request' })
   @Post(FRIEND_REQUESTS_SEND_ENDPOINT_NAME)
   @ApiNotFoundResponse({
@@ -91,17 +93,17 @@ export class FriendRequestsController {
     const user: User = await this.usersService.findOne({
       where: { username: sendFriendRequestDto.to },
     });
-    return await this.friendRequestsService.sendFriendRequest(
-      request.user,
-      user,
-    );
+    return await this.friendRequestsService.send(request.user, user);
   }
 
   @ApiOperation({ summary: 'accept a sent friend request sent to you' })
   @HttpCode(HttpStatus.OK)
-  @Post(':id/accept')
+  @Post(FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME)
   @ApiNotFoundResponse({
     description: 'This friend request could not be found',
+  })
+  @ApiForbiddenResponse({
+    description: 'You can not accept another users friend request',
   })
   @ApiOkResponse({
     description: 'Friend request has been accepted',
@@ -110,7 +112,7 @@ export class FriendRequestsController {
     @Req() request: AuthenticatedRequest,
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<void> {
-    await this.friendRequestsService.acceptFriendRequest(id, request.user);
+    await this.friendRequestsService.accept(id, request.user);
   }
 
   @ApiOperation({ summary: 'decline a sent friend request sent to you' })
@@ -126,10 +128,7 @@ export class FriendRequestsController {
     @Req() request: AuthenticatedRequest,
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<FriendRequest> {
-    return await this.friendRequestsService.declineFriendRequest(
-      id,
-      request.user,
-    );
+    return await this.friendRequestsService.decline(id, request.user);
   }
 
   @ApiOperation({ summary: 'revoke a friend request sent by you' })
@@ -142,6 +141,6 @@ export class FriendRequestsController {
     description: 'Friend request has been revoked',
   })
   async revoke(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
-    await this.friendRequestsService.revokeFriendRequest(id, request.user);
+    await this.friendRequestsService.revoke(id, request.user);
   }
 }

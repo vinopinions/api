@@ -29,10 +29,8 @@ describe('UsersController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    authService = app.get<AuthService>(AuthService);
-    friendRequestsService = app.get<FriendRequestsService>(
-      FriendRequestsService,
-    );
+    authService = app.get(AuthService);
+    friendRequestsService = app.get(FriendRequestsService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
     user = loginData.user;

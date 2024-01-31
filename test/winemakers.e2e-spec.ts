@@ -24,7 +24,7 @@ describe('WinemakersController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    winemakersService = app.get<WinemakersService>(WinemakersService);
+    winemakersService = app.get(WinemakersService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
   });

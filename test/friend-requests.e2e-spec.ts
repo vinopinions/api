@@ -6,6 +6,7 @@ import { AppModule } from '../src/app.module';
 import {
   FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT,
   FRIEND_REQUESTS_ID_DECLINE_ENDPOINT,
+  FRIEND_REQUESTS_ID_REVOKE_ENDPOINT,
   FRIEND_REQUESTS_INCOMING_ENDPOINT,
   FRIEND_REQUESTS_OUTGOING_ENDPOINT,
   FRIEND_REQUESTS_SEND_ENDPOINT,
@@ -572,6 +573,125 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(':id', friendRequest.id),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.FORBIDDEN)
+        .expect(isErrorResponse);
+    });
+  });
+
+  describe(FRIEND_REQUESTS_ID_REVOKE_ENDPOINT + ' (POST)', () => {
+    it('should exist', () => {
+      return request(app.getHttpServer())
+        .post(
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
+            ':id',
+            faker.string.uuid(),
+          ),
+        )
+        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      return request(app.getHttpServer())
+        .post(
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
+            ':id',
+            faker.string.uuid(),
+          ),
+        )
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
+      return request(app.getHttpServer())
+        .post(
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
+            ':id',
+            faker.string.uuid(),
+          ),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} with random uuid authorization`, async () => {
+      return request(app.getHttpServer())
+        .post(
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
+            ':id',
+            faker.string.uuid(),
+          ),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
+      return request(app.getHttpServer())
+        .post(
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
+            ':id',
+            faker.string.alphanumeric(10),
+          ),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => isErrorResponse(res, 'uuid'));
+    });
+
+    it(`should return ${HttpStatus.OK} when revoking a friend request that you sent yourself with authorization`, async () => {
+      const receiver: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+      const friendRequest: FriendRequest = await friendRequestsService.send(
+        user,
+        receiver,
+      );
+
+      return request(app.getHttpServer())
+        .post(
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(':id', friendRequest.id),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.OK);
+    });
+
+    it(`should return ${HttpStatus.FORBIDDEN} when revoking a received friend request with authorization`, async () => {
+      const sender: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+      const friendRequest = await friendRequestsService.send(sender, user);
+      return request(app.getHttpServer())
+        .post(
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(':id', friendRequest.id),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.FORBIDDEN)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.FORBIDDEN} when trying to revoking another users friend request with authorization`, async () => {
+      const sender: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+      const receiver: User = await authService.signUp(
+        faker.internet.userName(),
+        faker.internet.password(),
+      );
+      const friendRequest: FriendRequest = await friendRequestsService.send(
+        sender,
+        receiver,
+      );
+
+      return request(app.getHttpServer())
+        .post(
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(':id', friendRequest.id),
         )
         .set(authHeader)
         .expect(HttpStatus.FORBIDDEN)

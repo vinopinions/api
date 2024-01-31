@@ -144,17 +144,23 @@ export class FriendRequestsService {
    * @param acceptingUser the user who sent the friend request
    * @param toAcceptUser the user who's friend request should be revoked
    */
-  async revoke(id: string, revokingUser: User) {
+  async revoke(id: string, revokingUser: User): Promise<FriendRequest> {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
-        sender: {
-          id: revokingUser.id,
-        },
+      },
+      relations: {
+        sender: true,
+        receiver: true,
       },
     });
 
-    await this.friendRequestRepository.remove(friendRequest);
+    if (friendRequest.sender.id !== revokingUser.id)
+      throw new ForbiddenException(
+        'You can not revoke another users friend request',
+      );
+
+    return this.friendRequestRepository.remove(friendRequest);
   }
 
   async getReceived(user: User): Promise<FriendRequest[]> {

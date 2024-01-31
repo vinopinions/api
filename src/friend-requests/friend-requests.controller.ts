@@ -41,6 +41,8 @@ const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME = ':id/accept';
 export const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME}`;
 const FRIEND_REQUESTS_ID_DECLINE_ENDPOINT_NAME = ':id/decline';
 export const FRIEND_REQUESTS_ID_DECLINE_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_DECLINE_ENDPOINT_NAME}`;
+const FRIEND_REQUESTS_ID_REVOKE_ENDPOINT_NAME = ':id/revoke';
+export const FRIEND_REQUESTS_ID_REVOKE_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_REVOKE_ENDPOINT_NAME}`;
 
 @Controller(FRIEND_REQUESTS_ENDPOINT_NAME)
 @ApiTags(FRIEND_REQUESTS_ENDPOINT.replace('-', ' '))
@@ -145,14 +147,23 @@ export class FriendRequestsController {
 
   @ApiOperation({ summary: 'revoke a friend request sent by you' })
   @HttpCode(HttpStatus.OK)
-  @Delete(':id/revoke')
+  @Post(FRIEND_REQUESTS_ID_REVOKE_ENDPOINT_NAME)
   @ApiNotFoundResponse({
     description: 'This friend request could not be found',
+  })
+  @ApiForbiddenResponse({
+    description: 'You can not revoke another users friend request',
   })
   @ApiOkResponse({
     description: 'Friend request has been revoked',
   })
-  async revoke(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+  @ApiBadRequestResponse({
+    description: 'Invalid uuid',
+  })
+  async revoke(
+    @Req() request: AuthenticatedRequest,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
     await this.friendRequestsService.revoke(id, request.user);
   }
 }

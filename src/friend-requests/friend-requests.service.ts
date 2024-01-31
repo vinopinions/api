@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -39,10 +40,7 @@ export class FriendRequestsService {
    *    3. A user can not send a friend request to a user he is already friends with
    *    4. A user can not send a friend request to a user that has sent him a friend request already
    */
-  async sendFriendRequest(
-    sender: User,
-    receiver: User,
-  ): Promise<FriendRequest> {
+  async send(sender: User, receiver: User): Promise<FriendRequest> {
     // 1. Rule
     if (sender.id == receiver.id)
       throw new ConflictException('You can not send yourself a friend request');
@@ -100,19 +98,21 @@ export class FriendRequestsService {
     return await this.friendRequestRepository.save(friendRequest);
   }
 
-  async acceptFriendRequest(id: string, acceptingUser: User) {
+  async accept(id: string, acceptingUser: User) {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
-        receiver: {
-          id: acceptingUser.id,
-        },
       },
       relations: {
         sender: true,
         receiver: true,
       },
     });
+
+    if (friendRequest.receiver.id !== acceptingUser.id)
+      throw new ForbiddenException(
+        'You can not accept another users friend request',
+      );
 
     // remove friend request
     await this.friendRequestRepository.remove(friendRequest);
@@ -121,7 +121,7 @@ export class FriendRequestsService {
     await this.usersService.addFriend(acceptingUser, friendRequest.sender);
   }
 
-  async declineFriendRequest(id: string, decliningUser: User) {
+  async decline(id: string, decliningUser: User) {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
@@ -142,7 +142,7 @@ export class FriendRequestsService {
    * @param acceptingUser the user who sent the friend request
    * @param toAcceptUser the user who's friend request should be revoked
    */
-  async revokeFriendRequest(id: string, revokingUser: User) {
+  async revoke(id: string, revokingUser: User) {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
@@ -155,7 +155,7 @@ export class FriendRequestsService {
     await this.friendRequestRepository.remove(friendRequest);
   }
 
-  async getReceivedFriendRequests(user: User): Promise<FriendRequest[]> {
+  async getReceived(user: User): Promise<FriendRequest[]> {
     return this.friendRequestRepository.find({
       where: {
         receiver: {
@@ -169,7 +169,7 @@ export class FriendRequestsService {
     });
   }
 
-  async getSentFriendRequests(user: User): Promise<FriendRequest[]> {
+  async getSent(user: User): Promise<FriendRequest[]> {
     return this.friendRequestRepository.find({
       where: {
         sender: {

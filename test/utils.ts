@@ -6,7 +6,7 @@ import { AuthService } from '../src/auth/auth.service';
 import { User } from '../src/users/entities/user.entity';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
-  const entityManager = app.get<EntityManager>(EntityManager);
+  const entityManager = app.get(EntityManager);
   const tableNames = entityManager.connection.entityMetadatas
     .map((entity) => `"${entity.tableName}"`)
     .join(', ');
@@ -21,7 +21,7 @@ export const login = async (
   };
   user: User;
 }> => {
-  const authService = app.get<AuthService>(AuthService);
+  const authService = app.get(AuthService);
 
   const userData = {
     username: faker.internet.userName(),

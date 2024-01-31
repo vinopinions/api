@@ -23,7 +23,7 @@ describe('AuthController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    authService = app.get<AuthService>(AuthService);
+    authService = app.get(AuthService);
   });
 
   afterEach(async () => {

@@ -24,7 +24,7 @@ describe('WinemakersController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    winemakersService = app.get<WinemakersService>(WinemakersService);
+    winemakersService = app.get(WinemakersService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
   });
@@ -138,7 +138,9 @@ describe('WinemakersController (e2e)', () => {
 
     it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
       return request(app.getHttpServer())
-        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.alphanumeric()))
+        .get(
+          WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.alphanumeric(10)),
+        )
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
         .expect((res) => isErrorResponse(res, 'uuid'));

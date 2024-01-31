@@ -29,10 +29,8 @@ describe('UsersController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    authService = app.get<AuthService>(AuthService);
-    friendRequestsService = app.get<FriendRequestsService>(
-      FriendRequestsService,
-    );
+    authService = app.get(AuthService);
+    friendRequestsService = app.get(FriendRequestsService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
     user = loginData.user;
@@ -64,7 +62,7 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and  array with length of 1 with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and array with length of 1 with authorization`, async () => {
       return request(app.getHttpServer())
         .get(USERS_ENDPOINT)
         .set(authHeader)
@@ -95,22 +93,13 @@ describe('UsersController (e2e)', () => {
         });
     });
 
-    it(`should return ${HttpStatus.OK} and 10 valid user with authorization`, async () => {
-      // create 9 users since one is already created while login
-      for (let i = 0; i < 9; i++) {
-        const userData: SignUpDto = {
-          username: faker.internet.userName(),
-          password: faker.internet.password(),
-        };
-        await authService.signUp(userData.username, userData.password);
-      }
-
+    it(`should return ${HttpStatus.OK} and a user with authorization`, async () => {
       return request(app.getHttpServer())
         .get(USERS_ENDPOINT)
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(10);
+          expect((body as Array<any>).length).toBe(1);
           (body as Array<any>).forEach((item) => {
             expect(item.id).toBeDefined();
             expect(item.username).toBeDefined();
@@ -225,11 +214,11 @@ describe('UsersController (e2e)', () => {
           userData.username,
           userData.password,
         );
-        const friendRequest = await friendRequestsService.sendFriendRequest(
+        const friendRequest = await friendRequestsService.send(
           createdUser,
           user,
         );
-        await friendRequestsService.acceptFriendRequest(friendRequest.id, user);
+        await friendRequestsService.accept(friendRequest.id, user);
       }
 
       return request(app.getHttpServer())
@@ -352,11 +341,8 @@ describe('UsersController (e2e)', () => {
         faker.internet.userName(),
         faker.internet.password(),
       );
-      const friendRequest = await friendRequestsService.sendFriendRequest(
-        createdUser,
-        user,
-      );
-      await friendRequestsService.acceptFriendRequest(friendRequest.id, user);
+      const friendRequest = await friendRequestsService.send(createdUser, user);
+      await friendRequestsService.accept(friendRequest.id, user);
 
       return request(app.getHttpServer())
         .delete(

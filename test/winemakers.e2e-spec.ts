@@ -9,6 +9,7 @@ import {
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
 import { clearDatabase, isErrorResponse, login } from './utils';
+import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
@@ -140,6 +141,35 @@ describe('WinemakersController (e2e)', () => {
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
         .expect((res) => isErrorResponse(res, 'uuid'));
+    });
+
+    it(`should return ${HttpStatus.OK} and a valid winemaker if id parameter is valid with authorization`, async () => {
+      const winemaker: Winemaker = await winemakersService.create(
+        faker.person.fullName(),
+      );
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', winemaker.id))
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect(({ body }) => {
+          expect(body.id).toEqual(winemaker.id);
+          expect(body.name).toEqual(winemaker.name);
+          expect(body.createdAt).toEqual(winemaker.createdAt.toISOString());
+          expect(body.updatedAt).toEqual(winemaker.updatedAt.toISOString());
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} and no wines with authorization`, async () => {
+      const winemaker: Winemaker = await winemakersService.create(
+        faker.person.fullName(),
+      );
+      return request(app.getHttpServer())
+        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', winemaker.id))
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect(({ body }) => {
+          expect(body.wines).toBeUndefined();
+        });
     });
   });
 });

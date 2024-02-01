@@ -22,28 +22,18 @@ import { CreateStoreDto } from './dtos/create-store.dto';
 import { Store } from './entities/store.entity';
 import { StoresService } from './stores.service';
 
-@Controller('stores')
-@ApiTags('stores')
+const STORES_ENDPOINT_NAME = 'stores';
+export const STORES_ENDPOINT = `/${STORES_ENDPOINT_NAME}`;
+const STORES_ID_ENDPOINT_NAME = ':id';
+export const STORES_ID_ENDPOINT = `/${STORES_ENDPOINT_NAME}/${STORES_ID_ENDPOINT_NAME}`;
+@Controller(STORES_ENDPOINT_NAME)
+@ApiTags(STORES_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
 @ApiBearerAuth()
 export class StoresController {
   constructor(private storesService: StoresService) {}
-
-  @ApiOperation({ summary: 'get store by id' })
-  @HttpCode(HttpStatus.OK)
-  @Get(':id')
-  @ApiOkResponse({
-    description: 'Store has been found',
-    type: Store,
-  })
-  @ApiNotFoundResponse({
-    description: 'Store has not been found',
-  })
-  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Store> {
-    return this.storesService.findOne({ where: { id } });
-  }
 
   @ApiOperation({ summary: 'get all stores' })
   @HttpCode(HttpStatus.OK)
@@ -55,6 +45,20 @@ export class StoresController {
   })
   findAll(): Promise<Store[]> {
     return this.storesService.findMany();
+  }
+
+  @ApiOperation({ summary: 'get store by id' })
+  @HttpCode(HttpStatus.OK)
+  @Get(STORES_ID_ENDPOINT_NAME)
+  @ApiOkResponse({
+    description: 'Store has been found',
+    type: Store,
+  })
+  @ApiNotFoundResponse({
+    description: 'Store has not been found',
+  })
+  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Store> {
+    return this.storesService.findOne({ where: { id } });
   }
 
   @ApiOperation({ summary: 'create a store' })

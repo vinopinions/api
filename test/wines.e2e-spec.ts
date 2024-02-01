@@ -9,6 +9,7 @@ import { StoresService } from '../src/stores/stores.service';
 import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
+import { Wine } from '../src/wines/entities/wine.entity';
 import {
   WINES_ENDPOINT,
   WINES_ID_ENDPOINT,
@@ -67,18 +68,7 @@ describe('WinesController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} and wine with store relation with authorization`, async () => {
-      const store: Store = await storesService.create(faker.company.name());
-      const winemaker: Winemaker = await winemakersService.create(
-        faker.person.fullName(),
-      );
-      await winesService.create(
-        faker.word.noun(),
-        faker.date.past().getFullYear(),
-        winemaker.id,
-        [store.id],
-        faker.word.noun(),
-        faker.location.country(),
-      );
+      await createTestWine();
 
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
@@ -104,24 +94,24 @@ describe('WinesController (e2e)', () => {
 
   describe(WINES_ID_RATINGS_ENDPOINT + ' (GET)', () => {
     it('should exist', async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ENDPOINT + '/' + setupData.createdWine.id + '/ratings')
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ENDPOINT + '/' + setupData.createdWine.id + '/ratings')
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
         .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ENDPOINT + '/' + setupData.createdWine.id + '/ratings')
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
         .expect((response) => response.status === HttpStatus.OK);
     });
@@ -190,25 +180,25 @@ describe('WinesController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .post(`${WINES_ENDPOINT}/${setupData.createdWine.id}/ratings`)
+        .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
         .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .post(`${WINES_ENDPOINT}/${setupData.createdWine.id}/ratings`)
+        .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
         .set(authHeader)
         .expect((response) => response.status === HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.CREATED} with valid request body`, async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
 
       const createRatingDto: CreateRatingDto = {
         stars: 5,
@@ -216,7 +206,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(`${WINES_ENDPOINT}/${setupData.createdWine.id}/ratings`)
+        .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
         .set(authHeader)
         .send(createRatingDto)
         .expect((response) => response.status === HttpStatus.CREATED);
@@ -225,45 +215,48 @@ describe('WinesController (e2e)', () => {
 
   describe(WINES_ID_ENDPOINT + ' (PUT)', () => {
     it('should exist', async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
+
       return request(app.getHttpServer())
-        .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
+        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
+
       return request(app.getHttpServer())
-        .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
+        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
         .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
+
       return request(app.getHttpServer())
-        .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
+        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
         .expect((response) => response.status === HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.OK} when changed with authorization`, async () => {
-      const setupData = await setupWineRatingTest(app);
+      const wine: Wine = await createTestWine();
       const storeName = faker.company.name();
 
       const store = await storesService.create(storeName);
 
       const addStoreToWineDto: CreateWineDto = {
-        name: setupData.createdWine.name,
-        grapeVariety: setupData.createdWine.grapeVariety,
-        heritage: setupData.createdWine.heritage,
-        year: setupData.createdWine.year,
-        winemakerId: setupData.createdWine.winemaker.id,
-        storeIds: [setupData.storeId, store.id],
+        name: wine.name,
+        grapeVariety: wine.grapeVariety,
+        heritage: wine.heritage,
+        year: wine.year,
+        winemakerId: wine.winemaker.id,
+        storeIds: [...wine.stores.map((store) => store.id), store.id],
       };
 
       return request(app.getHttpServer())
-        .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
+        .put(WINES_ENDPOINT + '/' + wine.id)
         .set(authHeader)
         .send(addStoreToWineDto)
         .expect((response) => {
@@ -272,4 +265,19 @@ describe('WinesController (e2e)', () => {
         });
     });
   });
+
+  const createTestWine = async (): Promise<Wine> => {
+    const store: Store = await storesService.create(faker.company.name());
+    const winemaker: Winemaker = await winemakersService.create(
+      faker.person.fullName(),
+    );
+    return winesService.create(
+      faker.word.noun(),
+      faker.date.past().getFullYear(),
+      winemaker.id,
+      [store.id],
+      faker.word.noun(),
+      faker.location.country(),
+    );
+  };
 });

@@ -62,7 +62,6 @@ export class StoresController {
   }
 
   @ApiOperation({ summary: 'create a store' })
-  @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiCreatedResponse({
     description: 'Store has been created',

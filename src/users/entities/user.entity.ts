@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { Matches } from 'class-validator';
+import { IsDate, IsUUID, Matches } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -24,6 +24,7 @@ export class User {
     type: String,
     format: 'uuid',
   })
+  @IsUUID()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -35,15 +36,17 @@ export class User {
     maxLength: 20,
     pattern: USERNAME_REGEX.toString(),
   })
+  
   @Column({ unique: true })
   @Matches(USERNAME_REGEX, {
     message:
       'username must can be 3-20 characters long and can only include letters, underscores and dots, but no spaces',
   })
+  @Column({ unique: true })
   username: string;
 
-  @Column()
   @Exclude()
+  @Column()
   passwordHash: string;
 
   @ManyToMany(() => User)
@@ -53,6 +56,7 @@ export class User {
     inverseJoinColumn: { name: 'friendId', referencedColumnName: 'id' },
   })
   friends: User[];
+
   @OneToMany(() => Rating, (rating: Rating) => rating.user)
   ratings: Rating[];
 
@@ -62,9 +66,17 @@ export class User {
     description: 'createdAt',
     type: Date,
   })
+  @IsDate()
   @CreateDateColumn()
   createdAt: Date;
 
+  @ApiProperty({
+    readOnly: true,
+    example: new Date(),
+    description: 'updatedAt',
+    type: Date,
+  })
+  @IsDate()
   @UpdateDateColumn()
   updatedAt: Date;
 }

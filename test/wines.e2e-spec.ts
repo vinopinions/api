@@ -57,7 +57,7 @@ describe('WinesController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -73,7 +73,7 @@ describe('WinesController (e2e)', () => {
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
         .set(authHeader)
-        .expect(HttpStatus.OK)
+        .expect((response) => response.status === HttpStatus.OK)
         .expect(({ body }) => {
           (body as Array<any>).forEach((item) => {
             expect(item.id).toBeDefined();
@@ -103,7 +103,7 @@ describe('WinesController (e2e)', () => {
       const setupData = await setupWineRatingTest(app);
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT + '/' + setupData.createdWine.id + '/ratings')
-        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -183,7 +183,7 @@ describe('WinesController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(`${WINES_ENDPOINT}/${setupData.createdWine.id}/ratings`)
-        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -224,7 +224,7 @@ describe('WinesController (e2e)', () => {
       const setupData = await setupWineRatingTest(app);
       return request(app.getHttpServer())
         .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
-        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -233,7 +233,7 @@ describe('WinesController (e2e)', () => {
       return request(app.getHttpServer())
         .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
         .set(authHeader)
-        .expect(HttpStatus.OK);
+        .expect((response) => response.status === HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.OK} when changed with authorization`, async () => {

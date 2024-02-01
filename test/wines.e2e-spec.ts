@@ -42,7 +42,7 @@ describe('WinesController (e2e)', () => {
     await app.close();
   });
 
-  describe('GET ' + WINES_ENDPOINT, () => {
+  describe(WINES_ENDPOINT + ' (GET)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
@@ -86,7 +86,7 @@ describe('WinesController (e2e)', () => {
     });
   });
 
-  describe('GET ' + WINES_ID_RATINGS_ENDPOINT, () => {
+  describe(WINES_ID_RATINGS_ENDPOINT + ' (GET)', () => {
     it('should exist', async () => {
       const setupData = await setupWineRatingTest(app);
       return request(app.getHttpServer())
@@ -111,7 +111,7 @@ describe('WinesController (e2e)', () => {
     });
   });
 
-  describe('POST ' + WINES_ENDPOINT, () => {
+  describe(WINES_ENDPOINT + ' (POST)', () => {
     it('should exist', async () => {
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
@@ -166,7 +166,7 @@ describe('WinesController (e2e)', () => {
     });
   });
 
-  describe(`POST ${WINES_ID_RATINGS_ENDPOINT}`, () => {
+  describe(WINES_ID_RATINGS_ENDPOINT + '(POST)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .post(WINES_ID_RATINGS_ENDPOINT)
@@ -207,7 +207,7 @@ describe('WinesController (e2e)', () => {
     });
   });
 
-  describe(`PUT ` + WINES_ID_ENDPOINT, () => {
+  describe(WINES_ID_ENDPOINT + ' (PUT)', () => {
     it('should exist', async () => {
       const setupData = await setupWineRatingTest(app);
       return request(app.getHttpServer())

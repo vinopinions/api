@@ -246,8 +246,6 @@ describe('WinesController (e2e)', () => {
         storeIds: [setupData.storeId, store.id],
       };
 
-      console.log(addStoreToWineDto);
-
       return request(app.getHttpServer())
         .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
         .set(authHeader)

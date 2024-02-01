@@ -20,13 +20,13 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { AuthenticatedRequest } from '../auth/auth.guard';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
 import { RatingsService } from '../ratings/ratings.service';
 import { Rating } from './../ratings/entities/rating.entity';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { Wine } from './entities/wine.entity';
 import { WinesService } from './wines.service';
-import { AuthenticatedRequest } from '../auth/auth.guard';
 
 const WINES_ENDPOINT_NAME = 'wines';
 export const WINES_ENDPOINT = `/${WINES_ENDPOINT_NAME}`;
@@ -83,8 +83,25 @@ export class WinesController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  create(@Body() createWineDto: CreateWineDto): Promise<Wine> {
-    return this.wineService.create(createWineDto);
+  create(
+    @Body()
+    {
+      name,
+      year,
+      heritage,
+      grapeVariety,
+      storeIds,
+      winemakerId,
+    }: CreateWineDto,
+  ): Promise<Wine> {
+    return this.wineService.create(
+      name,
+      year,
+      grapeVariety,
+      storeIds,
+      heritage,
+      winemakerId,
+    );
   }
 
   @ApiOperation({ summary: 'update a wine' })

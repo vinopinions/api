@@ -6,7 +6,6 @@ import { AuthService } from '../src/auth/auth.service';
 import { StoresService } from '../src/stores/stores.service';
 import { User } from '../src/users/entities/user.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
-import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
 import { WinesService } from '../src/wines/wines.service';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
@@ -59,15 +58,14 @@ export const setupWineRatingTest = async (app: INestApplication) => {
   const storeName = faker.company.name();
   const storeId = (await storesService.create(storeName)).id;
 
-  const createWineDto: CreateWineDto = {
-    name: faker.word.noun(),
-    grapeVariety: faker.word.noun(),
-    heritage: faker.location.country(),
-    year: faker.date.past().getFullYear(),
-    winemakerId: faker.string.uuid(),
-    storeIds: [faker.string.uuid()],
-  };
-  const createdWine = await winesService.create(createWineDto);
+  const createdWine = await winesService.create(
+    faker.word.noun(),
+    faker.date.past().getFullYear(),
+    faker.string.uuid(),
+    [faker.string.uuid()],
+    faker.word.noun(),
+    faker.location.country(),
+  );
   return { createdWine, storeId, winemakerId };
 };
 

@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { Rating } from '../ratings/entities/rating.entity';
+import { RatingsService } from '../ratings/ratings.service';
 import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { Wine } from './entities/wine.entity';
-import { RatingsService } from '../ratings/ratings.service';
-import { Rating } from '../ratings/entities/rating.entity';
 
 @Injectable()
 export class WinesService {
@@ -19,20 +19,20 @@ export class WinesService {
     private ratingsService: RatingsService,
   ) {}
 
-  async create(data: {
-    name: string;
-    year: number;
-    winemakerId: string;
-    storeIds: string[];
-    grapeVariety: string;
-    heritage: string;
-  }): Promise<Wine> {
+  async create(
+    name: string,
+    year: number,
+    winemakerId: string,
+    storeIds: string[],
+    grapeVariety: string,
+    heritage: string,
+  ): Promise<Wine> {
     const winemaker: Winemaker = await this.winemakersService.findOne({
-      where: { id: data.winemakerId },
+      where: { id: winemakerId },
     });
 
     const stores: Store[] = await Promise.all(
-      (data.storeIds ?? []).map(async (storeId: string) => {
+      (storeIds ?? []).map(async (storeId: string) => {
         const store: Store | null = await this.storesService.findOne({
           where: { id: storeId },
         });
@@ -40,7 +40,12 @@ export class WinesService {
       }),
     );
 
-    const wine: Wine = this.wineRepository.create(data);
+    const wine: Wine = this.wineRepository.create({
+      name,
+      year,
+      grapeVariety,
+      heritage,
+    });
     wine.winemaker = winemaker;
     wine.stores = stores;
     return this.wineRepository.save(wine);

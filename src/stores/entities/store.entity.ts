@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Matches } from 'class-validator';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { IsDate, IsOptional, IsString, IsUUID, IsUrl } from 'class-validator';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Wine } from '../../wines/entities/wine.entity';
 
 @Entity()
@@ -12,6 +19,7 @@ export class Store {
     type: String,
     format: 'uuid',
   })
+  @IsUUID()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -20,6 +28,7 @@ export class Store {
     description: 'name of store',
     type: String,
   })
+  @IsString()
   @Column()
   name: string;
 
@@ -28,6 +37,7 @@ export class Store {
     description: 'address of store',
     type: String,
   })
+  @IsOptional()
   @Column({ nullable: true })
   address?: string;
 
@@ -38,15 +48,31 @@ export class Store {
     pattern:
       '[(http(s)?)://(www.)?a-zA-Z0-9@:%._+~#=]{2,256}.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)',
   })
-  @Matches(
-    /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
-    {
-      message: 'invalid url',
-    },
-  )
+  @IsOptional()
+  @IsUrl()
   @Column({ nullable: true })
   url?: string;
 
   @ManyToMany(() => Wine, (wine) => wine.stores)
   wines: Wine[];
+
+  @ApiProperty({
+    readOnly: true,
+    example: new Date(),
+    description: 'createdAt',
+    type: Date,
+  })
+  @IsDate()
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @ApiProperty({
+    readOnly: true,
+    example: new Date(),
+    description: 'updatedAt',
+    type: Date,
+  })
+  @IsDate()
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

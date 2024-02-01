@@ -2,6 +2,8 @@ import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
+import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { AppModule } from './../src/app.module';
 import {
@@ -9,8 +11,6 @@ import {
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
 import { clearDatabase, isErrorResponse, login } from './utils';
-import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
-import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
@@ -232,7 +232,7 @@ describe('WinemakersController (e2e)', () => {
         .expect(HttpStatus.CREATED)
         .expect(({ body }) => {
           expect(body.id).toBeDefined();
-          expect(body.name).toBeDefined();
+          expect(body.name).toEqual(validData.name);
           expect(body.createdAt).toBeDefined();
           expect(body.updatedAt).toBeDefined();
         });

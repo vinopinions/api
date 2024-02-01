@@ -9,8 +9,8 @@ export class StoresService {
     @InjectRepository(Store) private storeRepository: Repository<Store>,
   ) {}
 
-  async create(name: string): Promise<Store> {
-    const store: Store = this.storeRepository.create({ name });
+  async create(name: string, address?: string, url?: string): Promise<Store> {
+    const store: Store = this.storeRepository.create({ name, address, url });
     return this.storeRepository.save(store);
   }
 

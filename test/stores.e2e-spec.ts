@@ -68,11 +68,9 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
       for (let i = 0; i < 10; i++) {
         await storesService.create(
-          new CreateStoreDto(
-            faker.company.name(),
-            faker.location.streetAddress(),
-            faker.internet.url(),
-          ),
+          faker.company.name(),
+          faker.location.streetAddress(),
+          faker.internet.url(),
         );
       }
 
@@ -88,11 +86,9 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} and a store with authorization`, async () => {
       const store = await storesService.create(
-        new CreateStoreDto(
-          faker.company.name(),
-          faker.location.streetAddress(),
-          faker.internet.url(),
-        ),
+        faker.company.name(),
+        faker.location.streetAddress(),
+        faker.internet.url(),
       );
 
       return request(app.getHttpServer())
@@ -154,11 +150,9 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} and a valid store if id parameter is valid with authorization`, async () => {
       const store = await storesService.create(
-        new CreateStoreDto(
-          faker.company.name(),
-          faker.location.streetAddress(),
-          faker.internet.url(),
-        ),
+        faker.company.name(),
+        faker.location.streetAddress(),
+        faker.internet.url(),
       );
       return request(app.getHttpServer())
         .get(STORES_ID_ENDPOINT.replace(':id', store.id))
@@ -176,11 +170,9 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} and no wines with authorization`, async () => {
       const store = await storesService.create(
-        new CreateStoreDto(
-          faker.company.name(),
-          faker.location.streetAddress(),
-          faker.internet.url(),
-        ),
+        faker.company.name(),
+        faker.location.streetAddress(),
+        faker.internet.url(),
       );
       return request(app.getHttpServer())
         .get(STORES_ID_ENDPOINT.replace(':id', store.id))

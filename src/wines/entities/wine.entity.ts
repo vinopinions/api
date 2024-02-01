@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Matches } from 'class-validator';
+import { IsDate, IsString, IsUUID, Matches } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -11,9 +11,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Winemaker } from '../../winemakers/entities/winemaker.entity';
-import { Store } from '../../stores/entities/store.entity';
 import { Rating } from '../../ratings/entities/rating.entity';
+import { Store } from '../../stores/entities/store.entity';
+import { Winemaker } from '../../winemakers/entities/winemaker.entity';
 
 @Entity()
 export class Wine {
@@ -24,6 +24,7 @@ export class Wine {
     type: String,
     format: 'uuid',
   })
+  @IsUUID()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -32,6 +33,7 @@ export class Wine {
     description: 'name of the wine',
     type: String,
   })
+  @IsString()
   @Column()
   name: string;
 
@@ -51,6 +53,7 @@ export class Wine {
     description: 'the wines grape variety',
     type: String,
   })
+  @IsString()
   @Column()
   grapeVariety: string;
 
@@ -59,6 +62,7 @@ export class Wine {
     description: 'the wines heritage',
     type: String,
   })
+  @IsString()
   @Column()
   heritage: string;
 
@@ -113,6 +117,7 @@ export class Wine {
     description: 'createdAt',
     type: Date,
   })
+  @IsDate()
   @CreateDateColumn()
   createdAt: Date;
 
@@ -122,6 +127,7 @@ export class Wine {
     description: 'updatedAt',
     type: Date,
   })
+  @IsUUID()
   @UpdateDateColumn()
   updatedAt: Date;
 }

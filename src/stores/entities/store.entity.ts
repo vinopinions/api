@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Matches } from 'class-validator';
+import { IsDate, IsOptional, IsString, IsUUID, IsUrl } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -19,6 +19,7 @@ export class Store {
     type: String,
     format: 'uuid',
   })
+  @IsUUID()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -27,6 +28,7 @@ export class Store {
     description: 'name of store',
     type: String,
   })
+  @IsString()
   @Column()
   name: string;
 
@@ -35,6 +37,7 @@ export class Store {
     description: 'address of store',
     type: String,
   })
+  @IsOptional()
   @Column({ nullable: true })
   address?: string;
 
@@ -45,12 +48,8 @@ export class Store {
     pattern:
       '[(http(s)?)://(www.)?a-zA-Z0-9@:%._+~#=]{2,256}.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)',
   })
-  @Matches(
-    /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
-    {
-      message: 'invalid url',
-    },
-  )
+  @IsOptional()
+  @IsUrl()
   @Column({ nullable: true })
   url?: string;
 
@@ -63,6 +62,7 @@ export class Store {
     description: 'createdAt',
     type: Date,
   })
+  @IsDate()
   @CreateDateColumn()
   createdAt: Date;
 
@@ -72,6 +72,7 @@ export class Store {
     description: 'updatedAt',
     type: Date,
   })
+  @IsDate()
   @UpdateDateColumn()
   updatedAt: Date;
 }

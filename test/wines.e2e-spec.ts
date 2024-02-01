@@ -62,7 +62,7 @@ describe('WinesController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
-        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
+        .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -70,7 +70,7 @@ describe('WinesController (e2e)', () => {
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
         .set(authHeader)
-        .expect((response) => response.status === HttpStatus.OK);
+        .expect(HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.OK} and wine with store relation with authorization`, async () => {
@@ -79,7 +79,7 @@ describe('WinesController (e2e)', () => {
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
         .set(authHeader)
-        .expect((response) => response.status === HttpStatus.OK)
+        .expect(HttpStatus.OK)
         .expect(({ body }) => {
           expect((body as Array<any>).length).toBe(1);
           (body as Array<any>).forEach((item) => {
@@ -110,7 +110,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
       return request(app.getHttpServer())
         .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
-        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
+        .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -119,7 +119,7 @@ describe('WinesController (e2e)', () => {
       return request(app.getHttpServer())
         .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
-        .expect((response) => response.status === HttpStatus.OK);
+        .expect(HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.OK} and array with length of 0 with authorization`, async () => {
@@ -193,7 +193,7 @@ describe('WinesController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, () => {
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
-        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
+        .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -210,29 +210,46 @@ describe('WinesController (e2e)', () => {
         .post(WINES_ENDPOINT)
         .set(authHeader)
         .send(createWineDto)
-        .expect((response) => response.status === HttpStatus.CREATED);
+        .expect(HttpStatus.CREATED);
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with no data`, async () => {
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
         .set(authHeader)
-        .expect((response) => response.status === HttpStatus.BAD_REQUEST)
+        .expect(HttpStatus.BAD_REQUEST)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} when required field is missing`, async () => {
       // name is missing
       const wineObject = {
-        year: 2020,
-        grapeVariety: 'Grapes',
-        haritage: 'Germany',
+        year: faker.date.past().getFullYear(),
+        grapeVariety: faker.word.noun(),
+        heritage: faker.location.country(),
       };
 
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
         .send(wineObject)
-        .expect((response) => response.status === HttpStatus.BAD_REQUEST)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when store ids are random is missing`, async () => {
+      const createWineDto: CreateWineDto = {
+        name: faker.word.noun(),
+        year: faker.date.past().getFullYear(),
+        grapeVariety: faker.word.noun(),
+        storeIds: [faker.string.uuid()],
+        heritage: faker.location.country(),
+        winemakerId: faker.string.uuid(),
+      };
+
+      return request(app.getHttpServer())
+        .post(WINES_ENDPOINT)
+        .send(createWineDto)
+        .expect(HttpStatus.NOT_FOUND)
         .expect(isErrorResponse);
     });
   });
@@ -249,7 +266,7 @@ describe('WinesController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
-        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
+        .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -259,7 +276,7 @@ describe('WinesController (e2e)', () => {
       return request(app.getHttpServer())
         .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
         .set(authHeader)
-        .expect((response) => response.status === HttpStatus.OK);
+        .expect(HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.CREATED} with valid request body`, async () => {
@@ -274,7 +291,7 @@ describe('WinesController (e2e)', () => {
         .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
         .set(authHeader)
         .send(createRatingDto)
-        .expect((response) => response.status === HttpStatus.CREATED);
+        .expect(HttpStatus.CREATED);
     });
   });
 
@@ -292,7 +309,7 @@ describe('WinesController (e2e)', () => {
 
       return request(app.getHttpServer())
         .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
-        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
+        .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
@@ -302,7 +319,7 @@ describe('WinesController (e2e)', () => {
       return request(app.getHttpServer())
         .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
-        .expect((response) => response.status === HttpStatus.OK);
+        .expect(HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.OK} when changed with authorization`, async () => {

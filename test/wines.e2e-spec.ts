@@ -256,7 +256,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .put(WINES_ENDPOINT + '/' + wine.id)
+        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
         .send(addStoreToWineDto)
         .expect((response) => {

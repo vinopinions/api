@@ -4,8 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
+import { RatingsService } from '../src/ratings/ratings.service';
 import { Store } from '../src/stores/entities/store.entity';
 import { StoresService } from '../src/stores/stores.service';
+import { User } from '../src/users/entities/user.entity';
 import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
@@ -21,9 +23,11 @@ import { clearDatabase, isErrorResponse, login } from './utils';
 describe('WinesController (e2e)', () => {
   let app: INestApplication;
   let authHeader: object;
+  let user: User;
   let storesService: StoresService;
   let winemakersService: WinemakersService;
   let winesService: WinesService;
+  let ratingsService: RatingsService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -36,9 +40,11 @@ describe('WinesController (e2e)', () => {
     storesService = app.get(StoresService);
     winemakersService = app.get(WinemakersService);
     winesService = app.get(WinesService);
+    ratingsService = app.get(RatingsService);
 
     const loginData = await login(app);
     authHeader = loginData.authHeader;
+    user = loginData.user;
   });
 
   afterEach(async () => {
@@ -115,6 +121,66 @@ describe('WinesController (e2e)', () => {
         .set(authHeader)
         .expect((response) => response.status === HttpStatus.OK);
     });
+
+    it(`should return ${HttpStatus.OK} and array with length of 0 with authorization`, async () => {
+      const wine: Wine = await createTestWine();
+      return request(app.getHttpServer())
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(Array.isArray(res.body)).toBe(true);
+          expect((res.body as Array<any>).length).toBe(0);
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
+      const wine: Wine = await createTestWine();
+
+      for (let i = 0; i < 10; i++) {
+        await ratingsService.create(
+          faker.number.int({ min: 1, max: 5 }),
+          faker.lorem.text(),
+          user,
+          wine,
+        );
+      }
+
+      return request(app.getHttpServer())
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(Array.isArray(res.body)).toBe(true);
+          expect((res.body as Array<any>).length).toBe(10);
+        });
+    });
+
+    it(`should return ${HttpStatus.OK} and a rating with authorization`, async () => {
+      const wine: Wine = await createTestWine();
+
+      const rating = await ratingsService.create(
+        faker.number.int({ min: 1, max: 5 }),
+        faker.lorem.text(),
+        user,
+        wine,
+      );
+
+      return request(app.getHttpServer())
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect(({ body }) => {
+          expect((body as Array<any>).length).toBe(1);
+          (body as Array<any>).forEach((item) => {
+            expect(item.id).toEqual(rating.id);
+            expect(item.stars).toEqual(rating.stars);
+            expect(item.text).toEqual(rating.text);
+            expect(item.updatedAt).toEqual(rating.updatedAt.toISOString());
+            expect(item.createdAt).toEqual(rating.createdAt.toISOString());
+          });
+        });
+    });
   });
 
   describe(WINES_ENDPOINT + ' (POST)', () => {
@@ -134,13 +200,12 @@ describe('WinesController (e2e)', () => {
     it(`should return ${HttpStatus.CREATED} with authorization`, () => {
       const createWineDto: CreateWineDto = {
         name: faker.word.noun(),
-        grapeVariety: faker.word.noun(),
-        heritage: faker.location.country(),
         year: faker.date.past().getFullYear(),
-        winemakerId: faker.string.uuid(),
+        grapeVariety: faker.word.noun(),
         storeIds: [faker.string.uuid()],
+        heritage: faker.location.country(),
+        winemakerId: faker.string.uuid(),
       };
-
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
         .set(authHeader)
@@ -245,7 +310,6 @@ describe('WinesController (e2e)', () => {
       const storeName = faker.company.name();
 
       const store = await storesService.create(storeName);
-
       const addStoreToWineDto: CreateWineDto = {
         name: wine.name,
         grapeVariety: wine.grapeVariety,
@@ -271,6 +335,7 @@ describe('WinesController (e2e)', () => {
     const winemaker: Winemaker = await winemakersService.create(
       faker.person.fullName(),
     );
+
     return winesService.create(
       faker.word.noun(),
       faker.date.past().getFullYear(),

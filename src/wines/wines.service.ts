@@ -33,10 +33,9 @@ export class WinesService {
 
     const stores: Store[] = await Promise.all(
       (storeIds ?? []).map(async (storeId: string) => {
-        const store: Store | null = await this.storesService.findOne({
+        return await this.storesService.findOne({
           where: { id: storeId },
         });
-        return store;
       }),
     );
 

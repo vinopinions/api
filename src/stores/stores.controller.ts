@@ -70,7 +70,7 @@ export class StoresController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  create(@Body() { name }: CreateStoreDto): Promise<Store> {
-    return this.storesService.create(name);
+  create(@Body() { name, address, url }: CreateStoreDto): Promise<Store> {
+    return this.storesService.create(name, address, url);
   }
 }

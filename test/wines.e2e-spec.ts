@@ -15,7 +15,6 @@ import {
 import {
   clearDatabase,
   isErrorResponse,
-  logResponse,
   login,
   setupWineRatingTest,
 } from './utils';
@@ -254,7 +253,6 @@ describe('WinesController (e2e)', () => {
         .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
         .set(authHeader)
         .send(addStoreToWineDto)
-        .expect(logResponse)
         .expect((response) => {
           expect(response.status === HttpStatus.OK);
           expect((response.body.stores as Array<any>).length).toBe(2);

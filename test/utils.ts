@@ -3,10 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { Response } from 'supertest';
 import { EntityManager } from 'typeorm';
 import { AuthService } from '../src/auth/auth.service';
-import { StoresService } from '../src/stores/stores.service';
 import { User } from '../src/users/entities/user.entity';
-import { WinemakersService } from '../src/winemakers/winemakers.service';
-import { WinesService } from '../src/wines/wines.service';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get(EntityManager);
@@ -46,27 +43,6 @@ export const login = async (
     },
     user,
   };
-};
-
-export const setupWineRatingTest = async (app: INestApplication) => {
-  const winemakersService = app.get(WinemakersService);
-  const storesService = app.get(StoresService);
-  const winesService = app.get(WinesService);
-
-  const winemakerId = (await winemakersService.create('Winemaker')).id;
-
-  const storeName = faker.company.name();
-  const storeId = (await storesService.create(storeName)).id;
-
-  const createdWine = await winesService.create(
-    faker.word.noun(),
-    faker.date.past().getFullYear(),
-    faker.string.uuid(),
-    [faker.string.uuid()],
-    faker.word.noun(),
-    faker.location.country(),
-  );
-  return { createdWine, storeId, winemakerId };
 };
 
 export const isErrorResponse = (res: Response, messageContains?: string) => {

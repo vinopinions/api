@@ -4,24 +4,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
+import { Store } from '../src/stores/entities/store.entity';
 import { StoresService } from '../src/stores/stores.service';
+import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
 import {
   WINES_ENDPOINT,
   WINES_ID_ENDPOINT,
   WINES_ID_RATINGS_ENDPOINT,
 } from '../src/wines/wines.controller';
-import {
-  clearDatabase,
-  isErrorResponse,
-  login,
-  setupWineRatingTest,
-} from './utils';
+import { WinesService } from '../src/wines/wines.service';
+import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('WinesController (e2e)', () => {
   let app: INestApplication;
   let authHeader: object;
   let storesService: StoresService;
+  let winemakersService: WinemakersService;
+  let winesService: WinesService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -32,6 +33,8 @@ describe('WinesController (e2e)', () => {
     await app.init();
 
     storesService = app.get(StoresService);
+    winemakersService = app.get(WinemakersService);
+    winesService = app.get(WinesService);
 
     const loginData = await login(app);
     authHeader = loginData.authHeader;
@@ -64,12 +67,25 @@ describe('WinesController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} and wine with store relation with authorization`, async () => {
-      await setupWineRatingTest(app);
+      const store: Store = await storesService.create(faker.company.name());
+      const winemaker: Winemaker = await winemakersService.create(
+        faker.person.fullName(),
+      );
+      await winesService.create(
+        faker.word.noun(),
+        faker.date.past().getFullYear(),
+        winemaker.id,
+        [store.id],
+        faker.word.noun(),
+        faker.location.country(),
+      );
+
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
         .set(authHeader)
         .expect((response) => response.status === HttpStatus.OK)
         .expect(({ body }) => {
+          expect((body as Array<any>).length).toBe(1);
           (body as Array<any>).forEach((item) => {
             expect(item.id).toBeDefined();
             expect(item.name).toBeDefined();

@@ -8,6 +8,8 @@ import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { StoresService } from '../src/stores/stores.service';
 import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
 import { WinesService } from '../src/wines/wines.service';
+import { User } from '../src/users/entities/user.entity';
+import { RatingsService } from '../src/ratings/ratings.service';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get(EntityManager);
@@ -23,10 +25,7 @@ export const login = async (
   authHeader: {
     Authorization: string;
   };
-  userData: {
-    username: string;
-    password: string;
-  };
+  user: User;
 }> => {
   const authService = app.get(AuthService);
 
@@ -35,7 +34,10 @@ export const login = async (
     password: faker.internet.password(),
   };
 
-  await authService.signUp(userData.username, userData.password);
+  const user: User = await authService.signUp(
+    userData.username,
+    userData.password,
+  );
 
   const { access_token } = await authService.signIn(
     userData.username,
@@ -45,7 +47,7 @@ export const login = async (
     authHeader: {
       Authorization: `Bearer ${access_token}`,
     },
-    userData,
+    user,
   };
 };
 
@@ -57,9 +59,9 @@ export const isErrorResponse = (res: Response, messageContains?: string) => {
 };
 
 export const setupWineRatingTest = async (app: INestApplication) => {
-  const winemakersService = app.get<WinemakersService>(WinemakersService);
-  const storesService = app.get<StoresService>(StoresService);
-  const winesService = app.get<WinesService>(WinesService);
+  const winemakersService = app.get(WinemakersService);
+  const storesService = app.get(StoresService);
+  const winesService = app.get(WinesService);
 
   const winemakerId = (await winemakersService.create('Winemaker')).id;
 
@@ -76,6 +78,6 @@ export const setupWineRatingTest = async (app: INestApplication) => {
     storeIds: [storeId],
     winemakerId: winemakerId,
   };
-  const wineId = (await winesService.create(wine)).id;
-  return { wineId, storeId, winemakerId };
+  const createdWine = await winesService.create(wine);
+  return { createdWine, storeId, winemakerId };
 };

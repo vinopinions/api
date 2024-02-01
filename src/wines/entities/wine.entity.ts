@@ -40,9 +40,6 @@ export class Wine {
     description: 'year of the wine',
     type: Number,
   })
-  @Matches(/^(?:[1-9]\d{3})$/, {
-    message: 'Year must be a valid year',
-  })
   @Column()
   year: number;
 

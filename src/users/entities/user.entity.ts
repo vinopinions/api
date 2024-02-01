@@ -65,6 +65,12 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
+  @ApiProperty({
+    readOnly: true,
+    example: new Date(),
+    description: 'updatedAt',
+    type: Date,
+  })
   @UpdateDateColumn()
   updatedAt: Date;
 }

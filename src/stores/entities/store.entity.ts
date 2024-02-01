@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Matches } from 'class-validator';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Wine } from '../../wines/entities/wine.entity';
 
 @Entity()
@@ -49,4 +56,22 @@ export class Store {
 
   @ManyToMany(() => Wine, (wine) => wine.stores)
   wines: Wine[];
+
+  @ApiProperty({
+    readOnly: true,
+    example: new Date(),
+    description: 'createdAt',
+    type: Date,
+  })
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @ApiProperty({
+    readOnly: true,
+    example: new Date(),
+    description: 'updatedAt',
+    type: Date,
+  })
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

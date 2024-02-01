@@ -35,6 +35,20 @@ export const STORES_ID_ENDPOINT = `/${STORES_ENDPOINT_NAME}/${STORES_ID_ENDPOINT
 export class StoresController {
   constructor(private storesService: StoresService) {}
 
+  @ApiOperation({ summary: 'get store by id' })
+  @HttpCode(HttpStatus.OK)
+  @Get(':id')
+  @ApiOkResponse({
+    description: 'Store has been found',
+    type: Store,
+  })
+  @ApiNotFoundResponse({
+    description: 'Store has not been found',
+  })
+  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Store> {
+    return this.storesService.findOne({ where: { id } });
+  }
+
   @ApiOperation({ summary: 'get all stores' })
   @HttpCode(HttpStatus.OK)
   @Get()
@@ -71,10 +85,6 @@ export class StoresController {
     description: 'Invalid data',
   })
   create(@Body() createStoreDto: CreateStoreDto): Promise<Store> {
-    return this.storesService.create(
-      createStoreDto.name,
-      createStoreDto.address,
-      createStoreDto.url,
-    );
+    return this.storesService.create(createStoreDto);
   }
 }

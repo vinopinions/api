@@ -36,6 +36,8 @@ export class User {
     maxLength: 20,
     pattern: USERNAME_REGEX.toString(),
   })
+  
+  @Column({ unique: true })
   @Matches(USERNAME_REGEX, {
     message:
       'username must can be 3-20 characters long and can only include letters, underscores and dots, but no spaces',

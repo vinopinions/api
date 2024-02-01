@@ -274,13 +274,13 @@ describe('WinesController (e2e)', () => {
         .expect(isErrorResponse);
     });
 
-    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} with authorization`, async () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
         .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
         .set(authHeader)
-        .expect(HttpStatus.OK);
+        .expect(HttpStatus.BAD_REQUEST);
     });
 
     it(`should return ${HttpStatus.CREATED} with valid request body`, async () => {
@@ -317,13 +317,13 @@ describe('WinesController (e2e)', () => {
         .expect(isErrorResponse);
     });
 
-    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} with no data with authorization`, async () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
         .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
-        .expect(HttpStatus.OK);
+        .expect(HttpStatus.BAD_REQUEST);
     });
 
     it(`should return ${HttpStatus.OK} when changed with authorization`, async () => {

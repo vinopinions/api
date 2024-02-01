@@ -61,20 +61,6 @@ export class StoresController {
     return this.storesService.findMany();
   }
 
-  @ApiOperation({ summary: 'get store by id' })
-  @HttpCode(HttpStatus.OK)
-  @Get(STORES_ID_ENDPOINT_NAME)
-  @ApiOkResponse({
-    description: 'Store has been found',
-    type: Store,
-  })
-  @ApiNotFoundResponse({
-    description: 'Store has not been found',
-  })
-  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Store> {
-    return this.storesService.findOne({ where: { id } });
-  }
-
   @ApiOperation({ summary: 'create a store' })
   @Post()
   @ApiCreatedResponse({

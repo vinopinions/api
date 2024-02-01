@@ -2,7 +2,6 @@ import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { v4 as uuidv4 } from 'uuid';
 import { AppModule } from '../src/app.module';
 import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
 import { StoresService } from '../src/stores/stores.service';
@@ -132,8 +131,8 @@ describe('WinesController (e2e)', () => {
         grapeVariety: 'Grapes',
         heritage: 'Germany',
         year: 2021,
-        winemakerId: uuidv4(),
-        storeIds: [uuidv4()],
+        winemakerId: faker.string.uuid(),
+        storeIds: [faker.string.uuid()],
       };
 
       return request(app.getHttpServer())

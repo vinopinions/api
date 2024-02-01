@@ -197,14 +197,16 @@ describe('WinesController (e2e)', () => {
         .expect(isErrorResponse);
     });
 
-    it(`should return ${HttpStatus.CREATED} with authorization`, () => {
+    it(`should return ${HttpStatus.CREATED} with authorization`, async () => {
+      const store: Store = await storesService.create(faker.company.name());
+      const winemaker = await winemakersService.create(faker.person.fullName());
       const createWineDto: CreateWineDto = {
         name: faker.word.noun(),
         year: faker.date.past().getFullYear(),
         grapeVariety: faker.word.noun(),
-        storeIds: [faker.string.uuid()],
+        storeIds: [store.id],
         heritage: faker.location.country(),
-        winemakerId: faker.string.uuid(),
+        winemakerId: winemaker.id,
       };
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
@@ -231,6 +233,7 @@ describe('WinesController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
+        .set(authHeader)
         .send(wineObject)
         .expect(HttpStatus.BAD_REQUEST)
         .expect(isErrorResponse);
@@ -248,6 +251,7 @@ describe('WinesController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
+        .set(authHeader)
         .send(createWineDto)
         .expect(HttpStatus.NOT_FOUND)
         .expect(isErrorResponse);

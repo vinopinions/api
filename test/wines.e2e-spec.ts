@@ -1,7 +1,12 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
-import { clearDatabase, login, setupWineRatingTest } from './utils';
+import {
+  clearDatabase,
+  isErrorResponse,
+  login,
+  setupWineRatingTest,
+} from './utils';
 import {
   WINES_ENDPOINT,
   WINES_ID_ENDPOINT,
@@ -10,10 +15,6 @@ import {
 import request from 'supertest';
 import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
 import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
-import { WinesService } from '../src/wines/wines.service';
-import { User } from '../src/users/entities/user.entity';
-import { response } from 'express';
-import { AddStoreToWineDto } from '../src/wines/dtos/add-store-to-wine.dto';
 import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
 import { StoresService } from '../src/stores/stores.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,8 +22,6 @@ import { v4 as uuidv4 } from 'uuid';
 describe('WinesController (e2e)', () => {
   let app: INestApplication;
   let authHeader: object;
-  let user: User;
-  let winesService: WinesService;
   let storesService: StoresService;
 
   beforeEach(async () => {
@@ -33,12 +32,10 @@ describe('WinesController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    winesService = app.get(WinesService);
     storesService = app.get(StoresService);
 
     const loginData = await login(app);
     authHeader = loginData.authHeader;
-    user = loginData.user;
   });
 
   afterAll(async () => {
@@ -60,7 +57,8 @@ describe('WinesController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK}`, async () => {
@@ -105,7 +103,8 @@ describe('WinesController (e2e)', () => {
       const setupData = await setupWineRatingTest(app);
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT + '/' + setupData.createdWine.id + '/ratings')
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
@@ -127,7 +126,8 @@ describe('WinesController (e2e)', () => {
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, () => {
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
-        .expect((response) => response.status === HttpStatus.UNAUTHORIZED);
+        .expect((response) => response.status === HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.CREATED} with authorization`, () => {
@@ -147,7 +147,15 @@ describe('WinesController (e2e)', () => {
         .expect((response) => response.status === HttpStatus.CREATED);
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} when required field is missing`, () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} with no data`, async () => {
+      return request(app.getHttpServer())
+        .post(WINES_ENDPOINT)
+        .set(authHeader)
+        .expect((response) => response.status === HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} when required field is missing`, async () => {
       // name is missing
       const wineObject = {
         year: 2020,
@@ -158,7 +166,8 @@ describe('WinesController (e2e)', () => {
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
         .send(wineObject)
-        .expect((response) => response.status === HttpStatus.BAD_REQUEST);
+        .expect((response) => response.status === HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
     });
   });
 
@@ -174,7 +183,8 @@ describe('WinesController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(`${WINES_ENDPOINT}/${setupData.createdWine.id}/ratings`)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
@@ -214,7 +224,8 @@ describe('WinesController (e2e)', () => {
       const setupData = await setupWineRatingTest(app);
       return request(app.getHttpServer())
         .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {

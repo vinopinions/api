@@ -18,12 +18,12 @@ export class StoresService {
     return this.storeRepository.find(options);
   }
   async findOne(options: FindOneOptions<Store>): Promise<Store> {
-    const Rating = await this.storeRepository.findOne(options);
-    if (!Rating)
+    const rating = await this.storeRepository.findOne(options);
+    if (!rating)
       throw new NotFoundException(
         `Store with ${JSON.stringify(options.where)} not found`,
       );
-    return Rating;
+    return rating;
   }
 
   async remove(id: string): Promise<Store> {

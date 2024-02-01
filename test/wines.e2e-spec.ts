@@ -127,10 +127,10 @@ describe('WinesController (e2e)', () => {
 
     it(`should return ${HttpStatus.CREATED} with authorization`, () => {
       const createWineDto: CreateWineDto = {
-        name: 'Wine',
-        grapeVariety: 'Grapes',
-        heritage: 'Germany',
-        year: 2021,
+        name: faker.word.noun(),
+        grapeVariety: faker.word.noun(),
+        heritage: faker.location.country(),
+        year: faker.date.past().getFullYear(),
         winemakerId: faker.string.uuid(),
         storeIds: [faker.string.uuid()],
       };

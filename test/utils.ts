@@ -59,15 +59,15 @@ export const setupWineRatingTest = async (app: INestApplication) => {
   const storeName = faker.company.name();
   const storeId = (await storesService.create(storeName)).id;
 
-  const wine: CreateWineDto = {
-    name: 'Wine',
-    grapeVariety: 'Grape',
-    heritage: 'Region',
-    year: 2020,
-    storeIds: [storeId],
-    winemakerId: winemakerId,
+  const createWineDto: CreateWineDto = {
+    name: faker.word.noun(),
+    grapeVariety: faker.word.noun(),
+    heritage: faker.location.country(),
+    year: faker.date.past().getFullYear(),
+    winemakerId: faker.string.uuid(),
+    storeIds: [faker.string.uuid()],
   };
-  const createdWine = await winesService.create(wine);
+  const createdWine = await winesService.create(createWineDto);
   return { createdWine, storeId, winemakerId };
 };
 

@@ -9,7 +9,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { ApiProperty } from '@nestjs/swagger';
 import { Wine } from '../../wines/entities/wine.entity';
 
 @Entity()
@@ -21,7 +20,6 @@ export class Rating {
     type: String,
     format: 'uuid',
   })
-
   @IsUUID()
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -32,7 +30,6 @@ export class Rating {
     description: 'Ammount of stars the user submitted',
     type: Number,
   })
-  
   @IsInt()
   @Min(1)
   @Max(5)
@@ -45,7 +42,6 @@ export class Rating {
     description: 'Text in addition to the submitted stars',
     type: String,
   })
-
   @IsString()
   @Column()
   text: string;
@@ -74,7 +70,6 @@ export class Rating {
     description: 'createdAt',
     type: Date,
   })
-  
   @IsDate()
   @CreateDateColumn()
   createdAt: Date;
@@ -85,7 +80,6 @@ export class Rating {
     description: 'updatedAt',
     type: Date,
   })
-
   @IsDate()
   @UpdateDateColumn()
   updatedAt: Date;

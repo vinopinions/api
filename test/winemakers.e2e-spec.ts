@@ -11,8 +11,6 @@ import {
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
 import { clearDatabase, isErrorResponse, login } from './utils';
-import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
-import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;

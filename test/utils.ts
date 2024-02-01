@@ -3,12 +3,11 @@ import { INestApplication } from '@nestjs/common';
 import { Response } from 'supertest';
 import { EntityManager } from 'typeorm';
 import { AuthService } from '../src/auth/auth.service';
-import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
-import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { StoresService } from '../src/stores/stores.service';
+import { User } from '../src/users/entities/user.entity';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
 import { WinesService } from '../src/wines/wines.service';
-import { User } from '../src/users/entities/user.entity';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get(EntityManager);
@@ -57,10 +56,8 @@ export const setupWineRatingTest = async (app: INestApplication) => {
 
   const winemakerId = (await winemakersService.create('Winemaker')).id;
 
-  const store: CreateStoreDto = {
-    name: 'Store',
-  };
-  const storeId = (await storesService.create(store)).id;
+  const storeName = faker.company.name();
+  const storeId = (await storesService.create(storeName)).id;
 
   const wine: CreateWineDto = {
     name: 'Wine',

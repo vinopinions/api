@@ -1,23 +1,24 @@
+import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
+import { v4 as uuidv4 } from 'uuid';
 import { AppModule } from '../src/app.module';
-import {
-  clearDatabase,
-  isErrorResponse,
-  login,
-  setupWineRatingTest,
-} from './utils';
+import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
+import { StoresService } from '../src/stores/stores.service';
+import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
 import {
   WINES_ENDPOINT,
   WINES_ID_ENDPOINT,
   WINES_ID_RATINGS_ENDPOINT,
 } from '../src/wines/wines.controller';
-import request from 'supertest';
-import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
-import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
-import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
-import { StoresService } from '../src/stores/stores.service';
-import { v4 as uuidv4 } from 'uuid';
+import {
+  clearDatabase,
+  isErrorResponse,
+  logResponse,
+  login,
+  setupWineRatingTest,
+} from './utils';
 
 describe('WinesController (e2e)', () => {
   let app: INestApplication;
@@ -36,10 +37,6 @@ describe('WinesController (e2e)', () => {
 
     const loginData = await login(app);
     authHeader = loginData.authHeader;
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 
   afterEach(async () => {
@@ -238,11 +235,9 @@ describe('WinesController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} when changed with authorization`, async () => {
       const setupData = await setupWineRatingTest(app);
-      const store: CreateStoreDto = {
-        name: 'new Store',
-      };
+      const storeName = faker.company.name();
 
-      const newStoreId = (await storesService.create(store)).id;
+      const store = await storesService.create(storeName);
 
       const addStoreToWineDto: CreateWineDto = {
         name: setupData.createdWine.name,
@@ -250,13 +245,16 @@ describe('WinesController (e2e)', () => {
         heritage: setupData.createdWine.heritage,
         year: setupData.createdWine.year,
         winemakerId: setupData.createdWine.winemaker.id,
-        storeIds: [setupData.storeId, newStoreId],
+        storeIds: [setupData.storeId, store.id],
       };
+
+      console.log(addStoreToWineDto);
 
       return request(app.getHttpServer())
         .put(WINES_ENDPOINT + '/' + setupData.createdWine.id)
         .set(authHeader)
         .send(addStoreToWineDto)
+        .expect(logResponse)
         .expect((response) => {
           expect(response.status === HttpStatus.OK);
           expect((response.body.stores as Array<any>).length).toBe(2);

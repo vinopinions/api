@@ -22,6 +22,6 @@ export class CreateWineDto extends PickType(Wine, [
     type: Array,
   })
   @IsArray()
-  @IsUUID()
+  @IsUUID(undefined, { each: true })
   storeIds: string[];
 }

@@ -75,7 +75,7 @@ describe('RatingsController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and rating object`, async () => {
+    it(`should return ${HttpStatus.OK} and rating object without any relations`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
         .get(RATINGS_ENDPOINT)
@@ -89,6 +89,8 @@ describe('RatingsController (e2e)', () => {
             expect(item.text).toEqual(rating.text);
             expect(item.createdAt).toEqual(rating.createdAt.toISOString());
             expect(item.updatedAt).toEqual(rating.updatedAt.toISOString());
+            expect(item.wine).toBeUndefined();
+            expect(item.user).toBeUndefined();
           });
         });
     });

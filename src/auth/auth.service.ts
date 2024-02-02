@@ -20,10 +20,6 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<{ access_token: string }> {
-    if (!username)
-      throw new BadRequestException("'username' has to be defined");
-    if (!password)
-      throw new BadRequestException("'password' has to be defined");
     let user = null;
     try {
       user = await this.usersService.findOne({ where: { username } });

@@ -3,11 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { Response } from 'supertest';
 import { EntityManager } from 'typeorm';
 import { AuthService } from '../src/auth/auth.service';
-import { StoresService } from '../src/stores/stores.service';
 import { User } from '../src/users/entities/user.entity';
-import { WinemakersService } from '../src/winemakers/winemakers.service';
-import { CreateWineDto } from '../src/wines/dtos/create-wine.dto';
-import { WinesService } from '../src/wines/wines.service';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get(EntityManager);
@@ -49,32 +45,19 @@ export const login = async (
   };
 };
 
-export const setupWineRatingTest = async (app: INestApplication) => {
-  const winemakersService = app.get(WinemakersService);
-  const storesService = app.get(StoresService);
-  const winesService = app.get(WinesService);
-
-  const winemakerId = (await winemakersService.create('Winemaker')).id;
-
-  const storeName = faker.company.name();
-  const storeId = (await storesService.create(storeName)).id;
-
-  const wine: CreateWineDto = {
-    name: 'Wine',
-    grapeVariety: 'Grape',
-    heritage: 'Region',
-    year: 2020,
-    storeIds: [storeId],
-    winemakerId: winemakerId,
-  };
-  const createdWine = await winesService.create(wine);
-  return { createdWine, storeId, winemakerId };
-};
-
 export const isErrorResponse = (res: Response, messageContains?: string) => {
   expect(res.body).toHaveProperty('message');
-  if (messageContains) expect(res.body!.message).toContain(messageContains);
-
+  if (messageContains) {
+    if (Array.isArray(res.body!.message)) {
+      expect(
+        (res.body!.message as Array<string>).some((value) =>
+          value.includes(messageContains),
+        ),
+      ).toBe(true);
+    } else {
+      expect(res.body!.message).toContain(messageContains);
+    }
+  }
   expect(res.body).toHaveProperty('statusCode');
 };
 

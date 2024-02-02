@@ -11,6 +11,9 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { Wine } from '../../wines/entities/wine.entity';
 
+export const STARS_MIN = 1;
+export const STARS_MAX = 5;
+
 @Entity()
 export class Rating {
   @ApiProperty({
@@ -31,8 +34,8 @@ export class Rating {
     type: Number,
   })
   @IsInt()
-  @Min(1)
-  @Max(5)
+  @Min(STARS_MIN)
+  @Max(STARS_MAX)
   @Column({ type: 'int' })
   stars: number;
 

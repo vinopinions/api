@@ -1,9 +1,8 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCreatedResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -14,30 +13,38 @@ import { SignInResponseDto } from './dtos/sign-in-response.dto';
 import { SignInDto } from './dtos/sign-in.dto';
 import { SignUpDto } from './dtos/sign-up.dto';
 
-@Controller('auth')
-@ApiTags('auth')
+const AUTH_ENDPOINT_NAME = 'auth';
+export const AUTH_ENDPOINT = `/${AUTH_ENDPOINT_NAME}`;
+const AUTH_LOGIN_ENDPOINT_NAME = 'login';
+export const AUTH_LOGIN_ENDPOINT = `${AUTH_ENDPOINT}/${AUTH_LOGIN_ENDPOINT_NAME}`;
+const AUTH_SIGNUP_ENDPOINT_NAME = 'signup';
+export const AUTH_SIGNUP_ENDPOINT = `${AUTH_ENDPOINT}/${AUTH_SIGNUP_ENDPOINT_NAME}`;
+
+@Controller(AUTH_ENDPOINT_NAME)
+@ApiTags(AUTH_ENDPOINT_NAME)
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiOperation({ summary: 'log in' })
-  @HttpCode(HttpStatus.OK)
   @Public()
-  @Post('login')
+  @Post(AUTH_LOGIN_ENDPOINT_NAME)
+  @ApiOperation({ summary: 'log in' })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials',
   })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     description: 'Login successful',
     type: SignInResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data',
   })
   signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
-  @ApiOperation({ summary: 'sign up' })
-  @HttpCode(HttpStatus.OK)
   @Public()
-  @Post('signup')
+  @Post(AUTH_SIGNUP_ENDPOINT_NAME)
+  @ApiOperation({ summary: 'sign up' })
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
@@ -46,6 +53,9 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'A new user has been created',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data',
   })
   signUp(@Body() signUpDto: SignUpDto) {
     return this.authService.signUp(signUpDto.username, signUpDto.password);

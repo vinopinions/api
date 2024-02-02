@@ -1,11 +1,6 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
-import { Wine } from '../entities/wine.entity';
+import { PickType } from '@nestjs/swagger';
+import { CreateWineDto } from './create-wine.dto';
 
-export class AddStoreToWineDto extends PickType(Wine, ['stores'] as const) {
-  @ApiProperty({
-    example: '[uuid]',
-    description: 'the ids of the stores',
-    type: Array,
-  })
-  storeIds: string[];
-}
+export class UpdateWineDto extends PickType(CreateWineDto, [
+  'storeIds',
+] as const) {}

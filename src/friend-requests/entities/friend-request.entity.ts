@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDate, IsUUID } from 'class-validator';
 import {
   CreateDateColumn,
   Entity,
@@ -16,6 +17,7 @@ export class FriendRequest {
     type: String,
     format: 'uuid',
   })
+  @IsUUID()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -43,6 +45,7 @@ export class FriendRequest {
     description: 'createdAt',
     type: Date,
   })
+  @IsDate()
   @CreateDateColumn()
   createdAt: Date;
 }

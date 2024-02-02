@@ -22,8 +22,12 @@ import { CreateStoreDto } from './dtos/create-store.dto';
 import { Store } from './entities/store.entity';
 import { StoresService } from './stores.service';
 
-@Controller('stores')
-@ApiTags('stores')
+const STORES_ENDPOINT_NAME = 'stores';
+export const STORES_ENDPOINT = `/${STORES_ENDPOINT_NAME}`;
+const STORES_ID_ENDPOINT_NAME = ':id';
+export const STORES_ID_ENDPOINT = `/${STORES_ENDPOINT_NAME}/${STORES_ID_ENDPOINT_NAME}`;
+@Controller(STORES_ENDPOINT_NAME)
+@ApiTags(STORES_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
@@ -58,7 +62,6 @@ export class StoresController {
   }
 
   @ApiOperation({ summary: 'create a store' })
-  @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiCreatedResponse({
     description: 'Store has been created',
@@ -67,11 +70,7 @@ export class StoresController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  create(@Body() createStoreDto: CreateStoreDto): Promise<Store> {
-    return this.storesService.create(
-      createStoreDto.name,
-      createStoreDto.address,
-      createStoreDto.url,
-    );
+  create(@Body() { name, address, url }: CreateStoreDto): Promise<Store> {
+    return this.storesService.create(name, address, url);
   }
 }

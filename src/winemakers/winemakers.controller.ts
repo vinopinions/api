@@ -18,32 +18,23 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CreateWineMakerDto } from './dtos/create-winemaker.dto';
+import { CreateWinemakerDto } from './dtos/create-winemaker.dto';
 import { Winemaker } from './entities/winemaker.entity';
 import { WinemakersService } from './winemakers.service';
 
-@Controller('winemakers')
-@ApiTags('winemakers')
+const WINEMAKERS_ENDPOINT_NAME = 'winemakers';
+export const WINEMAKERS_ENDPOINT = `/${WINEMAKERS_ENDPOINT_NAME}`;
+const WINEMAKERS_ID_ENDPOINT_NAME = ':id';
+export const WINEMAKERS_ID_ENDPOINT = `${WINEMAKERS_ENDPOINT}/${WINEMAKERS_ID_ENDPOINT_NAME}`;
+
+@Controller(WINEMAKERS_ENDPOINT_NAME)
+@ApiTags(WINEMAKERS_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
 @ApiBearerAuth()
 export class WinemakersController {
   constructor(private winemakersService: WinemakersService) {}
-
-  @ApiOperation({ summary: 'get winemaker by id' })
-  @HttpCode(HttpStatus.OK)
-  @Get(':id')
-  @ApiOkResponse({
-    description: 'Winemaker has been found',
-    type: Winemaker,
-  })
-  @ApiNotFoundResponse({
-    description: 'Winemaker has not been found',
-  })
-  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Winemaker> {
-    return this.winemakersService.findOne({ where: { id } });
-  }
 
   @ApiOkResponse({
     description: 'Winemakers have been found',
@@ -57,6 +48,20 @@ export class WinemakersController {
     return this.winemakersService.findMany();
   }
 
+  @ApiOperation({ summary: 'get winemaker by id' })
+  @HttpCode(HttpStatus.OK)
+  @Get(WINEMAKERS_ID_ENDPOINT_NAME)
+  @ApiOkResponse({
+    description: 'Winemaker has been found',
+    type: Winemaker,
+  })
+  @ApiNotFoundResponse({
+    description: 'Winemaker has not been found',
+  })
+  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Winemaker> {
+    return this.winemakersService.findOne({ where: { id } });
+  }
+
   @ApiOperation({ summary: 'create a winemaker' })
   @HttpCode(HttpStatus.CREATED)
   @Post()
@@ -67,7 +72,7 @@ export class WinemakersController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  create(@Body() createWinemakersDto: CreateWineMakerDto) {
+  create(@Body() createWinemakersDto: CreateWinemakerDto) {
     return this.winemakersService.create(createWinemakersDto.name);
   }
 }

@@ -1,0 +1,45 @@
+name: test e2e
+
+on:
+  pull_request:
+    branches:
+      - developer
+      - master
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: node:20.11.0-alpine
+    environment: test
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: yarn --ignore-scripts --non-interactive
+
+      - name: Run E2E Tests
+        run: yarn test:e2e --runInBand
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
+          POSTGRS_DB: test
+          NODE_ENV: test
+          AUTH_SERVICE_DOMAIN: 'test.vinopinions.spots.host'
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ vars.JWT_PUBLIC_KEY }}

@@ -1,3 +1,5 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDate, IsInt, IsString, IsUUID, Max, Min } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -6,10 +8,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Wine } from '../../wines/entities/wine.entity';
-import { IsInt, Max, Min } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Wine } from '../../wines/entities/wine.entity';
+
+export const STARS_MIN = 1;
+export const STARS_MAX = 5;
 
 @Entity()
 export class Rating {
@@ -20,6 +23,7 @@ export class Rating {
     type: String,
     format: 'uuid',
   })
+  @IsUUID()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -29,10 +33,10 @@ export class Rating {
     description: 'Ammount of stars the user submitted',
     type: Number,
   })
+  @IsInt()
+  @Min(STARS_MIN)
+  @Max(STARS_MAX)
   @Column({ type: 'int' })
-  @IsInt({ message: 'Stars must be an integer' })
-  @Min(1, { message: 'Stars must be at least 1' })
-  @Max(5, { message: 'Stars must be at most 5' })
   stars: number;
 
   @ApiProperty({
@@ -41,6 +45,7 @@ export class Rating {
     description: 'Text in addition to the submitted stars',
     type: String,
   })
+  @IsString()
   @Column()
   text: string;
 
@@ -68,6 +73,7 @@ export class Rating {
     description: 'createdAt',
     type: Date,
   })
+  @IsDate()
   @CreateDateColumn()
   createdAt: Date;
 
@@ -77,6 +83,7 @@ export class Rating {
     description: 'updatedAt',
     type: Date,
   })
+  @IsDate()
   @UpdateDateColumn()
   updatedAt: Date;
 }

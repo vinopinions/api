@@ -18,19 +18,24 @@ import {
 import { Rating } from './entities/rating.entity';
 import { RatingsService } from './ratings.service';
 
-@ApiTags('ratings')
-@Controller('ratings')
+const RATINGS_ENDPOINT_NAME = 'ratings';
+export const RATINGS_ENDPOINT = `/${RATINGS_ENDPOINT_NAME}`;
+const RATINGS_ID_ENDPOINT_NAME = `:id`;
+export const RATINGS_ID_ENDPOINT = `${RATINGS_ENDPOINT}/${RATINGS_ID_ENDPOINT_NAME}`;
+
+@ApiTags(RATINGS_ENDPOINT_NAME)
+@Controller(RATINGS_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
-@ApiTags('ratings')
+@ApiTags(RATINGS_ENDPOINT_NAME)
 @ApiBearerAuth()
 export class RatingsController {
   constructor(private ratingsService: RatingsService) {}
 
   @ApiOperation({ summary: 'get rating by id' })
   @HttpCode(HttpStatus.OK)
-  @Get(':id')
+  @Get(RATINGS_ID_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'Rating has been found',
     type: Rating,
@@ -56,7 +61,7 @@ export class RatingsController {
 
   @ApiOperation({ summary: 'delete a rating' })
   @HttpCode(HttpStatus.OK)
-  @Delete(':id')
+  @Delete(RATINGS_ID_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'Rating has been deleted',
     type: Rating,

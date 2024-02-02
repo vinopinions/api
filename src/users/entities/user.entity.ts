@@ -38,7 +38,7 @@ export class User {
   })
   @Matches(USERNAME_REGEX, {
     message:
-      'username must can be 3-20 characters long and can only include letters, underscores and dots, but no spaces',
+      'username must be defined, has to be 3-20 characters long and can only include letters, underscores and dots, but no spaces',
   })
   @Column({ unique: true })
   username: string;

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -20,10 +19,6 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<{ access_token: string }> {
-    if (!username)
-      throw new BadRequestException("'username' has to be defined");
-    if (!password)
-      throw new BadRequestException("'password' has to be defined");
     let user = null;
     try {
       user = await this.usersService.findOne({ where: { username } });
@@ -40,10 +35,6 @@ export class AuthService {
   }
 
   async signUp(username: string, password: string): Promise<User> {
-    if (!username)
-      throw new BadRequestException("'username' has to be defined");
-    if (!password)
-      throw new BadRequestException("'password' has to be defined");
     // Weird setup but since findOneByUsername throws an exception when no user is found it makes sense
     try {
       if (await this.usersService.findOne({ where: { username } }))

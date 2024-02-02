@@ -19,6 +19,7 @@ import {
   WINES_ID_RATINGS_ENDPOINT,
 } from '../src/wines/wines.controller';
 import { WinesService } from '../src/wines/wines.service';
+import { UpdateWineDto } from './../src/wines/dtos/update-wine.dto';
 import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('WinesController (e2e)', () => {
@@ -388,24 +389,32 @@ describe('WinesController (e2e)', () => {
         .expect(HttpStatus.BAD_REQUEST);
     });
 
-    it(`should return ${HttpStatus.OK} when changed with authorization`, async () => {
+    it(`should return ${HttpStatus.NOT_FOUND} when using random store ids with authorization`, async () => {
       const wine: Wine = await createTestWine();
-      const storeName = faker.company.name();
 
-      const store = await storesService.create(storeName);
-      const addStoreToWineDto: CreateWineDto = {
-        name: wine.name,
-        grapeVariety: wine.grapeVariety,
-        heritage: wine.heritage,
-        year: wine.year,
-        winemakerId: wine.winemaker.id,
-        storeIds: [...wine.stores.map((store) => store.id), store.id],
+      const updateWineDto: UpdateWineDto = {
+        storeIds: [...wine.stores.map((e) => e.id), faker.string.uuid()],
       };
 
       return request(app.getHttpServer())
         .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
-        .send(addStoreToWineDto)
+        .send(updateWineDto)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.OK} when changed with authorization`, async () => {
+      const wine: Wine = await createTestWine();
+
+      const store = await storesService.create(faker.company.name());
+      const updateWineDto: UpdateWineDto = {
+        storeIds: [...wine.stores.map((e) => e.id), store.id],
+      };
+
+      return request(app.getHttpServer())
+        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .set(authHeader)
+        .send(updateWineDto)
         .expect((response) => {
           expect(response.status === HttpStatus.OK);
           expect((response.body.stores as Array<any>).length).toBe(2);

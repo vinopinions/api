@@ -25,6 +25,7 @@ import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
 import { RatingsService } from '../ratings/ratings.service';
 import { Rating } from './../ratings/entities/rating.entity';
 import { CreateWineDto } from './dtos/create-wine.dto';
+import { UpdateWineDto } from './dtos/update-wine.dto';
 import { Wine } from './entities/wine.entity';
 import { WinesService } from './wines.service';
 
@@ -109,9 +110,9 @@ export class WinesController {
   })
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updatedWine: CreateWineDto,
+    @Body() updateWineDto: UpdateWineDto,
   ) {
-    return this.winesService.update(id, updatedWine);
+    return this.winesService.update(id, updateWineDto.storeIds);
   }
 
   @ApiOperation({ summary: 'rate a wine' })

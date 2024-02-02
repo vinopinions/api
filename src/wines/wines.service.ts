@@ -7,7 +7,6 @@ import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
-import { CreateWineDto } from './dtos/create-wine.dto';
 import { Wine } from './entities/wine.entity';
 
 @Injectable()
@@ -68,17 +67,18 @@ export class WinesService {
     return this.wineRepository.remove(Wine);
   }
 
-  async update(id: string, updatedWine: CreateWineDto): Promise<Wine> {
+  async update(id: string, storeIds: string[]): Promise<Wine> {
     const wine = await this.wineRepository.findOneOrFail({
       where: { id },
-      relations: ['stores'],
+      relations: {
+        stores: true,
+      },
     });
 
-    if (!updatedWine.storeIds || updatedWine.storeIds.length < 0)
-      wine.stores = [];
+    if (!storeIds || storeIds.length < 0) wine.stores = [];
     else {
       const stores: Store[] = await Promise.all(
-        updatedWine.storeIds.map(async (storeId: string) => {
+        storeIds.map(async (storeId: string) => {
           const store: Store | null = await this.storesService.findOne({
             where: { id: storeId },
           });

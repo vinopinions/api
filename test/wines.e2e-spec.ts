@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
+import { STARS_MAX, STARS_MIN } from '../src/ratings/entities/rating.entity';
 import { RatingsService } from '../src/ratings/ratings.service';
 import { Store } from '../src/stores/entities/store.entity';
 import { StoresService } from '../src/stores/stores.service';
@@ -269,18 +270,79 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} with no data with authorization`, async () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST);
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid text data type with authorization`, async () => {
+      const wine: Wine = await createTestWine();
+      const invalidData = {
+        stars: faker.number.int({ min: STARS_MIN, max: STARS_MAX }),
+        text: 1,
+      };
+
+      return request(app.getHttpServer())
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .set(authHeader)
+        .send(invalidData)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => isErrorResponse(res, 'text'));
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid stars data type with authorization`, async () => {
+      const wine: Wine = await createTestWine();
+      const invalidData = {
+        stars: 'abc',
+        text: 'abc',
+      };
+
+      return request(app.getHttpServer())
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .set(authHeader)
+        .send(invalidData)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => isErrorResponse(res, 'stars'));
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} when stars are lower than ${STARS_MIN} data type with authorization`, async () => {
+      const wine: Wine = await createTestWine();
+      const invalidData = {
+        stars: STARS_MIN - 1,
+        text: 'abc',
+      };
+
+      return request(app.getHttpServer())
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .set(authHeader)
+        .send(invalidData)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => isErrorResponse(res, 'stars'));
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} when stars are higher than ${STARS_MAX} data type with authorization`, async () => {
+      const wine: Wine = await createTestWine();
+      const invalidData = {
+        stars: STARS_MAX + 1,
+        text: 'abc',
+      };
+
+      return request(app.getHttpServer())
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .set(authHeader)
+        .send(invalidData)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => isErrorResponse(res, 'stars'));
     });
 
     it(`should return ${HttpStatus.CREATED} with valid request body`, async () => {
@@ -292,7 +354,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(`${WINES_ENDPOINT}/${wine.id}/ratings`)
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
         .set(authHeader)
         .send(createRatingDto)
         .expect(HttpStatus.CREATED);

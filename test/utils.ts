@@ -50,10 +50,9 @@ export const isErrorResponse = (res: Response, messageContains?: string) => {
   if (messageContains) {
     if (Array.isArray(res.body!.message)) {
       expect(
-        (res.body!.message as Array<string>).some((value) => {
-          console.log({ value });
-          return value.includes(messageContains);
-        }),
+        (res.body!.message as Array<string>).some((value) =>
+          value.includes(messageContains),
+        ),
       ).toBe(true);
     } else {
       expect(res.body!.message).toContain(messageContains);

@@ -21,9 +21,6 @@ export class RatingsService {
     rating.wine = wine;
     rating.user = user;
 
-    //const validationErrors = await validate(rating);
-    //if (validationErrors.length > 0)
-    //  throw new BadRequestException(validationErrors.map((e) => e.constraints));
     return this.ratingRepository.save(rating);
   }
 

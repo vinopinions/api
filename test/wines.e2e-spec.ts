@@ -240,7 +240,7 @@ describe('WinesController (e2e)', () => {
         .expect(isErrorResponse);
     });
 
-    it(`should return ${HttpStatus.NOT_FOUND} when store ids are random is missing`, async () => {
+    it(`should return ${HttpStatus.NOT_FOUND} when store ids are random`, async () => {
       const createWineDto: CreateWineDto = {
         name: faker.word.noun(),
         year: faker.date.past().getFullYear(),
@@ -349,8 +349,8 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       const createRatingDto: CreateRatingDto = {
-        stars: 5,
-        text: 'tasty',
+        stars: STARS_MAX,
+        text: faker.lorem.lines(),
       };
 
       return request(app.getHttpServer())

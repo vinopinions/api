@@ -135,6 +135,15 @@ describe('RatingsController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
+    it(`should return ${HttpStatus.NOT_FOUND} when looking for an uuid that doesn't exist`, async () => {
+      const uuid = faker.string.uuid();
+      return request(app.getHttpServer())
+        .get(RATINGS_ID_ENDPOINT.replace(':id', uuid))
+        .set(authHeader)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
+    });
+
     it(`should return ${HttpStatus.OK} and rating object`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())

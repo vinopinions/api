@@ -18,7 +18,6 @@ import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { Store } from '../src/stores/entities/store.entity';
 import { Wine } from '../src/wines/entities/wine.entity';
 import { WINES_ID_ENDPOINT } from '../src/wines/wines.controller';
-import { response } from 'express';
 
 describe('RatingsController (e2e)', () => {
   let app: INestApplication;
@@ -144,6 +143,45 @@ describe('RatingsController (e2e)', () => {
           expect(body.createdAt).toEqual(rating.createdAt.toISOString());
           expect(body.updatedAt).toEqual(rating.updatedAt.toISOString());
         });
+    });
+  });
+
+  describe(RATINGS_ID_ENDPOINT + ' (DELETE)', () => {
+    it('should exist', async () => {
+      const rating: Rating = await createTestRating();
+      return request(app.getHttpServer())
+        .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      const rating: Rating = await createTestRating();
+      return request(app.getHttpServer())
+        .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+      const rating: Rating = await createTestRating();
+      return request(app.getHttpServer())
+        .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .set(authHeader)
+        .expect(HttpStatus.OK);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when getting the rating after deletion`, async () => {
+      const rating: Rating = await createTestRating();
+      await request(app.getHttpServer())
+        .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .set(authHeader)
+        .expect(HttpStatus.OK);
+
+      return request(app.getHttpServer())
+        .get(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .set(authHeader)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
     });
   });
 

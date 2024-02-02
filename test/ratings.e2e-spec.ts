@@ -12,7 +12,7 @@ import {
   RATINGS_ID_ENDPOINT,
 } from '../src/ratings/ratings.controller';
 import request from 'supertest';
-import { Rating } from '../src/ratings/entities/rating.entity';
+import { Rating, STARS_MIN } from '../src/ratings/entities/rating.entity';
 import { WinesService } from '../src/wines/wines.service';
 import { RatingsService } from '../src/ratings/ratings.service';
 import { faker } from '@faker-js/faker';
@@ -113,16 +113,14 @@ describe('RatingsController (e2e)', () => {
 
   describe(RATINGS_ID_ENDPOINT + ' (GET)', () => {
     it('should exist', async () => {
-      const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
@@ -136,15 +134,22 @@ describe('RatingsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} when looking for an uuid that doesn't exist`, async () => {
-      const uuid = faker.string.uuid();
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', uuid))
+        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
         .set(authHeader)
         .expect(HttpStatus.NOT_FOUND)
         .expect(isErrorResponse);
     });
 
-    it(`should return ${HttpStatus.OK} and rating object`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.alphanumeric(10)))
+        .set(authHeader)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => isErrorResponse(response, 'uuid'));
+    });
+
+    it(`should return ${HttpStatus.OK} and rating object without relations`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
         .get(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
@@ -156,6 +161,8 @@ describe('RatingsController (e2e)', () => {
           expect(body.text).toEqual(rating.text);
           expect(body.createdAt).toEqual(rating.createdAt.toISOString());
           expect(body.updatedAt).toEqual(rating.updatedAt.toISOString());
+          expect(body.store).toBeUndefined();
+          expect(body.user).toBeUndefined();
         });
     });
   });
@@ -174,6 +181,24 @@ describe('RatingsController (e2e)', () => {
         .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when looking for an uuid that doesn't exist`, async () => {
+      return request(app.getHttpServer())
+        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .set(authHeader)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
+      return request(app.getHttpServer())
+        .delete(
+          RATINGS_ID_ENDPOINT.replace(':id', faker.string.alphanumeric(10)),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => isErrorResponse(response, 'uuid'));
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
@@ -214,7 +239,7 @@ describe('RatingsController (e2e)', () => {
     );
 
     return ratingsService.create(
-      faker.number.int({ min: 1, max: 5 }),
+      faker.number.int({ min: STARS_MIN, max: STARS_MIN }),
       faker.lorem.text(),
       user,
       wine,

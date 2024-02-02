@@ -1,4 +1,8 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import {
+  HttpStatus,
+  INestApplication,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from '../src/users/entities/user.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
@@ -17,7 +21,6 @@ import { StoresService } from '../src/stores/stores.service';
 import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { Store } from '../src/stores/entities/store.entity';
 import { Wine } from '../src/wines/entities/wine.entity';
-import { WINES_ID_ENDPOINT } from '../src/wines/wines.controller';
 
 describe('RatingsController (e2e)', () => {
   let app: INestApplication;
@@ -106,7 +109,7 @@ describe('RatingsController (e2e)', () => {
     });
   });
 
-  describe(WINES_ID_ENDPOINT + ' (GET)', () => {
+  describe(RATINGS_ID_ENDPOINT + ' (GET)', () => {
     it('should exist', async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
@@ -170,18 +173,18 @@ describe('RatingsController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.NOT_FOUND} when getting the rating after deletion`, async () => {
+    it(`should return ${HttpStatus.OK} when deleting a rating and should not exist anymore in the database after deletion`, async () => {
       const rating: Rating = await createTestRating();
-      await request(app.getHttpServer())
+      return await request(app.getHttpServer())
         .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
         .set(authHeader)
-        .expect(HttpStatus.OK);
-
-      return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND)
-        .expect(isErrorResponse);
+        .expect(HttpStatus.OK)
+        .expect(async () => {
+          expect(
+            async () =>
+              await ratingsService.findOne({ where: { id: rating.id } }),
+          ).rejects.toThrow(NotFoundException);
+        });
     });
   });
 

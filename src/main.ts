@@ -5,8 +5,6 @@ import packagejson from '../package.json';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  console.log(process.env['JWT_PRIVATE_KEY']?.length);
-  console.log(process.env['JWT_PUBLIC_KEY']?.length);
   const app = await NestFactory.create(AppModule);
   app.enableVersioning({
     type: VersioningType.URI,

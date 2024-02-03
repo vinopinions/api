@@ -11,6 +11,7 @@ jobs:
 
   test-e2e:
     uses: ./.github/workflows/e2e-test.yml
+    secrets: inherit
 
   deploy:
     runs-on: ubuntu-latest

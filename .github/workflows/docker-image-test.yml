@@ -2,8 +2,6 @@ name: Deploy Docker Image Test
 on:
   push:
     branches: ['developer']
-  pull_request:
-    branches: ['developer']
 
 jobs:
   test-unit:
@@ -13,7 +11,8 @@ jobs:
     uses: ./.github/workflows/e2e-test.yml
     secrets: inherit
 
-  deploy:
+  publish-test:
+    name: Publish Test Docker Image
     runs-on: ubuntu-latest
     environment: test
     needs:

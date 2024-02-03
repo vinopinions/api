@@ -1,0 +1,31 @@
+name: End-to-End test
+
+on:
+  push:
+    branches: ['developer', 'master']
+  pull_request:
+    branches: ['developer', 'master']
+  schedule:
+    - cron: '0 8 * * *'
+
+jobs:
+  test:
+    name: Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: yarn --ignore-scripts --non-interactive --frozen-lockfile
+
+      - name: Run Tests
+        run: yarn test:e2e --ci --runInBand

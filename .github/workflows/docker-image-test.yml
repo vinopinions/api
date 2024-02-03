@@ -27,9 +27,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'Build and push image'
-        run: |
-          shortSha=$(git rev-parse --short ${{ github.sha }})
-          docker build . --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ vars.DOCKER_IMAGE_TAG }}
-          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ vars.DOCKER_IMAGE_TAG }}
-          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha
+      # - name: 'Build and push image'
+      #   run: |
+      #     shortSha=$(git rev-parse --short ${{ github.sha }})
+      #     docker build . --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ vars.DOCKER_IMAGE_TAG }}
+      #     docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ vars.DOCKER_IMAGE_TAG }}
+      #     docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha

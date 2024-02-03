@@ -8,9 +8,8 @@ on:
   workflow_call:
     inputs:
       ENVIRONMENT_NAME:
-        required: false
+        required: true
         type: string
-        default: test
 
   schedule:
     - cron: '0 8 * * *'
@@ -26,7 +25,7 @@ jobs:
   test:
     name: e2e Test
     runs-on: ubuntu-latest
-    environment: ${{ inputs.ENVIRONMENT_NAME }}
+    environment: ${{ inputs.ENVIRONMENT_NAME || 'test' }}
     container: node:${{ vars.NODE_VERSION }}
     permissions:
       contents: read

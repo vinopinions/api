@@ -10,10 +10,21 @@ on:
 
 jobs:
   test:
-    name: Scanning
+    name: e2e Test
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
     environment: test
     steps:
       - name: Checkout code
@@ -29,3 +40,13 @@ jobs:
 
       - name: Run Tests
         run: yarn test:e2e --ci --runInBand
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
+          POSTGRS_DB: test
+          NODE_ENV: test
+          AUTH_SERVICE_DOMAIN: 'test.vinopinions.spots.host'
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ vars.JWT_PUBLIC_KEY }}

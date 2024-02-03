@@ -50,7 +50,7 @@ jobs:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
           POSTGRES_PORT: ${{ env.POSTGRES_PORT }}
-          NODE_ENV: test
+          NODE_ENV: ${{ vars.NODE_ENV }}
           AUTH_SERVICE_DOMAIN: ${{ vars.AUTH_SERVICE_DOMAIN }}
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ vars.JWT_PUBLIC_KEY }}

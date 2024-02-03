@@ -11,8 +11,6 @@ jobs:
 
   test-e2e:
     uses: ./.github/workflows/e2e-test.yml
-    with:
-      ENVIRONMENT_NAME: test
 
   deploy:
     runs-on: ubuntu-latest

@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: ['developer', 'master']
   workflow_call:
-    inputs:
-      ENVIRONMENT_NAME:
-        required: true
-        type: string
 
   schedule:
     - cron: '0 8 * * *'
@@ -25,7 +21,6 @@ jobs:
   test:
     name: e2e Test
     runs-on: ubuntu-latest
-    environment: ${{ inputs.ENVIRONMENT_NAME || 'test' }}
     container: node:${{ vars.NODE_VERSION }}
     permissions:
       contents: read

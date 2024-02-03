@@ -10,7 +10,7 @@ on:
 
 jobs:
   eslint:
-    name: Run ESLint scanning
+    name: Scanning
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,7 +28,7 @@ jobs:
       - name: Install Dependencies
         run: yarn --ignore-scripts --non-interactive
 
-      - name: Build TypeScript
+      - name: Build Project
         run: yarn build
 
       - name: Run ESLint

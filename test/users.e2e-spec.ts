@@ -23,8 +23,6 @@ describe('UsersController (e2e)', () => {
   let user: User;
 
   beforeEach(async () => {
-    console.log(process.env);
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();

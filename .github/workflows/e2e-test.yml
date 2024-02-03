@@ -8,24 +8,32 @@ on:
   schedule:
     - cron: '0 8 * * *'
 
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRS_DB: test
+
 jobs:
   test:
     name: e2e Test
     runs-on: ubuntu-latest
+    environment: test
     permissions:
       contents: read
     services:
       postgres:
-        image: postgres
+        image: postgres:${{ vars.POSTGRES_VERSION }}
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRS_DB }}
           options: >-
             --health-cmd pg_isready
             --health-interval 10s
             --health-timeout 5s
             --health-retries 5
-    environment: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,11 +49,10 @@ jobs:
       - name: Run Tests
         run: yarn test:e2e --ci --runInBand
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_HOST: postgres
-          POSTGRES_PORT: 5432
-          POSTGRS_DB: test
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRS_DB }}
+          POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
           NODE_ENV: test
           AUTH_SERVICE_DOMAIN: 'test.vinopinions.spots.host'
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}

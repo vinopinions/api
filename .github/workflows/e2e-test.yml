@@ -20,6 +20,7 @@ jobs:
     name: e2e Test
     runs-on: ubuntu-latest
     environment: test
+    container: node:${{ vars.NODE_VERSION }}
     permissions:
       contents: read
     services:
@@ -37,11 +38,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ vars.NODE_VERSION }}
 
       - name: Install dependencies
         run: yarn --ignore-scripts --non-interactive --frozen-lockfile

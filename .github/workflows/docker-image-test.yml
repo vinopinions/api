@@ -19,6 +19,7 @@ jobs:
     needs:
       - test-unit
       - test-e2e
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4

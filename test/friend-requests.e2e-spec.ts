@@ -1,8 +1,11 @@
 import { faker } from '@faker-js/faker';
-import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, isErrorResponse, login } from './utils';
 import { HttpStatus, INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { AuthService } from '../src/auth/auth.service';
+import { SendFriendRequestDto } from '../src/friend-requests/dtos/send-friend-request.dto';
+import { FriendRequest } from '../src/friend-requests/entities/friend-request.entity';
 import {
   FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT,
   FRIEND_REQUESTS_ID_DECLINE_ENDPOINT,
@@ -11,12 +14,9 @@ import {
   FRIEND_REQUESTS_OUTGOING_ENDPOINT,
   FRIEND_REQUESTS_SEND_ENDPOINT,
 } from '../src/friend-requests/friend-requests.controller';
-import request from 'supertest';
-import { User } from '../src/users/entities/user.entity';
 import { FriendRequestsService } from '../src/friend-requests/friend-requests.service';
-import { SendFriendRequestDto } from '../src/friend-requests/dtos/send-friend-request.dto';
-import { AuthService } from '../src/auth/auth.service';
-import { FriendRequest } from '../src/friend-requests/entities/friend-request.entity';
+import { User } from '../src/users/entities/user.entity';
+import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('FriendRequestsController (e2e)', () => {
   let app: INestApplication;

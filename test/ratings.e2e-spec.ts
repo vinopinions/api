@@ -1,26 +1,26 @@
+import { faker } from '@faker-js/faker';
 import {
   HttpStatus,
   INestApplication,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '../src/users/entities/user.entity';
 import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { clearDatabase, isErrorResponse, login } from './utils';
+import { Rating, STARS_MIN } from '../src/ratings/entities/rating.entity';
 import {
   RATINGS_ENDPOINT,
   RATINGS_ID_ENDPOINT,
 } from '../src/ratings/ratings.controller';
-import request from 'supertest';
-import { Rating, STARS_MIN } from '../src/ratings/entities/rating.entity';
-import { WinesService } from '../src/wines/wines.service';
 import { RatingsService } from '../src/ratings/ratings.service';
-import { faker } from '@faker-js/faker';
-import { WinemakersService } from '../src/winemakers/winemakers.service';
-import { StoresService } from '../src/stores/stores.service';
-import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { Store } from '../src/stores/entities/store.entity';
+import { StoresService } from '../src/stores/stores.service';
+import { User } from '../src/users/entities/user.entity';
+import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { Wine } from '../src/wines/entities/wine.entity';
+import { WinesService } from '../src/wines/wines.service';
+import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('RatingsController (e2e)', () => {
   let app: INestApplication;

@@ -1,0 +1,314 @@
+{
+  "version": "2.1.0",
+  "$schema": "http://json.schemastore.org/sarif-2.1.0-rtm.5",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ESLint",
+          "informationUri": "https://eslint.org",
+          "rules": [],
+          "version": "8.56.0"
+        }
+      },
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/app.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/auth.controller.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/auth.controller.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/auth.guard.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/auth.guard.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/auth.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/auth.service.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/auth.service.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/dtos/sign-in-response.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/dtos/sign-in.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/auth/dtos/sign-up.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/database/database.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/friend-requests/dtos/send-friend-request.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/friend-requests/entities/friend-request.entity.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/friend-requests/friend-requests.controller.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/friend-requests/friend-requests.controller.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/friend-requests/friend-requests.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/friend-requests/friend-requests.service.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/friend-requests/friend-requests.service.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/main.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/ratings/dtos/create-rating.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/ratings/entities/rating.entity.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/ratings/ratings.controller.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/ratings/ratings.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/ratings/ratings.service.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/stores/dtos/create-store.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/stores/entities/store.entity.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/stores/stores.controller.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/stores/stores.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/stores/stores.service.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/users/entities/user.entity.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/users/users.controller.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/users/users.controller.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/users/users.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/users/users.service.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/users/users.service.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/winemakers/dtos/create-winemaker.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/winemakers/entities/winemaker.entity.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/winemakers/winemakers.controller.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/winemakers/winemakers.controller.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/winemakers/winemakers.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/winemakers/winemakers.service.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/winemakers/winemakers.service.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/wines/dtos/create-wine.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/wines/dtos/update-wine.dto.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/wines/entities/wine.entity.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/wines/wines.controller.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/wines/wines.controller.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/wines/wines.module.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/wines/wines.service.spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/src/wines/wines.service.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/test/auth.e2e-spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/test/friend-requests.e2e-spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/test/ratings.e2e-spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/test/stores.e2e-spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/test/users.e2e-spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/test/utils.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/test/winemakers.e2e-spec.ts"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///Users/oskar/Documents/coding/VinopinionsApi/test/wines.e2e-spec.ts"
+          }
+        }
+      ],
+      "results": []
+    }
+  ]
+}

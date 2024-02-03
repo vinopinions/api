@@ -1,8 +1,7 @@
-name: deploy staging
+name: Deploy Docker Image Test
 on:
   push:
-    branches:
-      - developer
+    branches: ['developer']
 
 jobs:
   test-unit:
@@ -10,12 +9,16 @@ jobs:
 
   test-e2e:
     uses: ./.github/workflows/e2e-test.yml
+    secrets: inherit
 
-  deploy:
+  publish-test:
+    name: Publish Test Docker Image
     runs-on: ubuntu-latest
+    environment: test
     needs:
       - test-unit
       - test-e2e
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -28,6 +31,6 @@ jobs:
       - name: 'Build and push image'
         run: |
           shortSha=$(git rev-parse --short ${{ github.sha }})
-          docker build . --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha --tag ghcr.io/layla-oskar-schule/vinopinionsapi:staging
-          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:staging
+          docker build . --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ vars.DOCKER_IMAGE_TAG }}
+          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ vars.DOCKER_IMAGE_TAG }}
           docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha

@@ -9,7 +9,6 @@ jobs:
 
   test-e2e:
     uses: ./.github/workflows/e2e-test.yml
-    secrets: inherit
 
   publish-staging:
     name: Publish Staging Docker Image

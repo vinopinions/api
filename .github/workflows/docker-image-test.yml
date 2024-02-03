@@ -1,0 +1,34 @@
+name: Deploy Docker Image Test
+on:
+  push:
+    branches:
+      - developer
+
+jobs:
+  test-unit:
+    uses: ./.github/workflows/unit-test.yml
+
+  test-e2e:
+    uses: ./.github/workflows/e2e-test.yml
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: test
+    needs:
+      - test-unit
+      - test-e2e
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Login to ghcr
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Build and push image'
+        run: |
+          shortSha=$(git rev-parse --short ${{ github.sha }})
+          docker build . --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha --tag ghcr.io/layla-oskar-schule/vinopinionsapi:${{ vars.DOCKER_IMAGE_TAG }}
+          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ vars.DOCKER_IMAGE_TAG }}
+          docker push ghcr.io/layla-oskar-schule/vinopinionsapi:${{ github.ref_name }}-$shortSha

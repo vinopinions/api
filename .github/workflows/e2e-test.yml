@@ -53,6 +53,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ env.POSTGRS_DB }}
           POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ env.POSTGRES_PORT }}
           NODE_ENV: test
           AUTH_SERVICE_DOMAIN: 'test.vinopinions.spots.host'
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}

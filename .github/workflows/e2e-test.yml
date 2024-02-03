@@ -24,7 +24,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: postgres:${{ vars.POSTGRES_VERSION }}
+        image: postgres
         env:
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
@@ -55,6 +55,6 @@ jobs:
           POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
           POSTGRES_PORT: ${{ env.POSTGRES_PORT }}
           NODE_ENV: test
-          AUTH_SERVICE_DOMAIN: 'test.vinopinions.spots.host'
+          AUTH_SERVICE_DOMAIN: ${{ vars.AUTH_SERVICE_DOMAIN }}
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ vars.JWT_PUBLIC_KEY }}

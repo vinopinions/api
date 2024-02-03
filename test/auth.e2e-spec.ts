@@ -17,6 +17,8 @@ describe('AuthController (e2e)', () => {
   let authService: AuthService;
 
   beforeEach(async () => {
+    console.log(process.env);
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();

@@ -13,7 +13,6 @@ jobs:
   test:
     name: Unit Test
     runs-on: ubuntu-latest
-    environment: test
     permissions:
       contents: read
 

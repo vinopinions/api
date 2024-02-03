@@ -5,6 +5,7 @@ on:
     branches: ['developer', 'master']
   pull_request:
     branches: ['developer', 'master']
+  workflow_call:
   schedule:
     - cron: '0 8 * * *'
 

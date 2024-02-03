@@ -1,8 +1,9 @@
 name: Deploy Docker Image Test
 on:
   push:
-    branches:
-      - developer
+    branches: ['developer']
+  pull_request:
+    branches: ['developer']
 
 jobs:
   test-unit:

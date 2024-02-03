@@ -44,7 +44,7 @@ jobs:
         run: yarn --ignore-scripts --non-interactive --frozen-lockfile
 
       - name: Run Tests
-        run: yarn run
+        run: yarn start
         # run: yarn test:e2e --ci --runInBand
         env:
           POSTGRES_USER: ${{ env.POSTGRES_USER }}

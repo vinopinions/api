@@ -17,7 +17,7 @@ import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
-  let authHeader: object;
+  let authHeader: Record<string, string>;
   let authService: AuthService;
   let friendRequestsService: FriendRequestsService;
   let user: User;

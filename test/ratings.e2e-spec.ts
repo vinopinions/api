@@ -24,7 +24,7 @@ import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('RatingsController (e2e)', () => {
   let app: INestApplication;
-  let authHeader: object;
+  let authHeader: Record<string, string>;
   let user: User;
   let ratingsService: RatingsService;
   let winesService: WinesService;

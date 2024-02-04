@@ -20,7 +20,7 @@ import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('FriendRequestsController (e2e)', () => {
   let app: INestApplication;
-  let authHeader: object;
+  let authHeader: Record<string, string>;
   let user: User;
   let friendRequestsService: FriendRequestsService;
   let authService: AuthService;

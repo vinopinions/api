@@ -24,7 +24,7 @@ import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('WinesController (e2e)', () => {
   let app: INestApplication;
-  let authHeader: object;
+  let authHeader: Record<string, string>;
   let user: User;
   let storesService: StoresService;
   let winemakersService: WinemakersService;

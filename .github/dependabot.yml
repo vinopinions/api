@@ -11,6 +11,7 @@ updates:
       interval: "weekly"
     assignees:
       - "devskar"
+    target-branch: "dependencies"
     labels:
       - "dependencies"
     open-pull-requests-limit: 15

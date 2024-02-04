@@ -2,7 +2,7 @@ name: End-to-End test
 
 on:
   pull_request:
-    branches: ['developer', 'master']
+    branches: ['dependencies', 'developer', 'master']
   workflow_call:
 
   schedule:

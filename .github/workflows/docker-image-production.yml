@@ -4,6 +4,12 @@ on:
     tags:
       - 'v*'
 jobs:
+  codeql:
+    uses: ./.github/workflows/codeql.yml
+
+  eslint:
+    uses: ./.github/workflows/eslint.yml
+
   test-unit:
     uses: ./.github/workflows/unit-test.yml
 
@@ -15,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     needs:
+      - codeql
+      - eslint
       - test-unit
       - test-e2e
 
@@ -39,8 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs:
-      - test-unit
-      - test-e2e
+      - publish-staging
 
     steps:
       - name: Check out repository code

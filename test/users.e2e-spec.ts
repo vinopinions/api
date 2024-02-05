@@ -4,7 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AuthService } from '../src/auth/auth.service';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
-import { USERNAME_URL_PARAMETER } from '../src/constants/url-parameter';
+import {
+  FRIEND_USERNAME_URL_PARAMETER,
+  USERNAME_URL_PARAMETER,
+} from '../src/constants/url-parameter';
 import { FriendRequestsService } from '../src/friend-requests/friend-requests.service';
 import { User } from '../src/users/entities/user.entity';
 import {
@@ -14,7 +17,7 @@ import {
   USERS_USERNAME_ENDPOINT,
 } from '../src/users/users.controller';
 import { AppModule } from './../src/app.module';
-import { clearDatabase, isErrorResponse, logResponse, login } from './utils';
+import { clearDatabase, isErrorResponse, login } from './utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -158,7 +161,6 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} and user with authorization`, async () => {
-      console.log(user);
       return request(app.getHttpServer())
         .get(
           USERS_USERNAME_ENDPOINT.replace(
@@ -167,7 +169,6 @@ describe('UsersController (e2e)', () => {
           ),
         )
         .set(authHeader)
-        .expect(logResponse)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
           expect(body.id).toEqual(user.id);
@@ -306,7 +307,7 @@ describe('UsersController (e2e)', () => {
             USERNAME_URL_PARAMETER,
             faker.internet.userName().toLowerCase(),
           ).replace(
-            'FRIENDNAME_ENDPOINT_NAME',
+            FRIEND_USERNAME_URL_PARAMETER,
             faker.internet.userName().toLowerCase(),
           ),
         )
@@ -320,7 +321,7 @@ describe('UsersController (e2e)', () => {
             USERNAME_URL_PARAMETER,
             faker.internet.userName().toLowerCase(),
           ).replace(
-            'FRIENDNAME_ENDPOINT_NAME',
+            FRIEND_USERNAME_URL_PARAMETER,
             faker.internet.userName().toLowerCase(),
           ),
         )
@@ -335,7 +336,7 @@ describe('UsersController (e2e)', () => {
             USERNAME_URL_PARAMETER,
             faker.internet.userName().toLowerCase(),
           ).replace(
-            'FRIENDNAME_ENDPOINT_NAME',
+            FRIEND_USERNAME_URL_PARAMETER,
             faker.internet.userName().toLowerCase(),
           ),
         )
@@ -351,7 +352,7 @@ describe('UsersController (e2e)', () => {
             USERNAME_URL_PARAMETER,
             user.username,
           ).replace(
-            'FRIENDNAME_ENDPOINT_NAME',
+            FRIEND_USERNAME_URL_PARAMETER,
             faker.internet.userName().toLowerCase(),
           ),
         )
@@ -371,7 +372,7 @@ describe('UsersController (e2e)', () => {
           USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             user.username,
-          ).replace('FRIENDNAME_ENDPOINT_NAME', toBeDeletedUser.username),
+          ).replace(FRIEND_USERNAME_URL_PARAMETER, toBeDeletedUser.username),
         )
         .set(authHeader)
         .expect(HttpStatus.NOT_FOUND)
@@ -390,7 +391,7 @@ describe('UsersController (e2e)', () => {
             USERNAME_URL_PARAMETER,
             otherUser.username,
           ).replace(
-            'FRIENDNAME_ENDPOINT_NAME',
+            FRIEND_USERNAME_URL_PARAMETER,
             faker.internet.userName().toLowerCase(),
           ),
         )
@@ -412,7 +413,7 @@ describe('UsersController (e2e)', () => {
           USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             user.username,
-          ).replace('FRIENDNAME_ENDPOINT_NAME', createdUser.username),
+          ).replace(FRIEND_USERNAME_URL_PARAMETER, createdUser.username),
         )
         .set(authHeader)
         .expect(HttpStatus.OK);

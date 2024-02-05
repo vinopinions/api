@@ -279,7 +279,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.NOT_FOUND} when sending a friend request to non existing user with authorization`, async () => {
       const validData: SendFriendRequestDto = {
-        to: faker.internet.userName(),
+        username: faker.internet.userName(),
       };
       return request(app.getHttpServer())
         .post(FRIEND_REQUESTS_SEND_ENDPOINT)

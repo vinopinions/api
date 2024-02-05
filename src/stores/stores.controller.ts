@@ -18,14 +18,18 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import {
+  ID_URL_PARAMETER,
+  ID_URL_PARAMETER_NAME,
+} from '../constants/url-parameter';
 import { CreateStoreDto } from './dtos/create-store.dto';
 import { Store } from './entities/store.entity';
 import { StoresService } from './stores.service';
 
 const STORES_ENDPOINT_NAME = 'stores';
 export const STORES_ENDPOINT = `/${STORES_ENDPOINT_NAME}`;
-const STORES_ID_ENDPOINT_NAME = ':id';
-export const STORES_ID_ENDPOINT = `/${STORES_ENDPOINT_NAME}/${STORES_ID_ENDPOINT_NAME}`;
+const STORES_ID_URL_PARAMETER = ID_URL_PARAMETER;
+export const STORES_ID_ENDPOINT = `/${STORES_ENDPOINT_NAME}/${STORES_ID_URL_PARAMETER}`;
 @Controller(STORES_ENDPOINT_NAME)
 @ApiTags(STORES_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
@@ -37,7 +41,7 @@ export class StoresController {
 
   @ApiOperation({ summary: 'get store by id' })
   @HttpCode(HttpStatus.OK)
-  @Get(':id')
+  @Get(STORES_ID_URL_PARAMETER)
   @ApiOkResponse({
     description: 'Store has been found',
     type: Store,
@@ -45,7 +49,9 @@ export class StoresController {
   @ApiNotFoundResponse({
     description: 'Store has not been found',
   })
-  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Store> {
+  findById(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+  ): Promise<Store> {
     return this.storesService.findOne({ where: { id } });
   }
 

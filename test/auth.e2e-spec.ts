@@ -10,7 +10,7 @@ import { AuthService } from '../src/auth/auth.service';
 import { SignInDto } from '../src/auth/dtos/sign-in.dto';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
-import { clearDatabase, isErrorResponse } from './utils';
+import { clearDatabase, isErrorResponse, logResponse } from './utils';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -65,6 +65,7 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post(AUTH_SIGNUP_ENDPOINT)
         .send(validData)
+        .expect(logResponse)
         .expect(HttpStatus.CREATED);
     });
 

@@ -3,6 +3,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
 import { STARS_MAX, STARS_MIN } from '../src/ratings/entities/rating.entity';
 import { RatingsService } from '../src/ratings/ratings.service';
@@ -104,14 +105,14 @@ describe('WinesController (e2e)', () => {
     it('should exist', async () => {
       const wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       const wine: Wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
@@ -119,7 +120,7 @@ describe('WinesController (e2e)', () => {
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
       const wine: Wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.OK);
     });
@@ -127,7 +128,7 @@ describe('WinesController (e2e)', () => {
     it(`should return ${HttpStatus.OK} and array with length of 0 with authorization`, async () => {
       const wine: Wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect((res) => {
@@ -149,7 +150,7 @@ describe('WinesController (e2e)', () => {
       }
 
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect((res) => {
@@ -169,7 +170,7 @@ describe('WinesController (e2e)', () => {
       );
 
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
@@ -271,7 +272,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
@@ -280,7 +281,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
         .expect(isErrorResponse);
@@ -294,7 +295,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST)
@@ -309,7 +310,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST)
@@ -324,7 +325,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST)
@@ -339,7 +340,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST)
@@ -355,7 +356,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(createRatingDto)
         .expect(HttpStatus.CREATED);
@@ -367,7 +368,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
@@ -375,7 +376,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
@@ -384,7 +385,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST);
     });
@@ -397,7 +398,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(updateWineDto)
         .expect(HttpStatus.NOT_FOUND);
@@ -412,7 +413,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(updateWineDto)
         .expect((response) => {

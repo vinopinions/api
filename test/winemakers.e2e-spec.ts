@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
 import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
@@ -117,20 +118,26 @@ describe('WinemakersController (e2e)', () => {
   describe(WINEMAKERS_ID_ENDPOINT + ' (GET)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
-        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(
+          WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        )
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
-        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(
+          WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        )
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
       return request(app.getHttpServer())
-        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(
+          WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        )
         .set(authHeader)
         .expect(HttpStatus.NOT_FOUND)
         .expect(isErrorResponse);
@@ -139,7 +146,10 @@ describe('WinemakersController (e2e)', () => {
     it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
       return request(app.getHttpServer())
         .get(
-          WINEMAKERS_ID_ENDPOINT.replace(':id', faker.string.alphanumeric(10)),
+          WINEMAKERS_ID_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            faker.string.alphanumeric(10),
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
@@ -151,7 +161,7 @@ describe('WinemakersController (e2e)', () => {
         faker.person.fullName(),
       );
       return request(app.getHttpServer())
-        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', winemaker.id))
+        .get(WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, winemaker.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
@@ -167,7 +177,7 @@ describe('WinemakersController (e2e)', () => {
         faker.person.fullName(),
       );
       return request(app.getHttpServer())
-        .get(WINEMAKERS_ID_ENDPOINT.replace(':id', winemaker.id))
+        .get(WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, winemaker.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {

@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/auth/auth.service';
+import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { SendFriendRequestDto } from '../src/friend-requests/dtos/send-friend-request.dto';
 import { FriendRequest } from '../src/friend-requests/entities/friend-request.entity';
 import {
@@ -347,7 +348,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -358,7 +359,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -370,7 +371,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -382,7 +383,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -395,7 +396,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.alphanumeric(10),
           ),
         )
@@ -412,7 +413,10 @@ describe('FriendRequestsController (e2e)', () => {
       const friendRequest = await friendRequestsService.send(sender, user);
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.OK);
@@ -430,7 +434,10 @@ describe('FriendRequestsController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.FORBIDDEN)
@@ -453,7 +460,10 @@ describe('FriendRequestsController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.FORBIDDEN)
@@ -466,7 +476,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -477,7 +487,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -489,7 +499,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -501,7 +511,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -514,7 +524,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.alphanumeric(10),
           ),
         )
@@ -531,7 +541,10 @@ describe('FriendRequestsController (e2e)', () => {
       const friendRequest = await friendRequestsService.send(sender, user);
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.OK);
@@ -549,7 +562,10 @@ describe('FriendRequestsController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.FORBIDDEN)
@@ -572,7 +588,10 @@ describe('FriendRequestsController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.FORBIDDEN)
@@ -585,7 +604,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -596,7 +615,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -608,7 +627,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -620,7 +639,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.uuid(),
           ),
         )
@@ -633,7 +652,7 @@ describe('FriendRequestsController (e2e)', () => {
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ':id',
+            ID_URL_PARAMETER,
             faker.string.alphanumeric(10),
           ),
         )
@@ -654,7 +673,10 @@ describe('FriendRequestsController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.OK);
@@ -668,7 +690,10 @@ describe('FriendRequestsController (e2e)', () => {
       const friendRequest = await friendRequestsService.send(sender, user);
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.FORBIDDEN)
@@ -691,7 +716,10 @@ describe('FriendRequestsController (e2e)', () => {
 
       return request(app.getHttpServer())
         .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(':id', friendRequest.id),
+          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            friendRequest.id,
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.FORBIDDEN)

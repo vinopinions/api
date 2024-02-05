@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
 import {
   STORES_ENDPOINT,
@@ -121,20 +122,20 @@ describe('UsersController (e2e)', () => {
   describe(STORES_ID_ENDPOINT + ' (GET)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .set(authHeader)
         .expect(HttpStatus.NOT_FOUND)
         .expect(isErrorResponse);
@@ -142,7 +143,12 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', faker.string.alphanumeric(10)))
+        .get(
+          STORES_ID_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            faker.string.alphanumeric(10),
+          ),
+        )
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
         .expect((res) => isErrorResponse(res, 'uuid'));
@@ -155,7 +161,7 @@ describe('UsersController (e2e)', () => {
         faker.internet.url(),
       );
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', store.id))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, store.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
@@ -175,7 +181,7 @@ describe('UsersController (e2e)', () => {
         faker.internet.url(),
       );
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', store.id))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, store.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {

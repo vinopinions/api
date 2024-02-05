@@ -294,8 +294,8 @@ describe('FriendRequestsController (e2e)', () => {
         faker.internet.userName().toLowerCase(),
         faker.internet.password(),
       );
-      const data = {
-        to: receiver.username,
+      const data: SendFriendRequestDto = {
+        username: receiver.username,
       };
       return request(app.getHttpServer())
         .post(FRIEND_REQUESTS_SEND_ENDPOINT)
@@ -309,8 +309,8 @@ describe('FriendRequestsController (e2e)', () => {
         faker.internet.userName().toLowerCase(),
         faker.internet.password(),
       );
-      const data = {
-        to: receiver.username,
+      const data: SendFriendRequestDto = {
+        username: receiver.username,
       };
 
       await friendRequestsService.send(user, receiver);
@@ -330,8 +330,8 @@ describe('FriendRequestsController (e2e)', () => {
       );
       await friendRequestsService.send(sender, user);
 
-      const data = {
-        to: sender.username,
+      const data: SendFriendRequestDto = {
+        username: sender.username,
       };
 
       return request(app.getHttpServer())

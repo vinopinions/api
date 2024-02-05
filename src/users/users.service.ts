@@ -7,8 +7,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { Rating } from '../ratings/entities/rating.entity';
-import { User } from './entities/user.entity';
 import { RatingsService } from '../ratings/ratings.service';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {

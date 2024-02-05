@@ -18,12 +18,13 @@ import {
 } from '@nestjs/swagger';
 import { Rating } from '../ratings/entities/rating.entity';
 import { AuthenticatedRequest } from './../auth/auth.guard';
+import { GetUserDto } from './dtos/get-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 const USERS_ENDPOINT_NAME = 'users';
 export const USERS_ENDPOINT = `/${USERS_ENDPOINT_NAME}`;
-const USERS_NAME_ENDPOINT_NAME = ':name';
+const USERS_NAME_ENDPOINT_NAME = ':username';
 export const USERS_NAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_NAME_ENDPOINT_NAME}`;
 const USERS_NAME_FRIENDS_ENDPOINT_NAME = `${USERS_NAME_ENDPOINT_NAME}/friends`;
 export const USERS_NAME_FRIENDS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_NAME_FRIENDS_ENDPOINT_NAME}`;
@@ -61,7 +62,7 @@ export class UsersController {
   @ApiNotFoundResponse({
     description: 'User has not been found',
   })
-  findByName(@Param('name') username: string): Promise<User> {
+  findByName(@Param() { username }: GetUserDto): Promise<User> {
     return this.usersService.findOne({
       where: {
         username,
@@ -80,7 +81,7 @@ export class UsersController {
   @ApiNotFoundResponse({
     description: 'User has not been found',
   })
-  async getFriends(@Param('name') username: string): Promise<User[]> {
+  async getFriends(@Param() { username }: GetUserDto): Promise<User[]> {
     const user: User = await this.usersService.findOne({
       where: {
         username,
@@ -102,7 +103,7 @@ export class UsersController {
     description: 'User has not been found or is not a friend',
   })
   async removeFriend(
-    @Param('name') username: string,
+    @Param() { username }: GetUserDto,
     @Param('friendName') friendUsername: string,
     @Req() request: AuthenticatedRequest,
   ): Promise<void> {
@@ -133,7 +134,7 @@ export class UsersController {
     isArray: true,
   })
   @ApiOperation({ summary: 'get ratings by a user' })
-  getRatings(@Param('name') username: string): Promise<Rating[]> {
+  getRatings(@Param() { username }: GetUserDto): Promise<Rating[]> {
     return this.usersService.getRatings(username);
   }
 }

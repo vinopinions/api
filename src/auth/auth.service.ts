@@ -1,13 +1,12 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import { SignInResponseDto } from './dtos/sign-in-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,15 +15,16 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(username: string, password: string): Promise<SignInResponseDto> {
-    if (!username)
-      throw new BadRequestException("'username' has to be defined");
-    if (!password)
-      throw new BadRequestException("'password' has to be defined");
-    const user = await this.usersService.findOne({ where: { username } });
-
-    if (!user) throw new UnauthorizedException();
-
+  async signIn(
+    username: string,
+    password: string,
+  ): Promise<{ access_token: string }> {
+    let user = null;
+    try {
+      user = await this.usersService.findOne({ where: { username } });
+    } catch (NotFoundException) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
     const correct: boolean = await bcrypt.compare(password, user.passwordHash);
     if (!correct) throw new UnauthorizedException();
 
@@ -34,12 +34,7 @@ export class AuthService {
     };
   }
 
-  async signUp(username: string, password: string) {
-    if (!username)
-      throw new BadRequestException("'username' has to be defined");
-    if (!password)
-      throw new BadRequestException("'password' has to be defined");
-
+  async signUp(username: string, password: string): Promise<User> {
     // Weird setup but since findOneByUsername throws an exception when no user is found it makes sense
     try {
       if (await this.usersService.findOne({ where: { username } }))
@@ -47,7 +42,8 @@ export class AuthService {
     } catch (NotFoundException) {
       const hash: string = await bcrypt.hash(password, 12);
 
-      this.usersService.create(username, hash);
+      return await this.usersService.create(username, hash);
     }
+    throw new ConflictException();
   }
 }

@@ -5,6 +5,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,11 +17,21 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Rating } from '../ratings/entities/rating.entity';
+import { AuthenticatedRequest } from './../auth/auth.guard';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
-@Controller('users')
-@ApiTags('users')
+const USERS_ENDPOINT_NAME = 'users';
+export const USERS_ENDPOINT = `/${USERS_ENDPOINT_NAME}`;
+const USERS_NAME_ENDPOINT_NAME = ':name';
+export const USERS_NAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_NAME_ENDPOINT_NAME}`;
+const USERS_NAME_FRIENDS_ENDPOINT_NAME = `${USERS_NAME_ENDPOINT_NAME}/friends`;
+export const USERS_NAME_FRIENDS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_NAME_FRIENDS_ENDPOINT_NAME}`;
+const USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME = `${USERS_NAME_FRIENDS_ENDPOINT_NAME}/:friendName`;
+export const USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME}`;
+
+@Controller(USERS_ENDPOINT_NAME)
+@ApiTags(USERS_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
@@ -41,7 +53,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'get information about a user' })
   @HttpCode(HttpStatus.OK)
-  @Get(':name')
+  @Get(USERS_NAME_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'User has been found',
     type: User,
@@ -59,7 +71,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'get friends of a user' })
   @HttpCode(HttpStatus.OK)
-  @Get(':name/friends')
+  @Get(USERS_NAME_FRIENDS_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'Friends for the user have been found',
     type: User,
@@ -79,9 +91,12 @@ export class UsersController {
 
   @ApiOperation({ summary: 'remove a friend' })
   @HttpCode(HttpStatus.OK)
-  @Delete(':name/friends/:friendName')
+  @Delete(USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'Friend has been deleted',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'You can not delete another users friendship',
   })
   @ApiNotFoundResponse({
     description: 'User has not been found or is not a friend',
@@ -89,12 +104,18 @@ export class UsersController {
   async removeFriend(
     @Param('name') username: string,
     @Param('friendName') friendUsername: string,
+    @Req() request: AuthenticatedRequest,
   ): Promise<void> {
     const removingUser: User = await this.usersService.findOne({
       where: {
         username,
       },
     });
+
+    if (removingUser.id !== request.user.id)
+      throw new UnauthorizedException(
+        'You can not delete another users friend',
+      );
 
     const toBeRemovedUser: User = await this.usersService.findOne({
       where: {

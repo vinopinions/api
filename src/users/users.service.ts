@@ -8,11 +8,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { Rating } from '../ratings/entities/rating.entity';
 import { User } from './entities/user.entity';
+import { RatingsService } from '../ratings/ratings.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private ratingsService: RatingsService,
   ) {}
 
   async create(username: string, passwordHash: string): Promise<User> {
@@ -116,7 +118,11 @@ export class UsersService {
       },
     });
 
-    if (!removingUserWithRelation.friends.includes(toBeRemovedUser))
+    if (
+      !removingUserWithRelation.friends.find(
+        (user) => user.id == toBeRemovedUser.id,
+      )
+    )
       throw new NotFoundException('This user is not your friend');
 
     // remove toBeRemovedUser from removingUser's friends
@@ -124,7 +130,11 @@ export class UsersService {
       (user) => user.id !== toBeRemovedUser.id,
     );
 
-    if (!toBeRemovedUserWithRelation.friends.includes(removingUser))
+    if (
+      !toBeRemovedUserWithRelation.friends.find(
+        (user) => user.id == removingUser.id,
+      )
+    )
       throw new InternalServerErrorException(
         'User were not in both of each others friend lists',
       );
@@ -143,8 +153,14 @@ export class UsersService {
   async getRatings(username: string): Promise<Rating[]> {
     const user: User = await this.findOne({
       where: { username },
-      relations: { ratings: true },
     });
-    return user.ratings;
+
+    return this.ratingsService.findMany({
+      where: { user: { id: user.id } },
+      relations: {
+        wine: true,
+        user: true,
+      },
+    });
   }
 }

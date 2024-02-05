@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDate, IsString, IsUUID } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -18,6 +19,7 @@ export class Winemaker {
     type: String,
     format: 'uuid',
   })
+  @IsUUID()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -26,6 +28,7 @@ export class Winemaker {
     description: 'name of the winemaker',
     type: String,
   })
+  @IsString()
   @Column({ unique: true })
   name: string;
 
@@ -38,9 +41,11 @@ export class Winemaker {
     description: 'createdAt',
     type: Date,
   })
+  @IsDate()
   @CreateDateColumn()
   createdAt: Date;
 
+  @IsDate()
   @UpdateDateColumn()
   updatedAt: Date;
 }

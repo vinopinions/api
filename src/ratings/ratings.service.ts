@@ -1,45 +1,26 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { validate } from 'class-validator';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
 import { Wine } from '../wines/entities/wine.entity';
-import { WinesService } from '../wines/wines.service';
-import { CreateRatingDto } from './dtos/create-rating.dto';
 import { Rating } from './entities/rating.entity';
 
 @Injectable()
 export class RatingsService {
   constructor(
     @InjectRepository(Rating) private ratingRepository: Repository<Rating>,
-    private wineService: WinesService,
-    private usersService: UsersService,
   ) {}
 
-  async create(data: CreateRatingDto): Promise<Rating> {
-    const wine: Wine = await this.wineService.findOne({
-      where: {
-        id: data.wineId,
-      },
-    });
-    const user: User = await this.usersService.findOne({
-      where: {
-        id: data.userId,
-      },
-    });
-
-    const rating: Rating = this.ratingRepository.create(data);
+  async create(
+    stars: number,
+    text: string,
+    user: User,
+    wine: Wine,
+  ): Promise<Rating> {
+    const rating: Rating = this.ratingRepository.create({ stars, text });
     rating.wine = wine;
     rating.user = user;
 
-    const validationErrors = await validate(rating);
-    if (validationErrors.length > 0)
-      throw new BadRequestException(validationErrors.map((e) => e.constraints));
     return this.ratingRepository.save(rating);
   }
 
@@ -63,10 +44,5 @@ export class RatingsService {
       },
     });
     return this.ratingRepository.remove(rating);
-  }
-
-  async getByWineId(id: string): Promise<Rating[]> {
-    const wine: Wine = await this.wineService.findOne({ where: { id } });
-    return wine.ratings;
   }
 }

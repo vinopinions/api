@@ -1,0 +1,32 @@
+name: Unit Test
+
+on:
+  pull_request:
+    branches: ['dependencies', 'developer', 'master']
+  workflow_call:
+  schedule:
+    - cron: '0 8 * * *'
+
+jobs:
+  test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: yarn --ignore-scripts --non-interactive --frozen-lockfile
+
+      - name: Run Tests
+        run: yarn test --ci
+        env:
+          NODE_ENV: ${{ vars.NODE_ENV }}

@@ -267,7 +267,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.BAD_REQUEST} with invalid data and with authorization`, async () => {
       const invalidData = {
-        to: 123,
+        username: 123,
       };
       return request(app.getHttpServer())
         .post(FRIEND_REQUESTS_SEND_ENDPOINT)
@@ -279,7 +279,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.NOT_FOUND} when sending a friend request to non existing user with authorization`, async () => {
       const validData: SendFriendRequestDto = {
-        username: faker.internet.userName(),
+        username: faker.internet.userName().toLowerCase(),
       };
       return request(app.getHttpServer())
         .post(FRIEND_REQUESTS_SEND_ENDPOINT)
@@ -291,7 +291,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.CREATED} when sending friend request with authorization`, async () => {
       const receiver: User = await authService.signUp(
-        faker.internet.userName(),
+        faker.internet.userName().toLowerCase(),
         faker.internet.password(),
       );
       const data = {
@@ -306,7 +306,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.CONFLICT} when already sent a friend request with authorization`, async () => {
       const receiver: User = await authService.signUp(
-        faker.internet.userName(),
+        faker.internet.userName().toLowerCase(),
         faker.internet.password(),
       );
       const data = {
@@ -325,7 +325,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.CONFLICT} when already received a friend request from sender and try to send one to him with authorization`, async () => {
       const sender: User = await authService.signUp(
-        faker.internet.userName(),
+        faker.internet.userName().toLowerCase(),
         faker.internet.password(),
       );
       await friendRequestsService.send(sender, user);

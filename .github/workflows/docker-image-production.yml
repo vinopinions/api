@@ -85,4 +85,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:${{ vars.DOCKER_IMAGE_TAG }}
-            ghcr.io/${{ github.repository }}:${{ github.ref_name }}-${{ steps.extract_version.outputs.version}}
+            ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.version}}

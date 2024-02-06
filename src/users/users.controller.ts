@@ -35,6 +35,8 @@ const USERS_USERNAME_FRIENDS_ENDPOINT_NAME = `${USERS_USERNAME_ENDPOINT_NAME}/fr
 export const USERS_NAME_FRIENDS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_ENDPOINT_NAME}`;
 const USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME = `${USERS_USERNAME_FRIENDS_ENDPOINT_NAME}/${FRIEND_USERNAME_URL_PARAMETER}`;
 export const USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME}`;
+const USERS_ME_ENDPOINT_NAME = 'me';
+export const USERS_ME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_ENDPOINT_NAME}`;
 
 @Controller(USERS_ENDPOINT_NAME)
 @ApiTags(USERS_ENDPOINT_NAME)
@@ -44,6 +46,20 @@ export const USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS
 @ApiBearerAuth()
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @ApiOperation({ summary: 'get current user' })
+  @HttpCode(HttpStatus.OK)
+  @Get(USERS_ME_ENDPOINT_NAME)
+  @ApiOkResponse({
+    description: 'User has been found',
+    type: User,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+  })
+  getCurrentUser(@Req() request: AuthenticatedRequest): User {
+    return request.user;
+  }
 
   @ApiOperation({ summary: 'get all user' })
   @HttpCode(HttpStatus.OK)

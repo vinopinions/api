@@ -12,6 +12,7 @@ import { FriendRequestsService } from '../src/friend-requests/friend-requests.se
 import { User } from '../src/users/entities/user.entity';
 import {
   USERS_ENDPOINT,
+  USERS_ME_ENDPOINT,
   USERS_NAME_FRIENDS_ENDPOINT,
   USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT,
   USERS_USERNAME_ENDPOINT,
@@ -120,6 +121,42 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.OK)
         .expect((res) => {
           expect(res.body.passwordHash).toBeUndefined();
+        });
+    });
+  });
+
+  describe(USERS_ME_ENDPOINT + ' (GET)', () => {
+    it('should exist', () => {
+      return request(app.getHttpServer())
+        .get(USERS_ME_ENDPOINT)
+        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(USERS_ME_ENDPOINT)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(USERS_ME_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK);
+    });
+
+    it(`should return ${HttpStatus.OK} and currently logged in User excluding passwordHash with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(USERS_ME_ENDPOINT)
+        .set(authHeader)
+        .expect(HttpStatus.OK)
+        .expect(({ body }) => {
+          expect(body.id).toEqual(user.id);
+          expect(body.username).toEqual(user.username);
+          expect(body.passwordHash).toBeUndefined();
+          expect(body.createdAt).toEqual(user.createdAt.toISOString());
+          expect(body.updatedAt).toEqual(user.updatedAt.toISOString());
         });
     });
   });

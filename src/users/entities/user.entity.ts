@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { Rating } from '../../ratings/entities/rating.entity';
 
-const USERNAME_REGEX = /^[a-zA-Z0-9_.]{3,20}$/;
+export const USERNAME_REGEX = /^[a-z0-9_.]{3,20}$/;
 
 @Entity()
 export class User {
@@ -38,7 +38,7 @@ export class User {
   })
   @Matches(USERNAME_REGEX, {
     message:
-      'username must be defined, has to be 3-20 characters long and can only include letters, underscores and dots, but no spaces',
+      'username must be defined, has to be lowercase, 3-20 characters long and can only include letters, underscores and dots, but no spaces',
   })
   @Column({ unique: true })
   username: string;

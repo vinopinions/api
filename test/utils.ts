@@ -24,7 +24,7 @@ export const login = async (
   const authService = app.get(AuthService);
 
   const userData = {
-    username: faker.internet.userName(),
+    username: faker.internet.userName().toLowerCase(),
     password: faker.internet.password(),
   };
 

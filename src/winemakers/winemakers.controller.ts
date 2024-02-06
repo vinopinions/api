@@ -18,14 +18,18 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import {
+  ID_URL_PARAMETER,
+  ID_URL_PARAMETER_NAME,
+} from '../constants/url-parameter';
 import { CreateWinemakerDto } from './dtos/create-winemaker.dto';
 import { Winemaker } from './entities/winemaker.entity';
 import { WinemakersService } from './winemakers.service';
 
 const WINEMAKERS_ENDPOINT_NAME = 'winemakers';
 export const WINEMAKERS_ENDPOINT = `/${WINEMAKERS_ENDPOINT_NAME}`;
-const WINEMAKERS_ID_ENDPOINT_NAME = ':id';
-export const WINEMAKERS_ID_ENDPOINT = `${WINEMAKERS_ENDPOINT}/${WINEMAKERS_ID_ENDPOINT_NAME}`;
+const WINEMAKERS_ID_URL_PARAMETER = ID_URL_PARAMETER;
+export const WINEMAKERS_ID_ENDPOINT = `${WINEMAKERS_ENDPOINT}/${WINEMAKERS_ID_URL_PARAMETER}`;
 
 @Controller(WINEMAKERS_ENDPOINT_NAME)
 @ApiTags(WINEMAKERS_ENDPOINT_NAME)
@@ -50,7 +54,7 @@ export class WinemakersController {
 
   @ApiOperation({ summary: 'get winemaker by id' })
   @HttpCode(HttpStatus.OK)
-  @Get(WINEMAKERS_ID_ENDPOINT_NAME)
+  @Get(WINEMAKERS_ID_URL_PARAMETER)
   @ApiOkResponse({
     description: 'Winemaker has been found',
     type: Winemaker,
@@ -58,7 +62,9 @@ export class WinemakersController {
   @ApiNotFoundResponse({
     description: 'Winemaker has not been found',
   })
-  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Winemaker> {
+  findById(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+  ): Promise<Winemaker> {
     return this.winemakersService.findOne({ where: { id } });
   }
 

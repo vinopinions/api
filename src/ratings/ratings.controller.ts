@@ -15,13 +15,17 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import {
+  ID_URL_PARAMETER,
+  ID_URL_PARAMETER_NAME,
+} from '../constants/url-parameter';
 import { Rating } from './entities/rating.entity';
 import { RatingsService } from './ratings.service';
 
 const RATINGS_ENDPOINT_NAME = 'ratings';
 export const RATINGS_ENDPOINT = `/${RATINGS_ENDPOINT_NAME}`;
-const RATINGS_ID_ENDPOINT_NAME = `:id`;
-export const RATINGS_ID_ENDPOINT = `${RATINGS_ENDPOINT}/${RATINGS_ID_ENDPOINT_NAME}`;
+const RATINGS_ID_URL_PARAMETER = ID_URL_PARAMETER;
+export const RATINGS_ID_ENDPOINT = `${RATINGS_ENDPOINT}/${RATINGS_ID_URL_PARAMETER}`;
 
 @ApiTags(RATINGS_ENDPOINT_NAME)
 @Controller(RATINGS_ENDPOINT_NAME)
@@ -35,7 +39,7 @@ export class RatingsController {
 
   @ApiOperation({ summary: 'get rating by id' })
   @HttpCode(HttpStatus.OK)
-  @Get(RATINGS_ID_ENDPOINT_NAME)
+  @Get(RATINGS_ID_URL_PARAMETER)
   @ApiOkResponse({
     description: 'Rating has been found',
     type: Rating,
@@ -43,7 +47,9 @@ export class RatingsController {
   @ApiNotFoundResponse({
     description: 'Rating has not been found',
   })
-  findById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Rating> {
+  findById(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+  ): Promise<Rating> {
     return this.ratingsService.findOne({ where: { id } });
   }
 
@@ -61,7 +67,7 @@ export class RatingsController {
 
   @ApiOperation({ summary: 'delete a rating' })
   @HttpCode(HttpStatus.OK)
-  @Delete(RATINGS_ID_ENDPOINT_NAME)
+  @Delete(RATINGS_ID_URL_PARAMETER)
   @ApiOkResponse({
     description: 'Rating has been deleted',
     type: Rating,
@@ -69,7 +75,9 @@ export class RatingsController {
   @ApiNotFoundResponse({
     description: 'Rating has not been found',
   })
-  delete(@Param('id', new ParseUUIDPipe()) id: string): Promise<Rating> {
+  delete(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+  ): Promise<Rating> {
     return this.ratingsService.remove(id);
   }
 }

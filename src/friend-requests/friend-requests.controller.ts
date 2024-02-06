@@ -22,6 +22,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/auth.guard';
+import {
+  ID_URL_PARAMETER,
+  ID_URL_PARAMETER_NAME,
+} from '../constants/url-parameter';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { SendFriendRequestDto } from './dtos/send-friend-request.dto';
@@ -36,11 +40,11 @@ const FRIEND_REQUESTS_OUTGOING_ENDPOINT_NAME = 'outgoing';
 export const FRIEND_REQUESTS_OUTGOING_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_OUTGOING_ENDPOINT_NAME}`;
 const FRIEND_REQUESTS_SEND_ENDPOINT_NAME = 'send';
 export const FRIEND_REQUESTS_SEND_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_SEND_ENDPOINT_NAME}`;
-const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME = ':id/accept';
+const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME = `${ID_URL_PARAMETER}/accept`;
 export const FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT_NAME}`;
-const FRIEND_REQUESTS_ID_DECLINE_ENDPOINT_NAME = ':id/decline';
+const FRIEND_REQUESTS_ID_DECLINE_ENDPOINT_NAME = `${ID_URL_PARAMETER}/decline`;
 export const FRIEND_REQUESTS_ID_DECLINE_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_DECLINE_ENDPOINT_NAME}`;
-const FRIEND_REQUESTS_ID_REVOKE_ENDPOINT_NAME = ':id/revoke';
+const FRIEND_REQUESTS_ID_REVOKE_ENDPOINT_NAME = `${ID_URL_PARAMETER}/revoke`;
 export const FRIEND_REQUESTS_ID_REVOKE_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_REVOKE_ENDPOINT_NAME}`;
 
 @Controller(FRIEND_REQUESTS_ENDPOINT_NAME)
@@ -95,7 +99,7 @@ export class FriendRequestsController {
     @Body() sendFriendRequestDto: SendFriendRequestDto,
   ) {
     const user: User = await this.usersService.findOne({
-      where: { username: sendFriendRequestDto.to },
+      where: { username: sendFriendRequestDto.username },
     });
     return await this.friendRequestsService.send(request.user, user);
   }
@@ -117,7 +121,7 @@ export class FriendRequestsController {
   })
   async accept(
     @Req() request: AuthenticatedRequest,
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
   ): Promise<void> {
     await this.friendRequestsService.accept(id, request.user);
   }
@@ -139,7 +143,7 @@ export class FriendRequestsController {
   })
   async decline(
     @Req() request: AuthenticatedRequest,
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
   ): Promise<FriendRequest> {
     return await this.friendRequestsService.decline(id, request.user);
   }
@@ -161,7 +165,7 @@ export class FriendRequestsController {
   })
   async revoke(
     @Req() request: AuthenticatedRequest,
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
   ) {
     await this.friendRequestsService.revoke(id, request.user);
   }

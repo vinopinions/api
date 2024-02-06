@@ -59,7 +59,7 @@ describe('AuthController (e2e)', () => {
 
     it(`should return ${HttpStatus.CREATED} with valid data`, () => {
       const validData: SignUpDto = {
-        username: faker.internet.userName(),
+        username: faker.internet.userName().toLowerCase(),
         password: faker.internet.password(),
       };
       return request(app.getHttpServer())
@@ -68,9 +68,53 @@ describe('AuthController (e2e)', () => {
         .expect(HttpStatus.CREATED);
     });
 
+    it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, () => {
+      const validData: SignUpDto = {
+        username: faker.string.alphanumeric(2),
+        password: faker.internet.password(),
+      };
+      return request(app.getHttpServer())
+        .post(AUTH_SIGNUP_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, () => {
+      const validData: SignUpDto = {
+        username: faker.string.alphanumeric(21),
+        password: faker.internet.password(),
+      };
+      return request(app.getHttpServer())
+        .post(AUTH_SIGNUP_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, () => {
+      const validData: SignUpDto = {
+        username: '$$$$$$',
+        password: faker.internet.password(),
+      };
+      return request(app.getHttpServer())
+        .post(AUTH_SIGNUP_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, () => {
+      const validData: SignUpDto = {
+        username: faker.internet.userName().toUpperCase(),
+        password: faker.internet.password(),
+      };
+      return request(app.getHttpServer())
+        .post(AUTH_SIGNUP_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+
     it(`should return ${HttpStatus.CONFLICT} when using the same username twice`, async () => {
       const validData: SignUpDto = {
-        username: faker.internet.userName(),
+        username: faker.internet.userName().toLowerCase(),
         password: faker.internet.password(),
       };
       await authService.signUp(validData.username, validData.password);
@@ -111,7 +155,7 @@ describe('AuthController (e2e)', () => {
 
     it(`should return ${HttpStatus.UNAUTHORIZED} with valid data but no signup before`, () => {
       const validData: SignInDto = {
-        username: faker.internet.userName(),
+        username: faker.internet.userName().toLowerCase(),
         password: faker.internet.password(),
       };
       return request(app.getHttpServer())
@@ -121,9 +165,53 @@ describe('AuthController (e2e)', () => {
         .expect(isErrorResponse);
     });
 
+    it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, () => {
+      const validData: SignInDto = {
+        username: faker.string.alphanumeric(2),
+        password: faker.internet.password(),
+      };
+      return request(app.getHttpServer())
+        .post(AUTH_LOGIN_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, () => {
+      const validData: SignInDto = {
+        username: faker.string.alphanumeric(21),
+        password: faker.internet.password(),
+      };
+      return request(app.getHttpServer())
+        .post(AUTH_LOGIN_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, () => {
+      const validData: SignInDto = {
+        username: '$$$$$$',
+        password: faker.internet.password(),
+      };
+      return request(app.getHttpServer())
+        .post(AUTH_LOGIN_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, () => {
+      const validData: SignInDto = {
+        username: faker.internet.userName().toUpperCase(),
+        password: faker.internet.password(),
+      };
+      return request(app.getHttpServer())
+        .post(AUTH_LOGIN_ENDPOINT)
+        .send(validData)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+
     it(`should return ${HttpStatus.CREATED} and access_token with valid data and signup before`, async () => {
       const validData: SignInDto = {
-        username: faker.internet.userName(),
+        username: faker.internet.userName().toLowerCase(),
         password: faker.internet.password(),
       };
 

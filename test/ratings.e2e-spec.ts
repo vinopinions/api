@@ -7,6 +7,7 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { Rating, STARS_MIN } from '../src/ratings/entities/rating.entity';
 import {
   RATINGS_ENDPOINT,
@@ -114,13 +115,13 @@ describe('RatingsController (e2e)', () => {
   describe(RATINGS_ID_ENDPOINT + ' (GET)', () => {
     it('should exist', async () => {
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
@@ -128,14 +129,14 @@ describe('RatingsController (e2e)', () => {
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))
         .set(authHeader)
         .expect(HttpStatus.OK);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} when looking for an uuid that doesn't exist`, async () => {
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .set(authHeader)
         .expect(HttpStatus.NOT_FOUND)
         .expect(isErrorResponse);
@@ -143,7 +144,12 @@ describe('RatingsController (e2e)', () => {
 
     it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.alphanumeric(10)))
+        .get(
+          RATINGS_ID_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            faker.string.alphanumeric(10),
+          ),
+        )
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => isErrorResponse(response, 'uuid'));
@@ -152,7 +158,7 @@ describe('RatingsController (e2e)', () => {
     it(`should return ${HttpStatus.OK} and rating object without relations`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
@@ -171,21 +177,21 @@ describe('RatingsController (e2e)', () => {
     it('should exist', async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
-        .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .delete(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
-        .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .delete(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} when looking for an uuid that doesn't exist`, async () => {
       return request(app.getHttpServer())
-        .get(RATINGS_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .set(authHeader)
         .expect(HttpStatus.NOT_FOUND)
         .expect(isErrorResponse);
@@ -194,7 +200,10 @@ describe('RatingsController (e2e)', () => {
     it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
       return request(app.getHttpServer())
         .delete(
-          RATINGS_ID_ENDPOINT.replace(':id', faker.string.alphanumeric(10)),
+          RATINGS_ID_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            faker.string.alphanumeric(10),
+          ),
         )
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
@@ -204,7 +213,7 @@ describe('RatingsController (e2e)', () => {
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
-        .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .delete(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))
         .set(authHeader)
         .expect(HttpStatus.OK);
     });
@@ -212,7 +221,7 @@ describe('RatingsController (e2e)', () => {
     it(`should return ${HttpStatus.OK} when deleting a rating and should not exist anymore in the database after deletion`, async () => {
       const rating: Rating = await createTestRating();
       return await request(app.getHttpServer())
-        .delete(RATINGS_ID_ENDPOINT.replace(':id', rating.id))
+        .delete(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(async () => {

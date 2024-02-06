@@ -21,6 +21,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/auth.guard';
+import {
+  ID_URL_PARAMETER,
+  ID_URL_PARAMETER_NAME,
+} from '../constants/url-parameter';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
 import { RatingsService } from '../ratings/ratings.service';
 import { Rating } from './../ratings/entities/rating.entity';
@@ -31,9 +35,9 @@ import { WinesService } from './wines.service';
 
 const WINES_ENDPOINT_NAME = 'wines';
 export const WINES_ENDPOINT = `/${WINES_ENDPOINT_NAME}`;
-const WINES_ID_ENDPOINT_NAME = ':id';
-export const WINES_ID_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_ENDPOINT_NAME}`;
-const WINES_ID_RATINGS_NAME = `${WINES_ID_ENDPOINT_NAME}/ratings`;
+const WINES_ID_URL_PARAMETER = ID_URL_PARAMETER;
+export const WINES_ID_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_URL_PARAMETER}`;
+const WINES_ID_RATINGS_NAME = `${WINES_ID_URL_PARAMETER}/ratings`;
 export const WINES_ID_RATINGS_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_RATINGS_NAME}`;
 
 @Controller(WINES_ENDPOINT_NAME)
@@ -50,7 +54,7 @@ export class WinesController {
 
   @ApiOperation({ summary: 'get wine by id' })
   @HttpCode(HttpStatus.OK)
-  @Get(WINES_ID_ENDPOINT_NAME)
+  @Get(WINES_ID_URL_PARAMETER)
   @ApiOkResponse({
     description: 'Wine has been found',
     type: Wine,
@@ -58,7 +62,7 @@ export class WinesController {
   @ApiNotFoundResponse({
     description: 'Wine has not been found',
   })
-  findById(@Param('id', new ParseUUIDPipe()) id: string) {
+  findById(@Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string) {
     return this.winesService.findOne({ where: { id } });
   }
 
@@ -97,7 +101,7 @@ export class WinesController {
 
   @ApiOperation({ summary: 'update a wine' })
   @HttpCode(HttpStatus.OK)
-  @Put(WINES_ID_ENDPOINT_NAME)
+  @Put(WINES_ID_URL_PARAMETER)
   @ApiCreatedResponse({
     description: 'Store has been added to the wine',
     type: Wine,
@@ -109,7 +113,7 @@ export class WinesController {
     description: 'Wine or store has not been found',
   })
   update(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
     @Body() updateWineDto: UpdateWineDto,
   ) {
     return this.winesService.update(id, updateWineDto.storeIds);

@@ -1,12 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { PickType } from '@nestjs/swagger';
+import { User } from '../../users/entities/user.entity';
 
-export class SendFriendRequestDto {
-  @ApiProperty({
-    example: 'bauerpeter',
-    description: 'name of the user you want to sent a friend request to',
-    type: String,
-  })
-  @IsString()
-  to: string;
-}
+export class SendFriendRequestDto extends PickType(User, [
+  'username',
+] as const) {}

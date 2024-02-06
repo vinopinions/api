@@ -133,7 +133,7 @@ export class WinesController {
     description: 'Wine has not been found',
   })
   async createRating(
-    @Param('wineId') wineId: string,
+    @Param(ID_URL_PARAMETER_NAME) wineId: string,
     @Body() { stars, text }: CreateRatingDto,
     @Req() request: AuthenticatedRequest,
   ): Promise<Rating> {

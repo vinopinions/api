@@ -361,6 +361,30 @@ describe('WinesController (e2e)', () => {
         .send(createRatingDto)
         .expect(HttpStatus.CREATED);
     });
+
+    it(`should return ${HttpStatus.CREATED} with valid request body and correct data`, async () => {
+      const wine: Wine = await createTestWine();
+
+      const createRatingDto: CreateRatingDto = {
+        stars: STARS_MAX,
+        text: faker.lorem.lines(),
+      };
+
+      return request(app.getHttpServer())
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
+        .set(authHeader)
+        .send(createRatingDto)
+        .expect(HttpStatus.CREATED)
+        .expect(({ body }) => {
+          expect(body.id).toBeDefined();
+          expect(body.stars).toEqual(createRatingDto.stars);
+          expect(body.text).toEqual(createRatingDto.text);
+          expect(body.wine).toBeDefined();
+          expect(body.wine.id).toEqual(wine.id);
+          expect(body.updatedAt).toBeDefined();
+          expect(body.createdAt).toBeDefined();
+        });
+    });
   });
 
   describe(WINES_ID_ENDPOINT + ' (PUT)', () => {

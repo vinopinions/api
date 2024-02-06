@@ -53,7 +53,6 @@ export class WinesController {
   ) {}
 
   @ApiOperation({ summary: 'get wine by id' })
-  @HttpCode(HttpStatus.OK)
   @Get(WINES_ID_URL_PARAMETER)
   @ApiOkResponse({
     description: 'Wine has been found',
@@ -67,7 +66,6 @@ export class WinesController {
   }
 
   @ApiOperation({ summary: 'get all wines' })
-  @HttpCode(HttpStatus.OK)
   @Get()
   @ApiOkResponse({
     description: 'Wines have been found',
@@ -79,7 +77,6 @@ export class WinesController {
   }
 
   @ApiOperation({ summary: 'create a wine' })
-  @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiCreatedResponse({
     description: 'Wine has been created',
@@ -120,7 +117,6 @@ export class WinesController {
   }
 
   @ApiOperation({ summary: 'rate a wine' })
-  @HttpCode(HttpStatus.CREATED)
   @Post(WINES_ID_RATINGS_NAME)
   @ApiCreatedResponse({
     description: 'Ratings has been added to the wine',
@@ -133,7 +129,7 @@ export class WinesController {
     description: 'Wine has not been found',
   })
   async createRating(
-    @Param(ID_URL_PARAMETER_NAME) wineId: string,
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) wineId: string,
     @Body() { stars, text }: CreateRatingDto,
     @Req() request: AuthenticatedRequest,
   ): Promise<Rating> {
@@ -152,10 +148,9 @@ export class WinesController {
     description: 'Wine has not been found',
   })
   @ApiOperation({ summary: 'get all ratings of a wine' })
-  @HttpCode(HttpStatus.OK)
-  @Get(':wineId/ratings')
+  @Get(WINES_ID_RATINGS_NAME)
   getRatingsForWines(
-    @Param('wineId', new ParseUUIDPipe()) wineId: string,
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) wineId: string,
   ): Promise<Rating[]> {
     return this.winesService.getRatingsForWine(wineId);
   }

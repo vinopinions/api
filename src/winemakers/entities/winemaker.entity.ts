@@ -13,8 +13,6 @@ import { Wine } from '../../wines/entities/wine.entity';
 @Entity()
 export class Winemaker {
   @ApiProperty({
-    readOnly: true,
-    example: 'uuid',
     description: 'uuid',
     type: String,
     format: 'uuid',
@@ -25,19 +23,22 @@ export class Winemaker {
 
   @ApiProperty({
     example: 'Sina Mertz',
-    description: 'name of the winemaker',
+    description: 'Name of the winemaker',
     type: String,
   })
   @IsString()
   @Column({ unique: true })
   name: string;
 
+  @ApiProperty({
+    description: 'Wines of the winemaker',
+    type: Wine,
+    isArray: true,
+  })
   @OneToMany(() => Wine, (wine) => wine.winemaker)
   wines: Wine[];
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'createdAt',
     type: Date,
   })
@@ -45,6 +46,10 @@ export class Winemaker {
   @CreateDateColumn()
   createdAt: Date;
 
+  @ApiProperty({
+    description: 'updatedAt',
+    type: Date,
+  })
   @IsDate()
   @UpdateDateColumn()
   updatedAt: Date;

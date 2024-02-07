@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsString, IsUUID } from 'class-validator';
+import { IsDate, IsNumber, IsString, IsUUID } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -18,8 +18,6 @@ import { Winemaker } from '../../winemakers/entities/winemaker.entity';
 @Entity()
 export class Wine {
   @ApiProperty({
-    readOnly: true,
-    example: 'uuid',
     description: 'uuid',
     type: String,
     format: 'uuid',
@@ -30,7 +28,7 @@ export class Wine {
 
   @ApiProperty({
     example: 'Scheurebe',
-    description: 'name of the wine',
+    description: 'Name of the wine',
     type: String,
   })
   @IsString()
@@ -39,15 +37,16 @@ export class Wine {
 
   @ApiProperty({
     example: 2017,
-    description: 'year of the wine',
+    description: 'Year of the wine',
     type: Number,
   })
+  @IsNumber()
   @Column()
   year: number;
 
   @ApiProperty({
     example: 'Scheurebe',
-    description: 'the wines grape variety',
+    description: 'The wines grape variety',
     type: String,
   })
   @IsString()
@@ -56,7 +55,7 @@ export class Wine {
 
   @ApiProperty({
     example: 'Rheinhessen',
-    description: 'the wines heritage',
+    description: 'The wines heritage',
     type: String,
   })
   @IsString()
@@ -64,19 +63,14 @@ export class Wine {
   heritage: string;
 
   @ApiProperty({
-    example: {
-      id: 'uuid',
-      name: 'Sina Mertz',
-      wines: [],
-    },
-    description: 'the wines winemaker',
+    description: 'The winemaker of the wine',
     type: Winemaker,
   })
   @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
   winemaker: Winemaker;
 
   @ApiProperty({
-    description: 'the store where the wine was bought at',
+    description: 'The stores where the wine can be bought at',
     type: Store,
     isArray: true,
   })
@@ -105,8 +99,6 @@ export class Wine {
   ratings: Rating[];
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'createdAt',
     type: Date,
   })
@@ -115,12 +107,10 @@ export class Wine {
   createdAt: Date;
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'updatedAt',
     type: Date,
   })
-  @IsUUID()
+  @IsDate()
   @UpdateDateColumn()
   updatedAt: Date;
 }

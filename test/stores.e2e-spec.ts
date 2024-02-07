@@ -11,11 +11,15 @@ import {
 import { StoresService } from '../src/stores/stores.service';
 import { AppModule } from './../src/app.module';
 import { clearDatabase, isErrorResponse, login } from './utils';
+import { WinesService } from '../src/wines/wines.service';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let authHeader: Record<string, string>;
   let storesService: StoresService;
+  let winesService: WinesService;
+  let winemakersService: WinemakersService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -25,6 +29,8 @@ describe('UsersController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     storesService = app.get(StoresService);
+    winesService = app.get(WinesService);
+    winemakersService = app.get(WinemakersService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
   });
@@ -155,11 +161,27 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} and a valid store if id parameter is valid with authorization`, async () => {
+      const winemaker = await winemakersService.create(faker.person.fullName());
       const store = await storesService.create(
         faker.company.name(),
         faker.location.streetAddress(),
         faker.internet.url(),
       );
+      const wines = [];
+      for (let i = 0; i < 3; i++) {
+        wines.push(
+          await winesService.create(
+            faker.person.fullName(),
+            faker.date.past().getFullYear(),
+            winemaker.id,
+            [store.id],
+            faker.word.noun(),
+            faker.location.country(),
+          ),
+        );
+      }
+      store.wines = wines;
+
       return request(app.getHttpServer())
         .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, store.id))
         .set(authHeader)
@@ -171,6 +193,19 @@ describe('UsersController (e2e)', () => {
           expect(body.url).toEqual(store.url);
           expect(body.createdAt).toEqual(store.createdAt.toISOString());
           expect(body.updatedAt).toEqual(store.updatedAt.toISOString());
+          (body.wines as Array<any>).forEach((wine, index) => {
+            expect(wine.id).toEqual(store.wines[index].id);
+            expect(wine.name).toEqual(store.wines[index].name);
+            expect(wine.year).toEqual(store.wines[index].year);
+            expect(wine.grapeVariety).toEqual(store.wines[index].grapeVariety);
+            expect(wine.heritage).toEqual(store.wines[index].heritage);
+            expect(wine.createdAt).toEqual(
+              store.wines[index].createdAt.toISOString(),
+            );
+            expect(wine.updatedAt).toEqual(
+              store.wines[index].updatedAt.toISOString(),
+            );
+          });
         });
     });
 
@@ -185,7 +220,7 @@ describe('UsersController (e2e)', () => {
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
-          expect(body.wines).toBeUndefined();
+          expect(body.wines).toEqual([]);
         });
     });
   });

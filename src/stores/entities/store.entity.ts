@@ -13,8 +13,6 @@ import { Wine } from '../../wines/entities/wine.entity';
 @Entity()
 export class Store {
   @ApiProperty({
-    readOnly: true,
-    example: 'uuid',
     description: 'uuid',
     type: String,
     format: 'uuid',
@@ -53,12 +51,15 @@ export class Store {
   @Column({ nullable: true })
   url?: string;
 
+  @ApiProperty({
+    description: 'List of wines that the store sells',
+    type: Wine,
+    isArray: true,
+  })
   @ManyToMany(() => Wine, (wine) => wine.stores)
   wines: Wine[];
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'createdAt',
     type: Date,
   })
@@ -67,8 +68,6 @@ export class Store {
   createdAt: Date;
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'updatedAt',
     type: Date,
   })

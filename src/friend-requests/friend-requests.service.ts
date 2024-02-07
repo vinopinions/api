@@ -119,6 +119,8 @@ export class FriendRequestsService {
 
     // add as friends
     await this.usersService.addFriend(acceptingUser, friendRequest.sender);
+
+    return friendRequest.sender;
   }
 
   async decline(id: string, decliningUser: User) {

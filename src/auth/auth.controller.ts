@@ -38,7 +38,10 @@ export class AuthController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
+  signIn(
+    @Body()
+    signInDto: SignInDto,
+  ): Promise<SignInResponseDto> {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 

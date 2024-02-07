@@ -62,7 +62,10 @@ export class WinesController {
     description: 'Wine has not been found',
   })
   findById(@Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string) {
-    return this.winesService.findOne({ where: { id } });
+    return this.winesService.findOne({
+      where: { id },
+      relations: ['winemaker', 'stores', 'ratings'],
+    });
   }
 
   @ApiOperation({ summary: 'get all wines' })

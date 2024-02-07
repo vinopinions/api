@@ -54,12 +54,12 @@ export class WinesService {
   }
 
   async findOne(options: FindOneOptions<Wine>): Promise<Wine> {
-    const user = await this.wineRepository.findOne(options);
-    if (!user)
+    const wine = await this.wineRepository.findOne(options);
+    if (!wine)
       throw new NotFoundException(
         `Wine with ${JSON.stringify(options.where)} not found`,
       );
-    return user;
+    return wine;
   }
 
   async remove(id: string): Promise<Wine> {

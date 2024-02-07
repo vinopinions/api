@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
-import { Rating } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
 import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
@@ -89,15 +88,5 @@ export class WinesService {
     }
 
     return this.wineRepository.save(wine);
-  }
-
-  async getRatingsForWine(wineId: string): Promise<Rating[]> {
-    return await this.ratingsService.findMany({
-      where: { wine: { id: wineId } },
-      relations: {
-        user: true,
-        wine: true,
-      },
-    });
   }
 }

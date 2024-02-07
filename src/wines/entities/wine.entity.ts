@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsString, IsUUID } from 'class-validator';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { IsDate, IsNumber, IsString, IsUUID } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -11,15 +11,22 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Rating } from '../../ratings/entities/rating.entity';
-import { Store } from '../../stores/entities/store.entity';
-import { Winemaker } from '../../winemakers/entities/winemaker.entity';
+import {
+  Rating,
+  RatingWithoutRelation,
+} from '../../ratings/entities/rating.entity';
+import {
+  Store,
+  StoreWithoutRelation,
+} from '../../stores/entities/store.entity';
+import {
+  Winemaker,
+  WinemakerWithoutRelation,
+} from '../../winemakers/entities/winemaker.entity';
 
 @Entity()
 export class Wine {
   @ApiProperty({
-    readOnly: true,
-    example: 'uuid',
     description: 'uuid',
     type: String,
     format: 'uuid',
@@ -30,7 +37,7 @@ export class Wine {
 
   @ApiProperty({
     example: 'Scheurebe',
-    description: 'name of the wine',
+    description: 'Name of the wine',
     type: String,
   })
   @IsString()
@@ -39,15 +46,16 @@ export class Wine {
 
   @ApiProperty({
     example: 2017,
-    description: 'year of the wine',
+    description: 'Year of the wine',
     type: Number,
   })
+  @IsNumber()
   @Column()
   year: number;
 
   @ApiProperty({
     example: 'Scheurebe',
-    description: 'the wines grape variety',
+    description: 'The wines grape variety',
     type: String,
   })
   @IsString()
@@ -56,7 +64,7 @@ export class Wine {
 
   @ApiProperty({
     example: 'Rheinhessen',
-    description: 'the wines heritage',
+    description: 'The wines heritage',
     type: String,
   })
   @IsString()
@@ -64,25 +72,16 @@ export class Wine {
   heritage: string;
 
   @ApiProperty({
-    example: {
-      id: 'uuid',
-      name: 'Sina Mertz',
-      wines: [],
-    },
-    description: 'the wines winemaker',
-    type: Winemaker,
+    description: 'The winemaker of the wine',
+    type: WinemakerWithoutRelation,
   })
   @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
   winemaker: Winemaker;
 
   @ApiProperty({
-    example: {
-      id: 'uuid',
-      name: 'Wein&Gut',
-      wines: [],
-    },
-    description: 'the store where the wine was bought at',
-    type: Store,
+    description: 'The stores where the wine can be bought at',
+    type: StoreWithoutRelation,
+    isArray: true,
   })
   @ManyToMany(() => Store, (store) => store.wines, {
     nullable: false,
@@ -101,15 +100,14 @@ export class Wine {
   stores: Store[];
 
   @ApiProperty({
-    type: [Rating],
-    description: 'Ratings that got submitten for the wine',
+    description: 'Ratings that got submitted for the wine',
+    type: RatingWithoutRelation,
+    isArray: true,
   })
   @OneToMany(() => Rating, (rating) => rating.wine)
   ratings: Rating[];
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'createdAt',
     type: Date,
   })
@@ -118,12 +116,16 @@ export class Wine {
   createdAt: Date;
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'updatedAt',
     type: Date,
   })
-  @IsUUID()
+  @IsDate()
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
+export class WineWithoutRelations extends OmitType(Wine, [
+  'ratings',
+  'stores',
+  'winemaker',
+]) {}

@@ -21,10 +21,9 @@ import {
   FRIEND_USERNAME_URL_PARAMETER_NAME,
   USERNAME_URL_PARAMETER,
 } from '../constants/url-parameter';
-import { Rating } from '../ratings/entities/rating.entity';
 import { AuthenticatedRequest } from './../auth/auth.guard';
 import { GetUserDto } from './dtos/get-user.dto';
-import { User } from './entities/user.entity';
+import { User, UserWithoutRelations } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 const USERS_ENDPOINT_NAME = 'users';
@@ -69,7 +68,7 @@ export class UsersController {
   @Get()
   @ApiOkResponse({
     description: 'Users have been found',
-    type: User,
+    type: UserWithoutRelations,
     isArray: true,
   })
   findAll(): Promise<User[]> {
@@ -100,7 +99,7 @@ export class UsersController {
   @Get(USERS_USERNAME_FRIENDS_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'Friends for the user have been found',
-    type: User,
+    type: UserWithoutRelations,
     isArray: true,
   })
   @ApiNotFoundResponse({
@@ -149,17 +148,6 @@ export class UsersController {
       },
     });
 
-    return await this.usersService.removeFriend(removingUser, toBeRemovedUser);
-  }
-
-  @Get(':name/ratings')
-  @ApiOkResponse({
-    description: 'Ratings have been found',
-    type: Rating,
-    isArray: true,
-  })
-  @ApiOperation({ summary: 'get ratings by a user' })
-  getRatings(@Param() { username }: GetUserDto): Promise<Rating[]> {
-    return this.usersService.getRatings(username);
+    return this.usersService.removeFriend(removingUser, toBeRemovedUser);
   }
 }

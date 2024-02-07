@@ -88,6 +88,7 @@ export class UsersController {
       where: {
         username,
       },
+      relations: ['friends', 'ratings'],
     });
   }
 

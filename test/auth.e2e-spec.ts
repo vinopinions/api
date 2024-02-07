@@ -72,7 +72,7 @@ describe('AuthController (e2e)', () => {
         .expect(HttpStatus.CREATED);
     });
 
-    it.each(['us_er', 'u1s2.3e4r', 'username'])(
+    it.each(['us_er', 'u1s2.3e4r', 'username', 'user35'])(
       `should return ${HttpStatus.CREATED} with valid usernames`,
       (username: string) => {
         const validData: SignUpDto = {
@@ -159,6 +159,7 @@ describe('AuthController (e2e)', () => {
         username: generateRandomValidUsername(),
         password: faker.internet.password(),
       };
+      console.log(validData.username);
       await authService.signUp(validData.username, validData.password);
 
       return request(app.getHttpServer())

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsDate, IsUUID } from 'class-validator';
 import {
   CreateDateColumn,
@@ -21,14 +21,14 @@ export class FriendRequest {
 
   @ApiProperty({
     description: 'The user who received the friend request',
-    type: User,
+    type: OmitType(User, ['friends', 'ratings']),
   })
   @ManyToOne(() => User)
   receiver: User;
 
   @ApiProperty({
     description: 'The user who sent the friend request',
-    type: User,
+    type: OmitType(User, ['friends', 'ratings']),
   })
   @ManyToOne(() => User)
   sender: User;

@@ -57,8 +57,11 @@ export class UsersController {
   @ApiNotFoundResponse({
     description: 'User has not been found',
   })
-  getCurrentUser(@Req() request: AuthenticatedRequest): User {
-    return request.user;
+  getCurrentUser(@Req() request: AuthenticatedRequest): Promise<User> {
+    return this.usersService.findOne({
+      where: { username: request.user.username },
+      relations: ['ratings', 'friends'],
+    });
   }
 
   @ApiOperation({ summary: 'get all user' })

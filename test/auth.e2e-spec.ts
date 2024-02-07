@@ -159,7 +159,6 @@ describe('AuthController (e2e)', () => {
         username: generateRandomValidUsername(),
         password: faker.internet.password(),
       };
-      console.log(validData.username);
       await authService.signUp(validData.username, validData.password);
 
       return request(app.getHttpServer())

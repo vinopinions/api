@@ -76,13 +76,9 @@ export class Wine {
   winemaker: Winemaker;
 
   @ApiProperty({
-    example: {
-      id: 'uuid',
-      name: 'Wein&Gut',
-      wines: [],
-    },
     description: 'the store where the wine was bought at',
     type: Store,
+    isArray: true,
   })
   @ManyToMany(() => Store, (store) => store.wines, {
     nullable: false,
@@ -101,8 +97,9 @@ export class Wine {
   stores: Store[];
 
   @ApiProperty({
-    type: [Rating],
     description: 'Ratings that got submitted for the wine',
+    type: Rating,
+    isArray: true,
   })
   @OneToMany(() => Rating, (rating) => rating.wine)
   ratings: Rating[];

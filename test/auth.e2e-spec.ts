@@ -72,6 +72,44 @@ describe('AuthController (e2e)', () => {
         .expect(HttpStatus.CREATED);
     });
 
+    it.each(['us_er', 'u1s2.3e4r', 'username'])(
+      `should return ${HttpStatus.CREATED} with valid usernames`,
+      (username: string) => {
+        const validData: SignUpDto = {
+          username,
+          password: faker.internet.password(),
+        };
+        return request(app.getHttpServer())
+          .post(AUTH_SIGNUP_ENDPOINT)
+          .send(validData)
+          .expect(HttpStatus.CREATED);
+      },
+    );
+
+    it.each([
+      faker.string.alpha(2),
+      faker.string.alpha(21),
+      'us__er',
+      'user_',
+      '_user',
+      '1user',
+      'us..er',
+      'user.',
+      '.user',
+    ])(
+      `should return ${HttpStatus.BAD_REQUEST} with invalid usernames`,
+      (username: string) => {
+        const validData: SignUpDto = {
+          username,
+          password: faker.internet.password(),
+        };
+        return request(app.getHttpServer())
+          .post(AUTH_SIGNUP_ENDPOINT)
+          .send(validData)
+          .expect(HttpStatus.BAD_REQUEST);
+      },
+    );
+
     it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, () => {
       const validData: SignUpDto = {
         username: faker.string.alphanumeric(2),

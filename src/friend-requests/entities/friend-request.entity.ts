@@ -11,8 +11,6 @@ import { User } from '../../users/entities/user.entity';
 @Entity()
 export class FriendRequest {
   @ApiProperty({
-    readOnly: true,
-    example: 'uuid',
     description: 'uuid',
     type: String,
     format: 'uuid',
@@ -22,8 +20,6 @@ export class FriendRequest {
   id: string;
 
   @ApiProperty({
-    readOnly: true,
-    example: User,
     description: 'The user who received the friend request',
     type: User,
   })
@@ -31,8 +27,6 @@ export class FriendRequest {
   receiver: User;
 
   @ApiProperty({
-    readOnly: true,
-    example: User,
     description: 'The user who sent the friend request',
     type: User,
   })
@@ -40,8 +34,6 @@ export class FriendRequest {
   sender: User;
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'createdAt',
     type: Date,
   })

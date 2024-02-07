@@ -52,7 +52,7 @@ export class StoresController {
   findById(
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
   ): Promise<Store> {
-    return this.storesService.findOne({ where: { id } });
+    return this.storesService.findOne({ where: { id }, relations: ['wines'] });
   }
 
   @ApiOperation({ summary: 'get all stores' })

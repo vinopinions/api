@@ -65,7 +65,10 @@ export class WinemakersController {
   findById(
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
   ): Promise<Winemaker> {
-    return this.winemakersService.findOne({ where: { id } });
+    return this.winemakersService.findOne({
+      where: { id },
+      relations: ['wines'],
+    });
   }
 
   @ApiOperation({ summary: 'create a winemaker' })

@@ -50,7 +50,10 @@ export class RatingsController {
   findById(
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
   ): Promise<Rating> {
-    return this.ratingsService.findOne({ where: { id } });
+    return this.ratingsService.findOne({
+      where: { id },
+      relations: ['wine', 'user'],
+    });
   }
 
   @ApiOperation({ summary: 'get all ratings' })

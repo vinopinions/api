@@ -167,8 +167,25 @@ describe('RatingsController (e2e)', () => {
           expect(body.text).toEqual(rating.text);
           expect(body.createdAt).toEqual(rating.createdAt.toISOString());
           expect(body.updatedAt).toEqual(rating.updatedAt.toISOString());
-          expect(body.store).toBeUndefined();
-          expect(body.user).toBeUndefined();
+          expect(body.wine.id).toEqual(rating.wine.id);
+          expect(body.wine.name).toEqual(rating.wine.name);
+          expect(body.wine.year).toEqual(rating.wine.year);
+          expect(body.wine.grapeVariety).toEqual(rating.wine.grapeVariety);
+          expect(body.wine.heritage).toEqual(rating.wine.heritage);
+          expect(body.wine.createdAt).toEqual(
+            rating.wine.createdAt.toISOString(),
+          );
+          expect(body.wine.updatedAt).toEqual(
+            rating.wine.updatedAt.toISOString(),
+          );
+          expect(body.user.id).toEqual(rating.user.id);
+          expect(body.user.username).toEqual(rating.user.username);
+          expect(body.user.createdAt).toEqual(
+            rating.user.createdAt.toISOString(),
+          );
+          expect(body.user.updatedAt).toEqual(
+            rating.user.updatedAt.toISOString(),
+          );
         });
     });
   });

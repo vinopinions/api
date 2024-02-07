@@ -24,12 +24,21 @@ import {
   isErrorResponse,
   login,
 } from './utils';
+import { RatingsService } from '../src/ratings/ratings.service';
+import { WinesService } from '../src/wines/wines.service';
+import { StoresService } from '../src/stores/stores.service';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { STARS_MAX, STARS_MIN } from '../src/ratings/entities/rating.entity';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let authHeader: Record<string, string>;
   let authService: AuthService;
   let friendRequestsService: FriendRequestsService;
+  let ratingsService: RatingsService;
+  let winesService: WinesService;
+  let storesService: StoresService;
+  let winemakersService: WinemakersService;
   let user: User;
 
   beforeEach(async () => {
@@ -41,6 +50,10 @@ describe('UsersController (e2e)', () => {
     await app.init();
     authService = app.get(AuthService);
     friendRequestsService = app.get(FriendRequestsService);
+    ratingsService = app.get(RatingsService);
+    winesService = app.get(WinesService);
+    storesService = app.get(StoresService);
+    winemakersService = app.get(WinemakersService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
     user = loginData.user;
@@ -151,7 +164,19 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and currently logged in User excluding passwordHash with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and currently logged in User including ratings and friends, excluding passwordHash with authorization`, async () => {
+      const ratings = [];
+      for (let i = 0; i < 3; i++) {
+        ratings.push(await createRating());
+      }
+      const friends = [];
+      for (let i = 0; i < 3; i++) {
+        const friend = await addFriend();
+        friends.push(friend);
+      }
+      user.friends = friends;
+      user.ratings = ratings;
+
       return request(app.getHttpServer())
         .get(USERS_ME_ENDPOINT)
         .set(authHeader)
@@ -162,6 +187,27 @@ describe('UsersController (e2e)', () => {
           expect(body.passwordHash).toBeUndefined();
           expect(body.createdAt).toEqual(user.createdAt.toISOString());
           expect(body.updatedAt).toEqual(user.updatedAt.toISOString());
+          (body.friends as Array<any>).forEach((friend, index) => {
+            expect(friend.id).toEqual(user.friends[index].id);
+            expect(friend.username).toEqual(user.friends[index].username);
+            expect(friend.createdAt).toEqual(
+              user.friends[index].createdAt.toISOString(),
+            );
+            expect(friend.updatedAt).toEqual(
+              user.friends[index].updatedAt.toISOString(),
+            );
+          });
+          (body.ratings as Array<any>).forEach((rating, index) => {
+            expect(rating.id).toEqual(user.ratings[index].id);
+            expect(rating.stars).toEqual(user.ratings[index].stars);
+            expect(rating.text).toEqual(user.ratings[index].text);
+            expect(rating.createdAt).toEqual(
+              user.ratings[index].createdAt.toISOString(),
+            );
+            expect(rating.updatedAt).toEqual(
+              user.ratings[index].updatedAt.toISOString(),
+            );
+          });
         });
     });
   });
@@ -202,7 +248,18 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and user with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and user including frends and ratings with authorization`, async () => {
+      const ratings = [];
+      for (let i = 0; i < 3; i++) {
+        ratings.push(await createRating());
+      }
+      const friends = [];
+      for (let i = 0; i < 3; i++) {
+        const friend = await addFriend();
+        friends.push(friend);
+      }
+      user.friends = friends;
+      user.ratings = ratings;
       return request(app.getHttpServer())
         .get(
           USERS_USERNAME_ENDPOINT.replace(
@@ -217,6 +274,27 @@ describe('UsersController (e2e)', () => {
           expect(body.username).toEqual(user.username);
           expect(body.createdAt).toEqual(user.createdAt.toISOString());
           expect(body.updatedAt).toEqual(user.updatedAt.toISOString());
+          (body.friends as Array<any>).forEach((friend, index) => {
+            expect(friend.id).toEqual(user.friends[index].id);
+            expect(friend.username).toEqual(user.friends[index].username);
+            expect(friend.createdAt).toEqual(
+              user.friends[index].createdAt.toISOString(),
+            );
+            expect(friend.updatedAt).toEqual(
+              user.friends[index].updatedAt.toISOString(),
+            );
+          });
+          (body.ratings as Array<any>).forEach((rating, index) => {
+            expect(rating.id).toEqual(user.ratings[index].id);
+            expect(rating.stars).toEqual(user.ratings[index].stars);
+            expect(rating.text).toEqual(user.ratings[index].text);
+            expect(rating.createdAt).toEqual(
+              user.ratings[index].createdAt.toISOString(),
+            );
+            expect(rating.updatedAt).toEqual(
+              user.ratings[index].updatedAt.toISOString(),
+            );
+          });
         });
     });
 
@@ -461,4 +539,36 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
   });
+
+  const createRating = async () => {
+    const winemaker = await winemakersService.create(faker.person.fullName());
+    const store = await storesService.create(faker.company.name());
+    const wine = await winesService.create(
+      faker.word.noun(),
+      faker.date.past().getFullYear(),
+      winemaker.id,
+      [store.id],
+      faker.word.noun(),
+      faker.location.country(),
+    );
+    return ratingsService.create(
+      faker.number.int({ min: STARS_MIN, max: STARS_MAX }),
+      faker.lorem.text(),
+      user,
+      wine,
+    );
+  };
+
+  const addFriend = async () => {
+    const userData: SignUpDto = {
+      username: generateRandomValidUsername(),
+      password: faker.internet.password(),
+    };
+    const createdUser: User = await authService.signUp(
+      userData.username,
+      userData.password,
+    );
+    const friendRequest = await friendRequestsService.send(createdUser, user);
+    return friendRequestsService.accept(friendRequest.id, user);
+  };
 });

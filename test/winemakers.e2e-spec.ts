@@ -12,11 +12,16 @@ import {
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
 import { clearDatabase, isErrorResponse, login } from './utils';
+import { StoresService } from '../src/stores/stores.service';
+import { WinesService } from '../src/wines/wines.service';
+import { Store } from '../src/stores/entities/store.entity';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
   let authHeader: Record<string, string>;
   let winemakersService: WinemakersService;
+  let storesService: StoresService;
+  let winesService: WinesService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -26,6 +31,8 @@ describe('WinemakersController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     winemakersService = app.get(WinemakersService);
+    storesService = app.get(StoresService);
+    winesService = app.get(WinesService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
   });
@@ -156,10 +163,25 @@ describe('WinemakersController (e2e)', () => {
         .expect((res) => isErrorResponse(res, 'uuid'));
     });
 
-    it(`should return ${HttpStatus.OK} and a valid winemaker if id parameter is valid with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and a valid winemaker including wines relation if id parameter is valid with authorization`, async () => {
       const winemaker: Winemaker = await winemakersService.create(
         faker.person.fullName(),
       );
+      const wines = [];
+      for (let i = 0; i < 3; i++) {
+        const store: Store = await storesService.create(faker.company.name());
+        wines.push(
+          await winesService.create(
+            faker.word.noun(),
+            faker.date.past().getFullYear(),
+            winemaker.id,
+            [store.id],
+            faker.word.noun(),
+            faker.location.country(),
+          ),
+        );
+      }
+      winemaker.wines = wines;
       return request(app.getHttpServer())
         .get(WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, winemaker.id))
         .set(authHeader)
@@ -169,19 +191,21 @@ describe('WinemakersController (e2e)', () => {
           expect(body.name).toEqual(winemaker.name);
           expect(body.createdAt).toEqual(winemaker.createdAt.toISOString());
           expect(body.updatedAt).toEqual(winemaker.updatedAt.toISOString());
-        });
-    });
-
-    it(`should return ${HttpStatus.OK} and no wines with authorization`, async () => {
-      const winemaker: Winemaker = await winemakersService.create(
-        faker.person.fullName(),
-      );
-      return request(app.getHttpServer())
-        .get(WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, winemaker.id))
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect(body.wines).toBeUndefined();
+          (body.wines as Array<any>).forEach((wine, index) => {
+            expect(wine.id).toEqual(winemaker.wines[index].id);
+            expect(wine.name).toEqual(winemaker.wines[index].name);
+            expect(wine.year).toEqual(winemaker.wines[index].year);
+            expect(wine.grapeVariety).toEqual(
+              winemaker.wines[index].grapeVariety,
+            );
+            expect(wine.heritage).toEqual(winemaker.wines[index].heritage);
+            expect(wine.createdAt).toEqual(
+              winemaker.wines[index].createdAt.toISOString(),
+            );
+            expect(wine.updatedAt).toEqual(
+              winemaker.wines[index].updatedAt.toISOString(),
+            );
+          });
         });
     });
   });

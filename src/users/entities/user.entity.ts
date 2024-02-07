@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { Rating } from '../../ratings/entities/rating.entity';
 
-export const USERNAME_REGEX = /^[a-z0-9_.]{3,20}$/;
+export const USERNAME_REGEX = /^([a-z]+[a-z0-9]*([\._][a-z0-9]+)?){3,20}$/;
 
 @Entity()
 export class User {

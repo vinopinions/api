@@ -23,7 +23,7 @@ import {
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
 import { CreateStoreDto } from './dtos/create-store.dto';
-import { Store } from './entities/store.entity';
+import { Store, StoreWithoutRelation } from './entities/store.entity';
 import { StoresService } from './stores.service';
 
 const STORES_ENDPOINT_NAME = 'stores';
@@ -60,7 +60,7 @@ export class StoresController {
   @Get()
   @ApiOkResponse({
     description: 'Stores have been found',
-    type: Store,
+    type: StoreWithoutRelation,
     isArray: true,
   })
   findAll(): Promise<Store[]> {
@@ -71,7 +71,7 @@ export class StoresController {
   @Post()
   @ApiCreatedResponse({
     description: 'Store has been created',
-    type: Store,
+    type: StoreWithoutRelation,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',

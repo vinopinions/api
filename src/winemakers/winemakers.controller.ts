@@ -23,7 +23,10 @@ import {
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
 import { CreateWinemakerDto } from './dtos/create-winemaker.dto';
-import { Winemaker } from './entities/winemaker.entity';
+import {
+  Winemaker,
+  WinemakerWithoutRelation,
+} from './entities/winemaker.entity';
 import { WinemakersService } from './winemakers.service';
 
 const WINEMAKERS_ENDPOINT_NAME = 'winemakers';
@@ -42,7 +45,7 @@ export class WinemakersController {
 
   @ApiOkResponse({
     description: 'Winemakers have been found',
-    type: Winemaker,
+    type: WinemakerWithoutRelation,
     isArray: true,
   })
   @ApiOperation({ summary: 'get all winemakers' })
@@ -76,7 +79,7 @@ export class WinemakersController {
   @Post()
   @ApiCreatedResponse({
     description: 'Winemaker has been created',
-    type: Winemaker,
+    type: WinemakerWithoutRelation,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',

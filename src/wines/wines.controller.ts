@@ -27,10 +27,13 @@ import {
 } from '../constants/url-parameter';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
 import { RatingsService } from '../ratings/ratings.service';
-import { Rating } from './../ratings/entities/rating.entity';
+import {
+  Rating,
+  RatingWithoutRelation,
+} from './../ratings/entities/rating.entity';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { UpdateWineDto } from './dtos/update-wine.dto';
-import { Wine } from './entities/wine.entity';
+import { Wine, WineWithoutRelations } from './entities/wine.entity';
 import { WinesService } from './wines.service';
 
 const WINES_ENDPOINT_NAME = 'wines';
@@ -72,7 +75,7 @@ export class WinesController {
   @Get()
   @ApiOkResponse({
     description: 'Wines have been found',
-    type: Wine,
+    type: WineWithoutRelations,
     isArray: true,
   })
   findAll(): Promise<Wine[]> {
@@ -83,7 +86,7 @@ export class WinesController {
   @Post()
   @ApiCreatedResponse({
     description: 'Wine has been created',
-    type: Wine,
+    type: WineWithoutRelations,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',
@@ -104,7 +107,7 @@ export class WinesController {
   @Put(WINES_ID_URL_PARAMETER)
   @ApiCreatedResponse({
     description: 'Store has been added to the wine',
-    type: Wine,
+    type: WineWithoutRelations,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',
@@ -123,7 +126,7 @@ export class WinesController {
   @Post(WINES_ID_RATINGS_NAME)
   @ApiCreatedResponse({
     description: 'Ratings has been added to the wine',
-    type: Rating,
+    type: RatingWithoutRelation,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',
@@ -140,21 +143,5 @@ export class WinesController {
       where: { id: wineId },
     });
     return this.ratingsService.create(stars, text, request.user, wine);
-  }
-
-  @ApiOkResponse({
-    description: 'Ratings for the wine have been found',
-    type: Rating,
-    isArray: true,
-  })
-  @ApiNotFoundResponse({
-    description: 'Wine has not been found',
-  })
-  @ApiOperation({ summary: 'get all ratings of a wine' })
-  @Get(WINES_ID_RATINGS_NAME)
-  getRatingsForWines(
-    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) wineId: string,
-  ): Promise<Rating[]> {
-    return this.winesService.getRatingsForWine(wineId);
   }
 }

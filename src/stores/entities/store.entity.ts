@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsDate, IsOptional, IsString, IsUUID, IsUrl } from 'class-validator';
 import {
   Column,
@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Wine } from '../../wines/entities/wine.entity';
+import { Wine, WineWithoutRelations } from '../../wines/entities/wine.entity';
 
 @Entity()
 export class Store {
@@ -36,6 +36,7 @@ export class Store {
     type: String,
   })
   @IsOptional()
+  @IsString()
   @Column({ nullable: true })
   address?: string;
 
@@ -53,7 +54,7 @@ export class Store {
 
   @ApiProperty({
     description: 'List of wines that the store sells',
-    type: Wine,
+    type: WineWithoutRelations,
     isArray: true,
   })
   @ManyToMany(() => Wine, (wine) => wine.stores)
@@ -75,3 +76,5 @@ export class Store {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
+export class StoreWithoutRelation extends OmitType(Store, ['wines']) {}

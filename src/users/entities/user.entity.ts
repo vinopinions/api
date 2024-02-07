@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { IsDate, IsUUID, Matches } from 'class-validator';
 import {
@@ -11,7 +11,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Rating } from '../../ratings/entities/rating.entity';
+import {
+  Rating,
+  RatingWithoutRelation,
+} from '../../ratings/entities/rating.entity';
 
 export const USERNAME_REGEX = /^([a-z]+[a-z0-9]*([\._][a-z0-9]+)?){3,20}$/;
 
@@ -47,7 +50,7 @@ export class User {
 
   @ApiProperty({
     description: 'Friends of the user',
-    type: User,
+    type: OmitType(User, ['friends', 'ratings'] as const),
     isArray: true,
   })
   @ManyToMany(() => User)
@@ -60,7 +63,7 @@ export class User {
 
   @ApiProperty({
     description: 'Friends the user submitted',
-    type: Rating,
+    type: RatingWithoutRelation,
     isArray: true,
   })
   @OneToMany(() => Rating, (rating: Rating) => rating.user)
@@ -82,3 +85,8 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
+export class UserWithoutRelations extends OmitType(User, [
+  'friends',
+  'ratings',
+] as const) {}

@@ -101,7 +101,7 @@ export class FriendRequestsController {
     const user: User = await this.usersService.findOne({
       where: { username: sendFriendRequestDto.username },
     });
-    return await this.friendRequestsService.send(request.user, user);
+    await this.friendRequestsService.send(request.user, user);
   }
 
   @ApiOperation({ summary: 'accept a sent friend request sent to you' })

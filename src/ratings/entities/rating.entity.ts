@@ -53,7 +53,7 @@ export class Rating {
 
   @ApiProperty({
     description: 'The User that submitted the rating',
-    type: UserWithoutRelations,
+    type: () => UserWithoutRelations,
   })
   @ManyToOne(() => User, (user: User) => user.ratings)
   user: User;

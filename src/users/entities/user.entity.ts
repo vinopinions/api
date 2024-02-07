@@ -18,8 +18,6 @@ export const USERNAME_REGEX = /^([a-z]+[a-z0-9]*([\._][a-z0-9]+)?){3,20}$/;
 @Entity()
 export class User {
   @ApiProperty({
-    readOnly: true,
-    example: 'uuid',
     description: 'uuid',
     type: String,
     format: 'uuid',
@@ -47,6 +45,11 @@ export class User {
   @Column()
   passwordHash: string;
 
+  @ApiProperty({
+    description: 'Friends of the user',
+    type: User,
+    isArray: true,
+  })
   @ManyToMany(() => User)
   @JoinTable({
     name: 'friends',
@@ -55,12 +58,15 @@ export class User {
   })
   friends: User[];
 
+  @ApiProperty({
+    description: 'Friends the user submitted',
+    type: Rating,
+    isArray: true,
+  })
   @OneToMany(() => Rating, (rating: Rating) => rating.user)
   ratings: Rating[];
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'createdAt',
     type: Date,
   })
@@ -69,8 +75,6 @@ export class User {
   createdAt: Date;
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'updatedAt',
     type: Date,
   })

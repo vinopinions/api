@@ -85,7 +85,6 @@ export class Wine {
     type: Store,
   })
   @ManyToMany(() => Store, (store) => store.wines, {
-    eager: true,
     nullable: false,
   })
   @JoinTable({

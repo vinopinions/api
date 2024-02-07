@@ -18,7 +18,12 @@ import {
   USERS_USERNAME_ENDPOINT,
 } from '../src/users/users.controller';
 import { AppModule } from './../src/app.module';
-import { clearDatabase, isErrorResponse, login } from './utils';
+import {
+  clearDatabase,
+  generateRandomValidUsername,
+  isErrorResponse,
+  login,
+} from './utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -82,7 +87,7 @@ describe('UsersController (e2e)', () => {
       // create 9 users since one is already created while login
       for (let i = 0; i < 9; i++) {
         const userData: SignUpDto = {
-          username: faker.internet.userName().toLowerCase(),
+          username: generateRandomValidUsername(),
           password: faker.internet.password(),
         };
         await authService.signUp(userData.username, userData.password);
@@ -167,7 +172,7 @@ describe('UsersController (e2e)', () => {
         .get(
           USERS_USERNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
@@ -178,7 +183,7 @@ describe('UsersController (e2e)', () => {
         .get(
           USERS_USERNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .expect(HttpStatus.UNAUTHORIZED)
@@ -235,7 +240,7 @@ describe('UsersController (e2e)', () => {
         .get(
           USERS_USERNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .set(authHeader)
@@ -288,7 +293,7 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.OK} and array of 3 users with authorization`, async () => {
       for (let i = 0; i < 3; i++) {
         const userData: SignUpDto = {
-          username: faker.internet.userName().toLowerCase(),
+          username: generateRandomValidUsername(),
           password: faker.internet.password(),
         };
         const createdUser: User = await authService.signUp(
@@ -327,7 +332,7 @@ describe('UsersController (e2e)', () => {
         .get(
           USERS_NAME_FRIENDS_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .set(authHeader)
@@ -342,10 +347,10 @@ describe('UsersController (e2e)', () => {
         .delete(
           USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ).replace(
             FRIEND_USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
@@ -356,10 +361,10 @@ describe('UsersController (e2e)', () => {
         .delete(
           USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ).replace(
             FRIEND_USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .expect(HttpStatus.UNAUTHORIZED)
@@ -371,10 +376,10 @@ describe('UsersController (e2e)', () => {
         .delete(
           USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ).replace(
             FRIEND_USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .set(authHeader)
@@ -390,7 +395,7 @@ describe('UsersController (e2e)', () => {
             user.username,
           ).replace(
             FRIEND_USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .set(authHeader)
@@ -400,7 +405,7 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.NOT_FOUND} when to be deleted user exists but is not friends with user`, async () => {
       const toBeDeletedUser: User = await authService.signUp(
-        faker.internet.userName().toLowerCase(),
+        generateRandomValidUsername(),
         faker.internet.password(),
       );
 
@@ -418,7 +423,7 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.UNAUTHORIZED} when trying to delete another users friends`, async () => {
       const otherUser: User = await authService.signUp(
-        faker.internet.userName().toLowerCase(),
+        generateRandomValidUsername(),
         faker.internet.password(),
       );
 
@@ -429,7 +434,7 @@ describe('UsersController (e2e)', () => {
             otherUser.username,
           ).replace(
             FRIEND_USERNAME_URL_PARAMETER,
-            faker.internet.userName().toLowerCase(),
+            generateRandomValidUsername(),
           ),
         )
         .set(authHeader)
@@ -439,7 +444,7 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} when deleting a present friendship`, async () => {
       const createdUser: User = await authService.signUp(
-        faker.internet.userName().toLowerCase(),
+        generateRandomValidUsername(),
         faker.internet.password(),
       );
       const friendRequest = await friendRequestsService.send(createdUser, user);

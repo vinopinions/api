@@ -24,7 +24,8 @@ export const login = async (
   const authService = app.get(AuthService);
 
   const userData = {
-    username: faker.internet.userName().toLowerCase(),
+    //username: generateRandomValidUsername(),
+    username: generateRandomValidUsername(),
     password: faker.internet.password(),
   };
 
@@ -66,4 +67,8 @@ export const isErrorResponse = (res: Response, messageContains?: string) => {
  */
 export const logResponse = (res: Response) => {
   console.log(JSON.stringify(res.body, null, 2));
+};
+
+export const generateRandomValidUsername = (): string => {
+  return faker.internet.userName().toLocaleLowerCase().replace('-', '.');
 };

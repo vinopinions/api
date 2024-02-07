@@ -17,8 +17,6 @@ export const STARS_MAX = 5;
 @Entity()
 export class Rating {
   @ApiProperty({
-    readOnly: true,
-    example: 'uuid',
     description: 'uuid',
     type: String,
     format: 'uuid',
@@ -28,10 +26,9 @@ export class Rating {
   id: string;
 
   @ApiProperty({
-    readOnly: true,
-    example: 2,
-    description: 'Ammount of stars the user submitted',
+    description: 'Amount of stars the user submitted',
     type: Number,
+    example: 2,
   })
   @IsInt()
   @Min(STARS_MIN)
@@ -40,8 +37,6 @@ export class Rating {
   stars: number;
 
   @ApiProperty({
-    readOnly: true,
-    example: 'meh',
     description: 'Text in addition to the submitted stars',
     type: String,
   })
@@ -50,17 +45,13 @@ export class Rating {
   text: string;
 
   @ApiProperty({
-    readOnly: true,
-    example: Wine,
     description: 'The rated Wine',
-    type: Wine,
+    type: User,
   })
   @ManyToOne(() => Wine, (wine) => wine.ratings)
   wine: Wine;
 
   @ApiProperty({
-    readOnly: true,
-    example: User,
     description: 'The User that submitted the rating',
     type: () => User,
   })
@@ -68,8 +59,6 @@ export class Rating {
   user: User;
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'createdAt',
     type: Date,
   })
@@ -78,8 +67,6 @@ export class Rating {
   createdAt: Date;
 
   @ApiProperty({
-    readOnly: true,
-    example: new Date(),
     description: 'updatedAt',
     type: Date,
   })

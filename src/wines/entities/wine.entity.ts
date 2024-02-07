@@ -102,7 +102,7 @@ export class Wine {
 
   @ApiProperty({
     type: [Rating],
-    description: 'Ratings that got submitten for the wine',
+    description: 'Ratings that got submitted for the wine',
   })
   @OneToMany(() => Rating, (rating) => rating.wine)
   ratings: Rating[];

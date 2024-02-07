@@ -10,7 +10,11 @@ import { AuthService } from '../src/auth/auth.service';
 import { SignInDto } from '../src/auth/dtos/sign-in.dto';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
-import { clearDatabase, isErrorResponse } from './utils';
+import {
+  clearDatabase,
+  generateRandomValidUsername,
+  isErrorResponse,
+} from './utils';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -59,7 +63,7 @@ describe('AuthController (e2e)', () => {
 
     it(`should return ${HttpStatus.CREATED} with valid data`, () => {
       const validData: SignUpDto = {
-        username: faker.internet.userName().toLowerCase(),
+        username: generateRandomValidUsername(),
         password: faker.internet.password(),
       };
       return request(app.getHttpServer())
@@ -114,7 +118,7 @@ describe('AuthController (e2e)', () => {
 
     it(`should return ${HttpStatus.CONFLICT} when using the same username twice`, async () => {
       const validData: SignUpDto = {
-        username: faker.internet.userName().toLowerCase(),
+        username: generateRandomValidUsername(),
         password: faker.internet.password(),
       };
       await authService.signUp(validData.username, validData.password);
@@ -155,7 +159,7 @@ describe('AuthController (e2e)', () => {
 
     it(`should return ${HttpStatus.UNAUTHORIZED} with valid data but no signup before`, () => {
       const validData: SignInDto = {
-        username: faker.internet.userName().toLowerCase(),
+        username: generateRandomValidUsername(),
         password: faker.internet.password(),
       };
       return request(app.getHttpServer())
@@ -211,7 +215,7 @@ describe('AuthController (e2e)', () => {
 
     it(`should return ${HttpStatus.CREATED} and access_token with valid data and signup before`, async () => {
       const validData: SignInDto = {
-        username: faker.internet.userName().toLowerCase(),
+        username: generateRandomValidUsername(),
         password: faker.internet.password(),
       };
 

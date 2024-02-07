@@ -17,7 +17,12 @@ import {
 } from '../src/friend-requests/friend-requests.controller';
 import { FriendRequestsService } from '../src/friend-requests/friend-requests.service';
 import { User } from '../src/users/entities/user.entity';
-import { clearDatabase, isErrorResponse, login } from './utils';
+import {
+  clearDatabase,
+  generateRandomValidUsername,
+  isErrorResponse,
+  login,
+} from './utils';
 
 describe('FriendRequestsController (e2e)', () => {
   let app: INestApplication;
@@ -279,7 +284,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.NOT_FOUND} when sending a friend request to non existing user with authorization`, async () => {
       const validData: SendFriendRequestDto = {
-        username: faker.internet.userName().toLowerCase(),
+        username: generateRandomValidUsername(),
       };
       return request(app.getHttpServer())
         .post(FRIEND_REQUESTS_SEND_ENDPOINT)
@@ -291,7 +296,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.CREATED} when sending friend request with authorization`, async () => {
       const receiver: User = await authService.signUp(
-        faker.internet.userName().toLowerCase(),
+        generateRandomValidUsername(),
         faker.internet.password(),
       );
       const data: SendFriendRequestDto = {
@@ -306,7 +311,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.CONFLICT} when already sent a friend request with authorization`, async () => {
       const receiver: User = await authService.signUp(
-        faker.internet.userName().toLowerCase(),
+        generateRandomValidUsername(),
         faker.internet.password(),
       );
       const data: SendFriendRequestDto = {
@@ -325,7 +330,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.CONFLICT} when already received a friend request from sender and try to send one to him with authorization`, async () => {
       const sender: User = await authService.signUp(
-        faker.internet.userName().toLowerCase(),
+        generateRandomValidUsername(),
         faker.internet.password(),
       );
       await friendRequestsService.send(sender, user);

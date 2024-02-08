@@ -19,6 +19,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "release": "semantic-release",
     "postinstall": "husky",
     "prepare": "husky"
   },
@@ -39,6 +40,7 @@
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
+    "@codedependant/semantic-release-docker": "^4.5.1",
     "@commitlint/cli": "^18.6.0",
     "@commitlint/config-conventional": "^18.6.0",
     "@faker-js/faker": "^8.4.0",

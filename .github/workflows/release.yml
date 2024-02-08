@@ -69,7 +69,7 @@ jobs:
       - name: Create github release and publish docker image
         env:
           DOCKER_REGISTRY_USER: ${{ github.actor }}
-          DOCKER_REGISTRY_PASSWORD: ${{ steps.generate_token.outputs.token }}
+          DOCKER_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_REGISTRY: ghcr.io
           DOCKER_IMAGE_TAG: ${{ vars.DOCKER_IMAGE_TAG }}
           DOCKER_IMAGE_NAME: ${{ github.event.repository.name }}

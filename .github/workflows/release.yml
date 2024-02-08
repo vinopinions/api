@@ -12,6 +12,7 @@ jobs:
     permissions:
       actions: read
       security-events: write
+      contents: read
 
   eslint:
     uses: ./.github/workflows/eslint.yml

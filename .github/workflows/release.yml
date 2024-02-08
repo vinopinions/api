@@ -7,6 +7,18 @@ permissions:
   contents: read # for checkout
 
 jobs:
+  codeql:
+    uses: ./.github/workflows/codeql.yml
+
+  eslint:
+    uses: ./.github/workflows/eslint.yml
+
+  test-unit:
+    uses: ./.github/workflows/unit-test.yml
+
+  test-e2e:
+    uses: ./.github/workflows/e2e-test.yml
+
   release:
     name: Release
     runs-on: ubuntu-latest
@@ -14,8 +26,14 @@ jobs:
       contents: write # to be able to publish a GitHub release
       issues: write # to be able to comment on released issues
       pull-requests: write # to be able to comment on released pull requests
+    needs:
+      - codeql
+      - eslint
+      - test-unit
+      - test-e2e
 
     steps:
+      # https://github.com/semantic-release/github/issues/175#issuecomment-1489689561
       - name: Generate token
         id: generate_token
         uses: tibdex/github-app-token@v2

@@ -7,24 +7,24 @@ permissions:
   contents: read # for checkout
 
 jobs:
-  # codeql:
-  #   uses: ./.github/workflows/codeql.yml
-  #   permissions:
-  #     actions: read
-  #     security-events: write
-  #     contents: read
+  codeql:
+    uses: ./.github/workflows/codeql.yml
+    permissions:
+      actions: read
+      security-events: write
+      contents: read
 
-  # eslint:
-  #   uses: ./.github/workflows/eslint.yml
-  #   permissions:
-  #     security-events: write
-  #     contents: read
+  eslint:
+    uses: ./.github/workflows/eslint.yml
+    permissions:
+      security-events: write
+      contents: read
 
-  # test-unit:
-  #   uses: ./.github/workflows/unit-test.yml
+  test-unit:
+    uses: ./.github/workflows/unit-test.yml
 
-  # test-e2e:
-  #   uses: ./.github/workflows/e2e-test.yml
+  test-e2e:
+    uses: ./.github/workflows/e2e-test.yml
 
   release:
     name: Release
@@ -37,11 +37,11 @@ jobs:
     environment:
       name: ${{ contains(github.event.ref, 'developer') && 'test' || 'production' }}
 
-    # needs:
-    # - codeql
-    # - eslint
-    # - test-unit
-    # - test-e2e
+    needs:
+      - codeql
+      - eslint
+      - test-unit
+      - test-e2e
 
     steps:
       - name: Generate token

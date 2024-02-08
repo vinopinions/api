@@ -16,6 +16,9 @@ jobs:
 
   eslint:
     uses: ./.github/workflows/eslint.yml
+    permissions:
+      security-events: write
+      contents: read
 
   test-unit:
     uses: ./.github/workflows/unit-test.yml

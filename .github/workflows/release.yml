@@ -44,6 +44,13 @@ jobs:
       - test-e2e
 
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ vars.RELEASE_BOT_ID }}
+          private_key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -65,4 +72,5 @@ jobs:
           DOCKER_IMAGE_TAG: ${{ vars.DOCKER_IMAGE_TAG }}
           DOCKER_IMAGE_NAME: ${{ github.event.repository.name }}
           DOCKER_PROJECT: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: yarn release

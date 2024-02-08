@@ -9,6 +9,9 @@ permissions:
 jobs:
   codeql:
     uses: ./.github/workflows/codeql.yml
+    permissions:
+      actions: read
+      security-events: write
 
   eslint:
     uses: ./.github/workflows/eslint.yml
@@ -26,8 +29,6 @@ jobs:
       contents: write # to be able to publish a GitHub release
       issues: write # to be able to comment on released issues
       pull-requests: write # to be able to comment on released pull requests
-      actions: read # required for CodeQl
-      security-events: write # required for CodeQl
       
     needs:
       - codeql

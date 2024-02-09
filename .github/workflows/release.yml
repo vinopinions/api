@@ -36,7 +36,7 @@ jobs:
       packages: write
 
     environment:
-      name: ${{ contains(github.event.ref, 'developer') && 'test' || 'production' }}
+      name: ${{ contains(github.event.ref, 'developer') && 'dev' || 'production' }}
 
     needs:
       - codeql

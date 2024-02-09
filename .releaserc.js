@@ -5,6 +5,7 @@ module.exports = {
     },
     {
       name: 'developer',
+      prerelease: 'dev',
     },
   ],
   plugins: [

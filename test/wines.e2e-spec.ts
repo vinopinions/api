@@ -3,8 +3,13 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { CreateRatingDto } from '../src/ratings/dtos/create-rating.dto';
-import { STARS_MAX, STARS_MIN } from '../src/ratings/entities/rating.entity';
+import {
+  Rating,
+  STARS_MAX,
+  STARS_MIN,
+} from '../src/ratings/entities/rating.entity';
 import { RatingsService } from '../src/ratings/ratings.service';
 import { Store } from '../src/stores/entities/store.entity';
 import { StoresService } from '../src/stores/stores.service';
@@ -75,7 +80,7 @@ describe('WinesController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and wine with store relation with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and wine with authorization`, async () => {
       await createTestWine();
 
       return request(app.getHttpServer())
@@ -90,98 +95,110 @@ describe('WinesController (e2e)', () => {
             expect(item.year).toBeDefined();
             expect(item.grapeVariety).toBeDefined();
             expect(item.heritage).toBeDefined();
-            expect(item.stores).toBeDefined();
-            (item.stores as Array<any>).forEach((store) => {
-              expect(store.id).toBeDefined();
-              expect(store.name).toBeDefined();
-            });
           });
         });
     });
   });
 
-  describe(WINES_ID_RATINGS_ENDPOINT + ' (GET)', () => {
+  describe(WINES_ID_ENDPOINT + ' (GET)', () => {
     it('should exist', async () => {
       const wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      const wine: Wine = await createTestWine();
+      const wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      const wine: Wine = await createTestWine();
+      const wine = await createTestWine();
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 0 with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and wine including its winemaker, stores and ratings`, async () => {
       const wine: Wine = await createTestWine();
-      return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect((res.body as Array<any>).length).toBe(0);
-        });
-    });
-
-    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
-      const wine: Wine = await createTestWine();
-
-      for (let i = 0; i < 10; i++) {
-        await ratingsService.create(
-          faker.number.int({ min: 1, max: 5 }),
-          faker.lorem.text(),
-          user,
-          wine,
-        );
-      }
-
-      return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect((res.body as Array<any>).length).toBe(10);
-        });
-    });
-
-    it(`should return ${HttpStatus.OK} and a rating with authorization`, async () => {
-      const wine: Wine = await createTestWine();
-
-      const rating = await ratingsService.create(
+      const rating: Rating = await ratingsService.create(
         faker.number.int({ min: 1, max: 5 }),
         faker.lorem.text(),
         user,
         wine,
       );
+      wine.ratings = [rating];
 
       return request(app.getHttpServer())
-        .get(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .get(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(1);
-          (body as Array<any>).forEach((item) => {
-            expect(item.id).toEqual(rating.id);
-            expect(item.stars).toEqual(rating.stars);
-            expect(item.text).toEqual(rating.text);
-            expect(item.updatedAt).toEqual(rating.updatedAt.toISOString());
-            expect(item.createdAt).toEqual(rating.createdAt.toISOString());
+          expect(body.id).toEqual(wine.id);
+          expect(body.name).toEqual(wine.name);
+          expect(body.year).toEqual(wine.year);
+          expect(body.grapeVariety).toEqual(wine.grapeVariety);
+          expect(body.heritage).toEqual(wine.heritage);
+          expect(body.createdAt).toEqual(wine.createdAt.toISOString());
+          expect(body.updatedAt).toEqual(wine.updatedAt.toISOString());
+          expect(body.winemaker.id).toEqual(wine.winemaker.id);
+          expect(body.winemaker.name).toEqual(wine.winemaker.name);
+          expect(body.winemaker.createdAt).toEqual(
+            wine.winemaker.createdAt.toISOString(),
+          );
+          expect(body.winemaker.updatedAt).toEqual(
+            wine.winemaker.updatedAt.toISOString(),
+          );
+          (body.stores as Array<any>).forEach((store, index) => {
+            expect(store.id).toEqual(wine.stores[index].id);
+            expect(store.name).toEqual(wine.stores[index].name);
+            expect(store.address).toEqual(wine.stores[index].address);
+            expect(store.url).toEqual(wine.stores[index].url);
+            expect(store.createdAt).toEqual(
+              wine.stores[index].createdAt.toISOString(),
+            );
+            expect(store.updatedAt).toEqual(
+              wine.stores[index].updatedAt.toISOString(),
+            );
+          });
+          (body.ratings as Array<any>).forEach((rating, index) => {
+            expect(rating.id).toEqual(wine.ratings[index].id);
+            expect(rating.stars).toEqual(wine.ratings[index].stars);
+            expect(rating.text).toEqual(wine.ratings[index].text);
+            expect(rating.createdAt).toEqual(
+              wine.ratings[index].createdAt.toISOString(),
+            );
+            expect(rating.updatedAt).toEqual(
+              wine.ratings[index].updatedAt.toISOString(),
+            );
           });
         });
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} with random id parameter with authorization`, async () => {
+      return request(app.getHttpServer())
+        .get(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
+        .set(authHeader)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect(isErrorResponse);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with malformed uuid`, async () => {
+      return request(app.getHttpServer())
+        .get(
+          WINES_ID_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            faker.number.int().toString(),
+          ),
+        )
+        .set(authHeader)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect(isErrorResponse);
     });
   });
 
@@ -271,7 +288,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
@@ -280,7 +297,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
         .expect(isErrorResponse);
@@ -294,7 +311,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST)
@@ -309,7 +326,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST)
@@ -324,7 +341,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST)
@@ -339,7 +356,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(invalidData)
         .expect(HttpStatus.BAD_REQUEST)
@@ -355,10 +372,34 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post(WINES_ID_RATINGS_ENDPOINT.replace(':id', wine.id))
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(createRatingDto)
         .expect(HttpStatus.CREATED);
+    });
+
+    it(`should return ${HttpStatus.CREATED} with valid request body and correct data`, async () => {
+      const wine: Wine = await createTestWine();
+
+      const createRatingDto: CreateRatingDto = {
+        stars: STARS_MAX,
+        text: faker.lorem.lines(),
+      };
+
+      return request(app.getHttpServer())
+        .post(WINES_ID_RATINGS_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
+        .set(authHeader)
+        .send(createRatingDto)
+        .expect(HttpStatus.CREATED)
+        .expect(({ body }) => {
+          expect(body.id).toBeDefined();
+          expect(body.stars).toEqual(createRatingDto.stars);
+          expect(body.text).toEqual(createRatingDto.text);
+          expect(body.wine).toBeDefined();
+          expect(body.wine.id).toEqual(wine.id);
+          expect(body.updatedAt).toBeDefined();
+          expect(body.createdAt).toBeDefined();
+        });
     });
   });
 
@@ -367,7 +408,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
@@ -375,7 +416,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
@@ -384,7 +425,7 @@ describe('WinesController (e2e)', () => {
       const wine: Wine = await createTestWine();
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST);
     });
@@ -397,7 +438,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(updateWineDto)
         .expect(HttpStatus.NOT_FOUND);
@@ -412,7 +453,7 @@ describe('WinesController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .put(WINES_ID_ENDPOINT.replace(':id', wine.id))
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
         .set(authHeader)
         .send(updateWineDto)
         .expect((response) => {

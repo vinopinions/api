@@ -6,9 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
-import { Rating } from '../ratings/entities/rating.entity';
-import { User } from './entities/user.entity';
 import { RatingsService } from '../ratings/ratings.service';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -149,18 +148,5 @@ export class UsersService {
       removingUserWithRelation,
       toBeRemovedUserWithRelation,
     ]);
-  }
-  async getRatings(username: string): Promise<Rating[]> {
-    const user: User = await this.findOne({
-      where: { username },
-    });
-
-    return this.ratingsService.findMany({
-      where: { user: { id: user.id } },
-      relations: {
-        wine: true,
-        user: true,
-      },
-    });
   }
 }

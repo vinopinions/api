@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: '0 8 * * 1'
 
+env:
+  LANGUAGE: 'javascript-typescript'
+
 jobs:
   analyze:
     name: Analyze
@@ -19,12 +22,15 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        language: ['javascript-typescript']
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
 
       - run: yarn --ignore-scripts --non-interactive --frozen-lockfile
 
@@ -33,9 +39,9 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
+          languages: ${{ env.LANGUAGE }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          category: '/language:${{matrix.language}}'
+          category: '/language:${{ env.LANGUAGE }}'

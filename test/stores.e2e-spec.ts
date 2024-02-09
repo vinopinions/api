@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
 import {
   STORES_ENDPOINT,
@@ -10,11 +11,15 @@ import {
 import { StoresService } from '../src/stores/stores.service';
 import { AppModule } from './../src/app.module';
 import { clearDatabase, isErrorResponse, login } from './utils';
+import { WinesService } from '../src/wines/wines.service';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let authHeader: Record<string, string>;
   let storesService: StoresService;
+  let winesService: WinesService;
+  let winemakersService: WinemakersService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -24,6 +29,8 @@ describe('UsersController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     storesService = app.get(StoresService);
+    winesService = app.get(WinesService);
+    winemakersService = app.get(WinemakersService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
   });
@@ -121,20 +128,20 @@ describe('UsersController (e2e)', () => {
   describe(STORES_ID_ENDPOINT + ' (GET)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .expect((response) => response.status !== HttpStatus.NOT_FOUND);
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .expect(HttpStatus.UNAUTHORIZED)
         .expect(isErrorResponse);
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', faker.string.uuid()))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
         .set(authHeader)
         .expect(HttpStatus.NOT_FOUND)
         .expect(isErrorResponse);
@@ -142,20 +149,41 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', faker.string.alphanumeric(10)))
+        .get(
+          STORES_ID_ENDPOINT.replace(
+            ID_URL_PARAMETER,
+            faker.string.alphanumeric(10),
+          ),
+        )
         .set(authHeader)
         .expect(HttpStatus.BAD_REQUEST)
         .expect((res) => isErrorResponse(res, 'uuid'));
     });
 
     it(`should return ${HttpStatus.OK} and a valid store if id parameter is valid with authorization`, async () => {
+      const winemaker = await winemakersService.create(faker.person.fullName());
       const store = await storesService.create(
         faker.company.name(),
         faker.location.streetAddress(),
         faker.internet.url(),
       );
+      const wines = [];
+      for (let i = 0; i < 3; i++) {
+        wines.push(
+          await winesService.create(
+            faker.person.fullName(),
+            faker.date.past().getFullYear(),
+            winemaker.id,
+            [store.id],
+            faker.word.noun(),
+            faker.location.country(),
+          ),
+        );
+      }
+      store.wines = wines;
+
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', store.id))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, store.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
@@ -165,6 +193,19 @@ describe('UsersController (e2e)', () => {
           expect(body.url).toEqual(store.url);
           expect(body.createdAt).toEqual(store.createdAt.toISOString());
           expect(body.updatedAt).toEqual(store.updatedAt.toISOString());
+          (body.wines as Array<any>).forEach((wine, index) => {
+            expect(wine.id).toEqual(store.wines[index].id);
+            expect(wine.name).toEqual(store.wines[index].name);
+            expect(wine.year).toEqual(store.wines[index].year);
+            expect(wine.grapeVariety).toEqual(store.wines[index].grapeVariety);
+            expect(wine.heritage).toEqual(store.wines[index].heritage);
+            expect(wine.createdAt).toEqual(
+              store.wines[index].createdAt.toISOString(),
+            );
+            expect(wine.updatedAt).toEqual(
+              store.wines[index].updatedAt.toISOString(),
+            );
+          });
         });
     });
 
@@ -175,11 +216,11 @@ describe('UsersController (e2e)', () => {
         faker.internet.url(),
       );
       return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(':id', store.id))
+        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, store.id))
         .set(authHeader)
         .expect(HttpStatus.OK)
         .expect(({ body }) => {
-          expect(body.wines).toBeUndefined();
+          expect(body.wines).toEqual([]);
         });
     });
   });

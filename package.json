@@ -1,7 +1,7 @@
 {
   "name": "vinopinions-api",
   "version": "0.0.1",
-  "description": "When you're ready, start your application by running: `docker compose up --build`.",
+  "description": "Rest API for the vinopinions app",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",

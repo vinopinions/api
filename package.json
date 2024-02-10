@@ -1,7 +1,7 @@
 {
   "name": "vinopinions-api",
   "version": "0.0.1",
-  "description": "When you're ready, start your application by running: `docker compose up --build`.",
+  "description": "Rest API for the vinopinions app",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
@@ -65,23 +65,6 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   },
   "repository": {
     "type": "git",

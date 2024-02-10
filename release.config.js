@@ -11,9 +11,15 @@ module.exports = {
   plugins: [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
-    '@semantic-release/github',
+    '@codedependant/semantic-release-docker',
+    // only create github release on master branch
+    process.env.BRANCH_NAME == 'master' ?? [
+      '@semantic-release/github',
+      {
+        addReleases: 'bottom',
+      },
+    ],
     [
-      '@codedependant/semantic-release-docker',
       {
         dockerRegistry: process.env.DOCKER_REGISTRY,
         dockerTags: [process.env.DOCKER_IMAGE_TAG, '{{version}}'],

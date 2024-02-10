@@ -1,23 +1,16 @@
 {
   "name": "vinopinions-api",
-  "version": "1.1.7-dev.1",
-  "description": "",
-  "author": "",
-  "private": true,
+  "version": "0.0.1",
+  "description": "When you're ready, start your application by running: `docker compose up --build`.",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
-    "start:docker": "docker compose up -d",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "release": "semantic-release",
     "postinstall": "husky",
@@ -89,5 +82,13 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layla-oskar-schule/vinopinions-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/layla-oskar-schule/vinopinions-api/issues"
+  },
+  "homepage": "https://github.com/layla-oskar-schule/vinopinions-api#readme"
 }

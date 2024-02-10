@@ -36,7 +36,7 @@ jobs:
       packages: write
 
     environment:
-      name: ${{ contains(github.event.ref, 'developer') && 'dev' || 'production' }}
+      name: ${{ contains(github.ref_name, 'developer') && 'dev' || 'production' }}
 
     needs:
       - codeql
@@ -68,6 +68,7 @@ jobs:
 
       - name: Create github release and publish docker image
         env:
+          BRANCH_NAME: ${{ github.ref_name }}
           DOCKER_REGISTRY_USER: ${{ github.actor }}
           DOCKER_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_REGISTRY: ghcr.io

@@ -1,10 +1,8 @@
-console.log(process.env.DOCKER_REGISTRY)
-
 const plugins = [
   '@semantic-release/commit-analyzer',
   '@semantic-release/release-notes-generator',
-  '@codedependant/semantic-release-docker',
   [
+    '@codedependant/semantic-release-docker',
     {
       dockerRegistry: process.env.DOCKER_REGISTRY,
       dockerTags: [process.env.DOCKER_IMAGE_TAG, '{{version}}'],

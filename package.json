@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "description": "Rest API for the vinopinions app",
   "license": "UNLICENSED",
+  "main": "./src/main.ts",
+  "type": "module",
   "scripts": {
     "build": "nest build",
     "start": "nest start",

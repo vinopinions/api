@@ -24,7 +24,7 @@ if (process.env.BRANCH_NAME == 'master') {
   ]);
 }
 
-module.exports = {
+export default {
   branches: [
     {
       name: 'master',

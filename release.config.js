@@ -1,3 +1,5 @@
+console.log(process.env.DOCKER_REGISTRY)
+
 const plugins = [
   '@semantic-release/commit-analyzer',
   '@semantic-release/release-notes-generator',

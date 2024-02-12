@@ -1,7 +1,7 @@
 name: Dependabot Auto-Merge
 
 on:
-  pull_request:
+  pull_request_target:
     branches: ['developer']
 
 jobs:
@@ -32,6 +32,7 @@ jobs:
         with:
           app_id: ${{ vars.RELEASE_BOT_ID }}
           private_key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+          
       - name: Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v1

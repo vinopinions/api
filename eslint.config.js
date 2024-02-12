@@ -1,3 +1,4 @@
+/* eslint-disable no-var-requires */
 const ts = require('@typescript-eslint/eslint-plugin');
 const tsParser = require('@typescript-eslint/parser');
 const prettierPlugin = require('eslint-plugin-prettier');

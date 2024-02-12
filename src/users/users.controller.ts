@@ -23,7 +23,7 @@ import {
 } from '../constants/url-parameter';
 import { AuthenticatedRequest } from './../auth/auth.guard';
 import { GetUserDto } from './dtos/get-user.dto';
-import { User, UserWithoutRelations } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 const USERS_ENDPOINT_NAME = 'users';
@@ -59,7 +59,6 @@ export class UsersController {
   getCurrentUser(@Req() request: AuthenticatedRequest): Promise<User> {
     return this.usersService.findOne({
       where: { username: request.user.username },
-      relations: ['ratings', 'friends'],
     });
   }
 
@@ -68,7 +67,7 @@ export class UsersController {
   @Get()
   @ApiOkResponse({
     description: 'Users have been found',
-    type: UserWithoutRelations,
+    type: User,
     isArray: true,
   })
   findAll(): Promise<User[]> {
@@ -90,28 +89,7 @@ export class UsersController {
       where: {
         username,
       },
-      relations: ['friends', 'ratings'],
     });
-  }
-
-  @ApiOperation({ summary: 'get friends of a user' })
-  @HttpCode(HttpStatus.OK)
-  @Get(USERS_USERNAME_FRIENDS_ENDPOINT_NAME)
-  @ApiOkResponse({
-    description: 'Friends for the user have been found',
-    type: UserWithoutRelations,
-    isArray: true,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-  })
-  async getFriends(@Param() { username }: GetUserDto): Promise<User[]> {
-    const user: User = await this.usersService.findOne({
-      where: {
-        username,
-      },
-    });
-    return this.usersService.getFriends(user);
   }
 
   @ApiOperation({ summary: 'remove a friend' })
@@ -148,6 +126,6 @@ export class UsersController {
       },
     });
 
-    return this.usersService.removeFriend(removingUser, toBeRemovedUser);
+    await this.usersService.removeFriend(removingUser, toBeRemovedUser);
   }
 }

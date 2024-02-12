@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsDate, IsUUID } from 'class-validator';
 import {
   CreateDateColumn,
@@ -41,3 +41,13 @@ export class FriendRequest {
   @CreateDateColumn()
   createdAt: Date;
 }
+
+export const FriendRequestRelations: Array<keyof FriendRequest> = [
+  'sender',
+  'receiver',
+];
+
+export class FriendRequestWithoutRelations extends OmitType(
+  FriendRequest,
+  FriendRequestRelations,
+) {}

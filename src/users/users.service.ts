@@ -75,7 +75,6 @@ export class UsersService {
 
     // add addingUser to toBeAddedUser's friends
     toBeAddedUser.friends.push(addingUser);
-    addingUser.friends.push(toBeAddedUser);
     // Save changes to the database
     await this.userRepository.save([addingUser, toBeAddedUser]);
   }

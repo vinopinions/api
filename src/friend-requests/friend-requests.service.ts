@@ -131,7 +131,14 @@ export class FriendRequestsService {
     await this.friendRequestRepository.remove(friendRequest);
 
     // add as friends
-    await this.usersService.addFriend(acceptingUser, friendRequest.sender);
+    await this.usersService.addFriend(
+      await this.usersService.findOne({
+        where: { id: friendRequest.receiver.id },
+      }),
+      await this.usersService.findOne({
+        where: { id: friendRequest.sender.id },
+      }),
+    );
 
     return friendRequest;
   }
@@ -173,7 +180,7 @@ export class FriendRequestsService {
   }
 
   async getReceived(user: User): Promise<FriendRequest[]> {
-    return this.friendRequestRepository.find({
+    return await this.findMany({
       where: {
         receiver: {
           id: user.id,
@@ -183,7 +190,7 @@ export class FriendRequestsService {
   }
 
   async getSent(user: User): Promise<FriendRequest[]> {
-    return this.friendRequestRepository.find({
+    return this.findMany({
       where: {
         sender: {
           id: user.id,

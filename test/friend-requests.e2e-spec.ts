@@ -415,7 +415,10 @@ describe('FriendRequestsController (e2e)', () => {
         faker.internet.userName(),
         faker.internet.password(),
       );
-      const friendRequest = await friendRequestsService.send(sender, user);
+      const friendRequest: FriendRequest = await friendRequestsService.send(
+        sender,
+        user,
+      );
       return request(app.getHttpServer())
         .post(
           FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(

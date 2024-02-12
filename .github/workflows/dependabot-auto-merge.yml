@@ -4,9 +4,6 @@ on:
   pull_request:
     branches: ['dependencies']
 
-permissions:
-  pull-requests: write
-
 jobs:
   test-unit:
     uses: ./.github/workflows/unit-test.yml
@@ -24,6 +21,9 @@ jobs:
     needs:
       - test-e2e
       - test-unit
+    permissions:
+      pull-requests: write
+      contents: write
 
     steps:
       - name: Dependabot metadata
@@ -31,8 +31,9 @@ jobs:
         uses: dependabot/fetch-metadata@v1
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
-      - name: Approve a PR
-        run: gh pr review --approve "$PR_URL"
+
+      - name: Merge a PR
+        run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}

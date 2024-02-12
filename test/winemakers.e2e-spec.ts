@@ -3,18 +3,18 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
+import { Store } from '../src/stores/entities/store.entity';
+import { StoresService } from '../src/stores/stores.service';
 import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
 import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
 import {
   WINEMAKERS_ENDPOINT,
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
 import { clearDatabase, isErrorResponse, login } from './utils';
-import { StoresService } from '../src/stores/stores.service';
-import { WinesService } from '../src/wines/wines.service';
-import { Store } from '../src/stores/entities/store.entity';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
@@ -283,7 +283,8 @@ describe('WinemakersController (e2e)', () => {
         .set(authHeader)
         .expect(HttpStatus.CREATED)
         .expect(({ body }) => {
-          expect(body.wines).toBeUndefined();
+          expect(Array.isArray(body.wines)).toBe(true);
+          expect((body.wines as Array<any>).length).toBe(0);
         });
     });
   });

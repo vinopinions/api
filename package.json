@@ -1,23 +1,18 @@
 {
   "name": "vinopinions-api",
-  "version": "1.1.6",
-  "description": "",
-  "author": "",
-  "private": true,
+  "version": "0.0.1",
+  "description": "Rest API for the vinopinions app",
   "license": "UNLICENSED",
+  "main": "./src/main.ts",
+  "type": "module",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
-    "start:docker": "docker compose up -d",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "release": "semantic-release",
     "postinstall": "husky",
@@ -73,21 +68,12 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
-  }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layla-oskar-schule/vinopinions-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/layla-oskar-schule/vinopinions-api/issues"
+  },
+  "homepage": "https://github.com/layla-oskar-schule/vinopinions-api#readme"
 }

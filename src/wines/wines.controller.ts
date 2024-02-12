@@ -27,13 +27,10 @@ import {
 } from '../constants/url-parameter';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
 import { RatingsService } from '../ratings/ratings.service';
-import {
-  Rating,
-  RatingWithoutRelation,
-} from './../ratings/entities/rating.entity';
+import { Rating } from './../ratings/entities/rating.entity';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { UpdateWineDto } from './dtos/update-wine.dto';
-import { Wine, WineWithoutRelations } from './entities/wine.entity';
+import { Wine } from './entities/wine.entity';
 import { WinesService } from './wines.service';
 
 const WINES_ENDPOINT_NAME = 'wines';
@@ -67,7 +64,6 @@ export class WinesController {
   findById(@Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string) {
     return this.winesService.findOne({
       where: { id },
-      relations: ['winemaker', 'stores', 'ratings'],
     });
   }
 
@@ -75,7 +71,7 @@ export class WinesController {
   @Get()
   @ApiOkResponse({
     description: 'Wines have been found',
-    type: WineWithoutRelations,
+    type: Wine,
     isArray: true,
   })
   findAll(): Promise<Wine[]> {
@@ -86,7 +82,7 @@ export class WinesController {
   @Post()
   @ApiCreatedResponse({
     description: 'Wine has been created',
-    type: WineWithoutRelations,
+    type: Wine,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',
@@ -107,7 +103,7 @@ export class WinesController {
   @Put(WINES_ID_URL_PARAMETER)
   @ApiCreatedResponse({
     description: 'Store has been added to the wine',
-    type: WineWithoutRelations,
+    type: Wine,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',
@@ -126,7 +122,7 @@ export class WinesController {
   @Post(WINES_ID_RATINGS_NAME)
   @ApiCreatedResponse({
     description: 'Ratings has been added to the wine',
-    type: RatingWithoutRelation,
+    type: Rating,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',

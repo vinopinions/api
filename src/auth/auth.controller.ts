@@ -7,6 +7,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { User } from '../users/entities/user.entity';
 import { Public } from './auth.guard';
 import { AuthService } from './auth.service';
 import { SignInResponseDto } from './dtos/sign-in-response.dto';
@@ -38,11 +39,14 @@ export class AuthController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  signIn(
+  async signIn(
     @Body()
     signInDto: SignInDto,
   ): Promise<SignInResponseDto> {
-    return this.authService.signIn(signInDto.username, signInDto.password);
+    return await this.authService.signIn(
+      signInDto.username,
+      signInDto.password,
+    );
   }
 
   @Public()
@@ -56,11 +60,15 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'A new user has been created',
+    type: User,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  signUp(@Body() signUpDto: SignUpDto) {
-    return this.authService.signUp(signUpDto.username, signUpDto.password);
+  async signUp(@Body() signUpDto: SignUpDto): Promise<User> {
+    return await this.authService.signUp(
+      signUpDto.username,
+      signUpDto.password,
+    );
   }
 }

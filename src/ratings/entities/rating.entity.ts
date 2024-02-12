@@ -74,7 +74,7 @@ export class Rating {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-export class RatingWithoutRelation extends OmitType(Rating, [
-  'user',
-  'wine',
-] as const) {}
+
+export const RatingRelations: (keyof Rating)[] = ['user', 'wine'];
+
+export class RatingWithoutRelation extends OmitType(Rating, RatingRelations) {}

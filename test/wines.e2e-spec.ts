@@ -63,7 +63,7 @@ describe('WinesController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(WINES_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -105,7 +105,7 @@ describe('WinesController (e2e)', () => {
       const wine = await createTestWine();
       return request(app.getHttpServer())
         .get(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -206,7 +206,7 @@ describe('WinesController (e2e)', () => {
     it('should exist', async () => {
       return request(app.getHttpServer())
         .post(WINES_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, () => {
@@ -281,7 +281,7 @@ describe('WinesController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .post(WINES_ID_RATINGS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -409,7 +409,7 @@ describe('WinesController (e2e)', () => {
 
       return request(app.getHttpServer())
         .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {

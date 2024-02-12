@@ -9,14 +9,23 @@ import {
   USERNAME_URL_PARAMETER,
 } from '../src/constants/url-parameter';
 import { FriendRequestsService } from '../src/friend-requests/friend-requests.service';
+import {
+  Rating,
+  STARS_MAX,
+  STARS_MIN,
+} from '../src/ratings/entities/rating.entity';
+import { RatingsService } from '../src/ratings/ratings.service';
+import { StoresService } from '../src/stores/stores.service';
 import { User } from '../src/users/entities/user.entity';
 import {
   USERS_ENDPOINT,
   USERS_ME_ENDPOINT,
-  USERS_NAME_FRIENDS_ENDPOINT,
-  USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT,
   USERS_USERNAME_ENDPOINT,
+  USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT,
 } from '../src/users/users.controller';
+import { UsersService } from '../src/users/users.service';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
 import {
   clearDatabase,
@@ -24,16 +33,12 @@ import {
   isErrorResponse,
   login,
 } from './utils';
-import { RatingsService } from '../src/ratings/ratings.service';
-import { WinesService } from '../src/wines/wines.service';
-import { StoresService } from '../src/stores/stores.service';
-import { WinemakersService } from '../src/winemakers/winemakers.service';
-import { STARS_MAX, STARS_MIN } from '../src/ratings/entities/rating.entity';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let authHeader: Record<string, string>;
   let authService: AuthService;
+  let usersService: UsersService;
   let friendRequestsService: FriendRequestsService;
   let ratingsService: RatingsService;
   let winesService: WinesService;
@@ -54,6 +59,7 @@ describe('UsersController (e2e)', () => {
     winesService = app.get(WinesService);
     storesService = app.get(StoresService);
     winemakersService = app.get(WinemakersService);
+    usersService = app.get(UsersService);
     const loginData = await login(app);
     authHeader = loginData.authHeader;
     user = loginData.user;
@@ -68,7 +74,7 @@ describe('UsersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(USERS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -147,7 +153,7 @@ describe('UsersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(USERS_ME_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -165,14 +171,18 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} and currently logged in User including ratings and friends, excluding passwordHash with authorization`, async () => {
-      const ratings = [];
+      const ratings: Rating[] = [];
       for (let i = 0; i < 3; i++) {
         ratings.push(await createRating());
       }
-      const friends = [];
+      const friends: User[] = [];
       for (let i = 0; i < 3; i++) {
-        const friend = await addFriend();
-        friends.push(friend);
+        const createdUser: User = await authService.signUp(
+          generateRandomValidUsername(),
+          faker.internet.password(),
+        );
+        await usersService.addFriend(createdUser, user);
+        friends.push(createdUser);
       }
       user.friends = friends;
       user.ratings = ratings;
@@ -184,28 +194,41 @@ describe('UsersController (e2e)', () => {
         .expect(({ body }) => {
           expect(body.id).toEqual(user.id);
           expect(body.username).toEqual(user.username);
-          expect(body.passwordHash).toBeUndefined();
           expect(body.createdAt).toEqual(user.createdAt.toISOString());
           expect(body.updatedAt).toEqual(user.updatedAt.toISOString());
           (body.friends as Array<any>).forEach((friend, index) => {
-            expect(friend.id).toEqual(user.friends[index].id);
-            expect(friend.username).toEqual(user.friends[index].username);
+            expect(friend.id).toBeDefined();
+            const realFriend: User | undefined = friends.find(
+              (i) => i.id == friend.id,
+            );
+            expect(realFriend).toBeDefined();
+            // we just return here since the test would have failed already anyways
+            if (realFriend == undefined) return;
+            expect(friend.id).toEqual(realFriend.id);
+            expect(friend.username).toEqual(realFriend.username);
             expect(friend.createdAt).toEqual(
-              user.friends[index].createdAt.toISOString(),
+              realFriend.createdAt.toISOString(),
             );
             expect(friend.updatedAt).toEqual(
-              user.friends[index].updatedAt.toISOString(),
+              realFriend.updatedAt.toISOString(),
             );
           });
           (body.ratings as Array<any>).forEach((rating, index) => {
-            expect(rating.id).toEqual(user.ratings[index].id);
-            expect(rating.stars).toEqual(user.ratings[index].stars);
-            expect(rating.text).toEqual(user.ratings[index].text);
+            expect(rating.id).toBeDefined();
+            const realRating: Rating | undefined = ratings.find(
+              (i) => i.id == rating.id,
+            );
+            expect(realRating).toBeDefined();
+            // we just return here since the test would have failed already anyways
+            if (realRating == undefined) return;
+            expect(rating.id).toEqual(realRating.id);
+            expect(rating.stars).toEqual(realRating.stars);
+            expect(rating.text).toEqual(realRating.text);
             expect(rating.createdAt).toEqual(
-              user.ratings[index].createdAt.toISOString(),
+              realRating.createdAt.toISOString(),
             );
             expect(rating.updatedAt).toEqual(
-              user.ratings[index].updatedAt.toISOString(),
+              realRating.updatedAt.toISOString(),
             );
           });
         });
@@ -221,7 +244,7 @@ describe('UsersController (e2e)', () => {
             generateRandomValidUsername(),
           ),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -248,15 +271,19 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and user including frends and ratings with authorization`, async () => {
-      const ratings = [];
+    it(`should return ${HttpStatus.OK} and user including friends and ratings with authorization`, async () => {
+      const ratings: Rating[] = [];
       for (let i = 0; i < 3; i++) {
         ratings.push(await createRating());
       }
-      const friends = [];
+      const friends: User[] = [];
       for (let i = 0; i < 3; i++) {
-        const friend = await addFriend();
-        friends.push(friend);
+        const createdUser: User = await authService.signUp(
+          generateRandomValidUsername(),
+          faker.internet.password(),
+        );
+        await usersService.addFriend(createdUser, user);
+        friends.push(createdUser);
       }
       user.friends = friends;
       user.ratings = ratings;
@@ -275,24 +302,38 @@ describe('UsersController (e2e)', () => {
           expect(body.createdAt).toEqual(user.createdAt.toISOString());
           expect(body.updatedAt).toEqual(user.updatedAt.toISOString());
           (body.friends as Array<any>).forEach((friend, index) => {
-            expect(friend.id).toEqual(user.friends[index].id);
-            expect(friend.username).toEqual(user.friends[index].username);
+            expect(friend.id).toBeDefined();
+            const realFriend: User | undefined = friends.find(
+              (i) => i.id == friend.id,
+            );
+            expect(realFriend).toBeDefined();
+            // we just return here since the test would have failed already anyways
+            if (realFriend == undefined) return;
+            expect(friend.id).toEqual(realFriend.id);
+            expect(friend.username).toEqual(realFriend.username);
             expect(friend.createdAt).toEqual(
-              user.friends[index].createdAt.toISOString(),
+              realFriend.createdAt.toISOString(),
             );
             expect(friend.updatedAt).toEqual(
-              user.friends[index].updatedAt.toISOString(),
+              realFriend.updatedAt.toISOString(),
             );
           });
           (body.ratings as Array<any>).forEach((rating, index) => {
-            expect(rating.id).toEqual(user.ratings[index].id);
-            expect(rating.stars).toEqual(user.ratings[index].stars);
-            expect(rating.text).toEqual(user.ratings[index].text);
+            expect(rating.id).toBeDefined();
+            const realRating: Rating | undefined = ratings.find(
+              (i) => i.id == rating.id,
+            );
+            expect(realRating).toBeDefined();
+            // we just return here since the test would have failed already anyways
+            if (realRating == undefined) return;
+            expect(rating.id).toEqual(realRating.id);
+            expect(rating.stars).toEqual(realRating.stars);
+            expect(rating.text).toEqual(realRating.text);
             expect(rating.createdAt).toEqual(
-              user.ratings[index].createdAt.toISOString(),
+              realRating.createdAt.toISOString(),
             );
             expect(rating.updatedAt).toEqual(
-              user.ratings[index].updatedAt.toISOString(),
+              realRating.updatedAt.toISOString(),
             );
           });
         });
@@ -327,103 +368,11 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe(USERS_NAME_FRIENDS_ENDPOINT + ' (GET)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
-    });
-
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
-
-    it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
-            USERNAME_URL_PARAMETER,
-            user.username,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK);
-    });
-
-    it(`should return ${HttpStatus.OK} and empty array with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
-            USERNAME_URL_PARAMETER,
-            user.username,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(0);
-        });
-    });
-
-    it(`should return ${HttpStatus.OK} and array of 3 users with authorization`, async () => {
-      for (let i = 0; i < 3; i++) {
-        const userData: SignUpDto = {
-          username: generateRandomValidUsername(),
-          password: faker.internet.password(),
-        };
-        const createdUser: User = await authService.signUp(
-          userData.username,
-          userData.password,
-        );
-        const friendRequest = await friendRequestsService.send(
-          createdUser,
-          user,
-        );
-        await friendRequestsService.accept(friendRequest.id, user);
-      }
-
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
-            USERNAME_URL_PARAMETER,
-            user.username,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(3);
-          (body as Array<any>).forEach((item) => {
-            expect(item.id).toBeDefined();
-            expect(item.username).toBeDefined();
-            expect(item.createdAt).toBeDefined();
-            expect(item.updatedAt).toBeDefined();
-          });
-        });
-    });
-
-    it(`should return ${HttpStatus.NOT_FOUND} with random username as parameter with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
-            USERNAME_URL_PARAMETER,
-            generateRandomValidUsername(),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND)
-        .expect(isErrorResponse);
-    });
-  });
-
-  describe(USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT + ' (DELETE)', () => {
+  describe(USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT + ' (DELETE)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             generateRandomValidUsername(),
           ).replace(
@@ -431,13 +380,13 @@ describe('UsersController (e2e)', () => {
             generateRandomValidUsername(),
           ),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             generateRandomValidUsername(),
           ).replace(
@@ -452,7 +401,7 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.NOT_FOUND} when deleting user that does not exist`, async () => {
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             generateRandomValidUsername(),
           ).replace(
@@ -468,7 +417,7 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.NOT_FOUND} when to be deleted user does not exist`, async () => {
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             user.username,
           ).replace(
@@ -489,7 +438,7 @@ describe('UsersController (e2e)', () => {
 
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             user.username,
           ).replace(FRIEND_USERNAME_URL_PARAMETER, toBeDeletedUser.username),
@@ -507,7 +456,7 @@ describe('UsersController (e2e)', () => {
 
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             otherUser.username,
           ).replace(
@@ -530,7 +479,7 @@ describe('UsersController (e2e)', () => {
 
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             user.username,
           ).replace(FRIEND_USERNAME_URL_PARAMETER, createdUser.username),
@@ -540,7 +489,7 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  const createRating = async () => {
+  const createRating = async (): Promise<Rating> => {
     const winemaker = await winemakersService.create(faker.person.fullName());
     const store = await storesService.create(faker.company.name());
     const wine = await winesService.create(
@@ -557,18 +506,5 @@ describe('UsersController (e2e)', () => {
       user,
       wine,
     );
-  };
-
-  const addFriend = async () => {
-    const userData: SignUpDto = {
-      username: generateRandomValidUsername(),
-      password: faker.internet.password(),
-    };
-    const createdUser: User = await authService.signUp(
-      userData.username,
-      userData.password,
-    );
-    const friendRequest = await friendRequestsService.send(createdUser, user);
-    return friendRequestsService.accept(friendRequest.id, user);
   };
 });

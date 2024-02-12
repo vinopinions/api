@@ -1,12 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
-import { RatingsService } from '../ratings/ratings.service';
 import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
 import { WinemakersService } from './../winemakers/winemakers.service';
-import { Wine } from './entities/wine.entity';
+import { Wine, WineRelations } from './entities/wine.entity';
 
 @Injectable()
 export class WinesService {
@@ -14,7 +13,6 @@ export class WinesService {
     @InjectRepository(Wine) private wineRepository: Repository<Wine>,
     private winemakersService: WinemakersService,
     private storesService: StoresService,
-    private ratingsService: RatingsService,
   ) {}
 
   async create(
@@ -45,15 +43,22 @@ export class WinesService {
     });
     wine.winemaker = winemaker;
     wine.stores = stores;
-    return this.wineRepository.save(wine);
+    const dbWine: Wine = await this.wineRepository.save(wine);
+    return await this.findOne({ where: { id: dbWine.id } });
   }
 
   findMany(options?: FindManyOptions<Wine>) {
-    return this.wineRepository.find(options);
+    return this.wineRepository.find({
+      relations: Object.fromEntries(WineRelations.map((key) => [key, true])),
+      ...options,
+    });
   }
 
   async findOne(options: FindOneOptions<Wine>): Promise<Wine> {
-    const wine = await this.wineRepository.findOne(options);
+    const wine = await this.wineRepository.findOne({
+      relations: Object.fromEntries(WineRelations.map((key) => [key, true])),
+      ...options,
+    });
     if (!wine)
       throw new NotFoundException(
         `Wine with ${JSON.stringify(options.where)} not found`,
@@ -62,16 +67,14 @@ export class WinesService {
   }
 
   async remove(id: string): Promise<Wine> {
-    const Wine: Wine = await this.findOne({ where: { id } });
-    return this.wineRepository.remove(Wine);
+    const wine: Wine = await this.findOne({ where: { id } });
+    await this.wineRepository.remove(wine);
+    return wine;
   }
 
   async update(id: string, storeIds: string[]): Promise<Wine> {
     const wine = await this.wineRepository.findOneOrFail({
       where: { id },
-      relations: {
-        stores: true,
-      },
     });
 
     if (!storeIds || storeIds.length < 0) wine.stores = [];
@@ -87,6 +90,7 @@ export class WinesService {
       wine.stores = stores;
     }
 
-    return this.wineRepository.save(wine);
+    await this.wineRepository.save(wine);
+    return await this.findOne({ where: { id: wine.id } });
   }
 }

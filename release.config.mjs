@@ -2,6 +2,12 @@ const plugins = [
   '@semantic-release/commit-analyzer',
   '@semantic-release/release-notes-generator',
   [
+    '@semantic-release/npm',
+    {
+      npmPublish: false,
+    },
+  ],
+  [
     '@codedependant/semantic-release-docker',
     {
       dockerRegistry: process.env.DOCKER_REGISTRY,

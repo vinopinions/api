@@ -46,7 +46,7 @@ describe('WinemakersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(WINEMAKERS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -128,7 +128,7 @@ describe('WinemakersController (e2e)', () => {
         .get(
           WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -214,7 +214,7 @@ describe('WinemakersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .post(WINEMAKERS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {

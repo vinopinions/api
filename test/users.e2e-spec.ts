@@ -20,9 +20,8 @@ import { User } from '../src/users/entities/user.entity';
 import {
   USERS_ENDPOINT,
   USERS_ME_ENDPOINT,
-  USERS_NAME_FRIENDS_ENDPOINT,
-  USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT,
   USERS_USERNAME_ENDPOINT,
+  USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT,
 } from '../src/users/users.controller';
 import { UsersService } from '../src/users/users.service';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
@@ -75,7 +74,7 @@ describe('UsersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(USERS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -154,7 +153,7 @@ describe('UsersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(USERS_ME_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -245,7 +244,7 @@ describe('UsersController (e2e)', () => {
             generateRandomValidUsername(),
           ),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -288,7 +287,6 @@ describe('UsersController (e2e)', () => {
       }
       user.friends = friends;
       user.ratings = ratings;
-      console.log(friends);
       return request(app.getHttpServer())
         .get(
           USERS_USERNAME_ENDPOINT.replace(
@@ -370,103 +368,11 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe(USERS_NAME_FRIENDS_ENDPOINT + ' (GET)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
-    });
-
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(USERS_NAME_FRIENDS_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
-
-    it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
-            USERNAME_URL_PARAMETER,
-            user.username,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK);
-    });
-
-    it(`should return ${HttpStatus.OK} and empty array with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
-            USERNAME_URL_PARAMETER,
-            user.username,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(0);
-        });
-    });
-
-    it(`should return ${HttpStatus.OK} and array of 3 users with authorization`, async () => {
-      for (let i = 0; i < 3; i++) {
-        const userData: SignUpDto = {
-          username: generateRandomValidUsername(),
-          password: faker.internet.password(),
-        };
-        const createdUser: User = await authService.signUp(
-          userData.username,
-          userData.password,
-        );
-        const friendRequest = await friendRequestsService.send(
-          createdUser,
-          user,
-        );
-        await friendRequestsService.accept(friendRequest.id, user);
-      }
-
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
-            USERNAME_URL_PARAMETER,
-            user.username,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(3);
-          (body as Array<any>).forEach((item) => {
-            expect(item.id).toBeDefined();
-            expect(item.username).toBeDefined();
-            expect(item.createdAt).toBeDefined();
-            expect(item.updatedAt).toBeDefined();
-          });
-        });
-    });
-
-    it(`should return ${HttpStatus.NOT_FOUND} with random username as parameter with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(
-          USERS_NAME_FRIENDS_ENDPOINT.replace(
-            USERNAME_URL_PARAMETER,
-            generateRandomValidUsername(),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND)
-        .expect(isErrorResponse);
-    });
-  });
-
-  describe(USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT + ' (DELETE)', () => {
+  describe(USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT + ' (DELETE)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             generateRandomValidUsername(),
           ).replace(
@@ -474,13 +380,13 @@ describe('UsersController (e2e)', () => {
             generateRandomValidUsername(),
           ),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             generateRandomValidUsername(),
           ).replace(
@@ -495,7 +401,7 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.NOT_FOUND} when deleting user that does not exist`, async () => {
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             generateRandomValidUsername(),
           ).replace(
@@ -511,7 +417,7 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.NOT_FOUND} when to be deleted user does not exist`, async () => {
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             user.username,
           ).replace(
@@ -532,7 +438,7 @@ describe('UsersController (e2e)', () => {
 
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             user.username,
           ).replace(FRIEND_USERNAME_URL_PARAMETER, toBeDeletedUser.username),
@@ -550,7 +456,7 @@ describe('UsersController (e2e)', () => {
 
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             otherUser.username,
           ).replace(
@@ -573,7 +479,7 @@ describe('UsersController (e2e)', () => {
 
       return request(app.getHttpServer())
         .delete(
-          USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
+          USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(
             USERNAME_URL_PARAMETER,
             user.username,
           ).replace(FRIEND_USERNAME_URL_PARAMETER, createdUser.username),

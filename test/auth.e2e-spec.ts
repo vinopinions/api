@@ -39,7 +39,7 @@ describe('AuthController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .post(AUTH_SIGNUP_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with no data`, () => {
@@ -173,7 +173,7 @@ describe('AuthController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .post(AUTH_LOGIN_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with no data`, () => {

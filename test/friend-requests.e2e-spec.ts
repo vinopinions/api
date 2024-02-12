@@ -54,7 +54,7 @@ describe('FriendRequestsController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -153,7 +153,7 @@ describe('FriendRequestsController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(FRIEND_REQUESTS_OUTGOING_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -252,7 +252,7 @@ describe('FriendRequestsController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .post(FRIEND_REQUESTS_SEND_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -357,7 +357,7 @@ describe('FriendRequestsController (e2e)', () => {
             faker.string.uuid(),
           ),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -488,7 +488,7 @@ describe('FriendRequestsController (e2e)', () => {
             faker.string.uuid(),
           ),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -616,7 +616,7 @@ describe('FriendRequestsController (e2e)', () => {
             faker.string.uuid(),
           ),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {

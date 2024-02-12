@@ -2,7 +2,7 @@ name: Dependabot Auto-Merge
 
 on:
   pull_request:
-    branches: ['developer']
+    branches: ['dependencies']
 
 jobs:
   test-unit:
@@ -15,7 +15,7 @@ jobs:
     permissions:
       contents: read # for checkout
 
-  approve:
+  merge:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
     needs:
@@ -26,14 +26,26 @@ jobs:
       contents: write
 
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ vars.RELEASE_BOT_ID }}
+          private_key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
       - name: Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v1
         with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
+          github-token: ${{ steps.generate_token.outputs.token }}
 
-      - name: Merge a PR
+      - name: Approve
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+
+      - name: Merge
         run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}

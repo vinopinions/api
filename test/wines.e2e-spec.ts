@@ -126,13 +126,6 @@ describe('WinesController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} and wine including its winemaker, stores and ratings`, async () => {
       const wine: Wine = await createTestWine();
-      const rating: Rating = await ratingsService.create(
-        faker.number.int({ min: 1, max: 5 }),
-        faker.lorem.text(),
-        user,
-        wine,
-      );
-      wine.ratings = [rating];
 
       return request(app.getHttpServer())
         .get(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
@@ -154,27 +147,37 @@ describe('WinesController (e2e)', () => {
           expect(body.winemaker.updatedAt).toEqual(
             wine.winemaker.updatedAt.toISOString(),
           );
-          (body.stores as Array<any>).forEach((store, index) => {
-            expect(store.id).toEqual(wine.stores[index].id);
-            expect(store.name).toEqual(wine.stores[index].name);
-            expect(store.address).toEqual(wine.stores[index].address);
-            expect(store.url).toEqual(wine.stores[index].url);
-            expect(store.createdAt).toEqual(
-              wine.stores[index].createdAt.toISOString(),
+          (body.stores as Array<any>).forEach((store) => {
+            const realStore: Store | undefined = wine.stores.find(
+              (i) => i.id == store.id,
             );
-            expect(store.updatedAt).toEqual(
-              wine.stores[index].updatedAt.toISOString(),
-            );
+            expect(realStore).toBeDefined();
+            // we just return here since the test would have failed already anyways
+            if (realStore == undefined) return;
+            expect(store.id).toEqual(realStore.id);
+            expect(store.name).toEqual(realStore.name);
+            expect(store.address).toEqual(realStore.address);
+            expect(store.url).toEqual(realStore.url);
+            expect(store.createdAt).toEqual(realStore.createdAt.toISOString());
+            expect(store.updatedAt).toEqual(realStore.updatedAt.toISOString());
           });
-          (body.ratings as Array<any>).forEach((rating, index) => {
-            expect(rating.id).toEqual(wine.ratings[index].id);
-            expect(rating.stars).toEqual(wine.ratings[index].stars);
-            expect(rating.text).toEqual(wine.ratings[index].text);
+          (body.ratings as Array<any>).forEach((rating) => {
+            expect(rating.id).toBeDefined();
+            console.log({ rating, ratings: wine.ratings });
+            const realRating: Rating | undefined = wine.ratings.find(
+              (i) => i.id == rating.id,
+            );
+            expect(realRating).toBeDefined();
+            // we just return here since the test would have failed already anyways
+            if (realRating == undefined) return;
+            expect(rating.id).toEqual(realRating.id);
+            expect(rating.stars).toEqual(realRating.stars);
+            expect(rating.text).toEqual(realRating.text);
             expect(rating.createdAt).toEqual(
-              wine.ratings[index].createdAt.toISOString(),
+              realRating.createdAt.toISOString(),
             );
             expect(rating.updatedAt).toEqual(
-              wine.ratings[index].updatedAt.toISOString(),
+              realRating.updatedAt.toISOString(),
             );
           });
         });
@@ -483,6 +486,6 @@ describe('WinesController (e2e)', () => {
       wine,
     );
 
-    return wine;
+    return await winesService.findOne({ where: { id: wine.id } });
   };
 });

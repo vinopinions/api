@@ -55,4 +55,4 @@ jobs:
           DOCKER_IMAGE_NAME: ${{ github.event.repository.name }}
           DOCKER_PROJECT: ${{ github.repository_owner }}
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        run: echo $(npx semantic-release@23 --dry-run | grep "The next release version is" | awk '{print $6}')
+        run: echo $(npx semantic-release@23 --dry-run | grep "The next release version is")

@@ -58,11 +58,6 @@ jobs:
           @semantic-release/git@10 \
           --ignore-scripts --non-interactive --frozen-lockfile --no-save
 
-      - name: Set up secret file
-        env:
-          TOKEN: ${{ steps.generate_token.outputs.token }}
-        run: echo $TOKEN >> secrets.txt
-
       - name: Check version
         id: check_version
         env:

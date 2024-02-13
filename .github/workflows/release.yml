@@ -49,7 +49,7 @@ jobs:
         run: |
           yarn add \
           @semantic-release/git@10 \ 
-          --ignore-scripts --non-interactive --frozen-lockfile
+          --ignore-scripts --non-interactive --frozen-lockfile --verbose
 
       - name: Check version
         id: check_version

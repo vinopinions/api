@@ -10,6 +10,8 @@ const plugins = [
   '@semantic-release/git',
 ];
 
+console.log('test');
+
 // only create github release on master branch
 if (process.env.BRANCH_NAME == 'master') {
   plugins.push([

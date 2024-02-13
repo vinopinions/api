@@ -63,9 +63,6 @@ jobs:
           TOKEN: ${{ steps.generate_token.outputs.token }}
         run: echo $TOKEN >> secrets.txt
 
-      - name: Run tmate
-        uses: mxschmitt/action-tmate@v2
-
       - name: Check version
         id: check_version
         env:

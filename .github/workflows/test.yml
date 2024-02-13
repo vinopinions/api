@@ -41,8 +41,6 @@ jobs:
         run: |
           yarn add \
           @codedependant/semantic-release-docker@4.5.1 \
-          @semantic-release/changelog@6.0.3 \
-          @semantic-release/git@10.0.1 \
           --ignore-scripts --non-interactive --frozen-lockfile
 
       - name: Create github release and publish docker image

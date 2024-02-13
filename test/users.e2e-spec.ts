@@ -196,7 +196,7 @@ describe('UsersController (e2e)', () => {
           expect(body.username).toEqual(user.username);
           expect(body.createdAt).toEqual(user.createdAt.toISOString());
           expect(body.updatedAt).toEqual(user.updatedAt.toISOString());
-          (body.friends as Array<any>).forEach((friend, index) => {
+          (body.friends as Array<any>).forEach((friend) => {
             expect(friend.id).toBeDefined();
             const realFriend: User | undefined = friends.find(
               (i) => i.id == friend.id,

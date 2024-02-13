@@ -23,14 +23,14 @@ export class FriendRequest {
     description: 'The user who received the friend request',
     type: UserWithoutRelations,
   })
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { eager: true })
   receiver: User;
 
   @ApiProperty({
     description: 'The user who sent the friend request',
     type: UserWithoutRelations,
   })
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { eager: true })
   sender: User;
 
   @ApiProperty({

@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           yarn add \
-          @semantic-release/git@10
+          @semantic-release/git@10 \ 
           --ignore-scripts --non-interactive --frozen-lockfile
 
       - name: Check version

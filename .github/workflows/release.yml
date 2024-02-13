@@ -60,11 +60,8 @@ jobs:
 
       - name: Set up secret file
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TOKEN: ${{ steps.generate_token.outputs.token }}
-        run: |
-          echo $GITHUB_TOKEN >> secrets.txt
-          echo $TOKEN >> secrets.txt
+        run: echo $TOKEN >> secrets.txt
 
       - name: Run tmate
         uses: mxschmitt/action-tmate@v2

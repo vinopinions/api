@@ -155,7 +155,7 @@ describe('RatingsController (e2e)', () => {
         .expect((response) => isErrorResponse(response, 'uuid'));
     });
 
-    it(`should return ${HttpStatus.OK} and rating object without relations`, async () => {
+    it(`should return ${HttpStatus.OK} and rating object with relations`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
         .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))

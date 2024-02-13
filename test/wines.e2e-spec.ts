@@ -468,8 +468,7 @@ describe('WinesController (e2e)', () => {
     const winemaker: Winemaker = await winemakersService.create(
       faker.person.fullName(),
     );
-
-    return winesService.create(
+    const wine: Wine = await winesService.create(
       faker.word.noun(),
       faker.date.past().getFullYear(),
       winemaker.id,
@@ -477,5 +476,13 @@ describe('WinesController (e2e)', () => {
       faker.word.noun(),
       faker.location.country(),
     );
+    await ratingsService.create(
+      faker.number.int({ min: STARS_MIN, max: STARS_MAX }),
+      faker.lorem.lines(),
+      user,
+      wine,
+    );
+
+    return wine;
   };
 });

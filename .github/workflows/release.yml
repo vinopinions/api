@@ -45,6 +45,12 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
+      - name: Install dependencies
+        run: |
+          yarn add \
+          @semantic-release/git@10
+          --ignore-scripts --non-interactive --frozen-lockfile
+
       - name: Check version
         id: check_version
         run: echo "{RELEASE_VERSION}=$(npx semantic-release@${{ env.SEMANTIC_RELEASE_VERSION }} --dry-run | grep 'The next release version is' | awk '{print $NF}')" >> $GITHUB_OUTPUT

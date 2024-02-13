@@ -67,7 +67,6 @@ jobs:
           echo "{RELEASE_VERSION}=$(
             BRANCH_NAME=${{ env.BRANCH_NAME }} \
             GITHUB_TOKEN=${{ env.GITHUB_TOKEN }} \
-            echo $BRANCH_NAME \
             npx semantic-release@${{ env.SEMANTIC_RELEASE_VERSION }} --dry-run | grep 'The next release version is' | awk '{print $NF}'
           )"
 

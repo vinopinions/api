@@ -1,6 +1,6 @@
 {
   "name": "vinopinions-api",
-  "version": "1.0.0-dev.8",
+  "version": "1.0.0-dev.9",
   "description": "Rest API for the vinopinions app",
   "license": "UNLICENSED",
   "main": "./src/main.ts",
@@ -24,6 +24,7 @@
     "@nestjs/platform-express": "^10.3.3",
     "@nestjs/swagger": "^7.3.0",
     "@nestjs/typeorm": "^10.0.2",
+    "@semantic-release/git": "10",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

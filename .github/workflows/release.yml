@@ -85,6 +85,9 @@ jobs:
     needs:
       - release
 
+    permissions:
+      packages: write
+
     # check if a new version should be released
     if: needs.release.outputs.version != ''
 

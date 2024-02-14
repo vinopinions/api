@@ -75,11 +75,10 @@ jobs:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: npx semantic-release
 
+      # store the commit hash of the release commit for later workflows to verify the correct version
       - name: Get Release Commit Sha
         id: get_release_commit_sha
         run: echo "RELEASE_COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-
-      - run: git --no-pager log --decorate=short --pretty=oneline -n1
 
   publish_docker:
     name: Publish Docker
@@ -101,6 +100,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # use the commit hash of the release commit to verify the correct version
           ref: ${{ needs.release.outputs.releaseCommitSha }}
 
       - name: Set up Docker Buildx

@@ -1,8 +1,7 @@
 #!/bin/bash
 set -x
 
-echo "${#GITHUB_TOKEN}"
-
+npx semantic-release$SEMANTIC_RELEASE_VERSION
 # MESSAGE=$(npx semantic-release@$SEMANTIC_RELEASE_VERSION)
 
 # FORMAT=$($MESSAGE | grep 'The next release version is' | awk '{print $NF}')

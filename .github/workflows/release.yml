@@ -68,7 +68,7 @@ jobs:
         run: |
           yarn add \
           @semantic-release/git@10 \
-          semantic-release@${{ env.SEMANTIC_RELEASE_VERSION }}
+          semantic-release@${{ env.SEMANTIC_RELEASE_VERSION }} \
           --ignore-scripts --non-interactive --frozen-lockfile
 
       - name: Check version

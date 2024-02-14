@@ -65,12 +65,8 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          yarn add \
-          @semantic-release/git@10 \
-          semantic-release@${{ env.SEMANTIC_RELEASE_VERSION }} \
-          -D --ignore-scripts --non-interactive
+      - name: Install dev dependencies
+        run: yarn install --dev --ignore-scripts --non-interactive --frozen-lockfile
 
       - name: Check version
         id: check_version

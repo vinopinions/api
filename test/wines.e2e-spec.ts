@@ -163,7 +163,6 @@ describe('WinesController (e2e)', () => {
           });
           (body.ratings as Array<any>).forEach((rating) => {
             expect(rating.id).toBeDefined();
-            console.log({ rating, ratings: wine.ratings });
             const realRating: Rating | undefined = wine.ratings.find(
               (i) => i.id == rating.id,
             );

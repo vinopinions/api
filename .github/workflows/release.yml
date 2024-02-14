@@ -67,16 +67,6 @@ jobs:
         # run: echo "{RELEASE_VERSION}=$(./scripts/release-version.sh)"
         # run: npx semantic-release@${{ env.SEMANTIC_RELEASE_VERSION }}
 
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-
-    needs:
-      - evaluate_commits
-
-    steps:
-      - run: echo "${{ needs.evaluate_commits.outputs.version }} abc"
-
   create_release:
     name: Create Github Tag/Release for ${{ needs.evaluate_commits.outputs.version }}
     runs-on: ubuntu-latest
@@ -109,6 +99,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          npm install \
+          @semantic-release/git@10 \
+          --ignore-scripts --no-package-lock --no-save
 
       - name: Release version
         env:

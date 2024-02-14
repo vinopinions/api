@@ -52,15 +52,14 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          yarn add \
-          @semantic-release/git@10 \
-          --ignore-scripts --non-interactive --frozen-lockfile --no-save
-
+      # - name: Install dependencies
+      #   run: |
+      #     yarn add \
+      #     @semantic-release/git@10 \
+      #     --ignore-scripts --non-interactive --frozen-lockfile --no-save
       - name: Check version
         id: check_version
-        run: echo "{RELEASE_VERSION}=1.0.0" >> $GITHUB_OUTPUT
+        run: echo "{RELEASE_VERSION}={1.0.0}" >> $GITHUB_OUTPUT
 
         # env:
         #   BRANCH_NAME: ${{ github.ref_name }}

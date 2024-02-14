@@ -19,7 +19,7 @@ FROM base as deps
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=yarn.lock,target=yarn.lock \
     --mount=type=cache,target=/root/.yarn \
-    yarn install --production --ignore-scripts
+    yarn install --production --frozen-lockfile --ignore-scripts
 
 ################################################################################
 # Create a stage for building the application.
@@ -30,7 +30,7 @@ FROM deps as build
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=yarn.lock,target=yarn.lock \
     --mount=type=cache,target=/root/.yarn \
-    yarn install
+    yarn install --frozen-lockfile --ignore-scripts
 
 # Copy the rest of the source files into the image.
 COPY . .

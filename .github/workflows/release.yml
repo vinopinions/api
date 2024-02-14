@@ -34,6 +34,7 @@ jobs:
   #   runs-on: ubuntu-latest
 
   release:
+    name: Release
     runs-on: ubuntu-latest
 
     outputs:
@@ -69,7 +70,7 @@ jobs:
           yarn add \
           @semantic-release/git@10 \
           semantic-release@${{ env.SEMANTIC_RELEASE_VERSION }} \
-          --ignore-scripts --non-interactive --frozen-lockfile
+          -D --ignore-scripts --non-interactive
 
       - name: Check version
         id: check_version

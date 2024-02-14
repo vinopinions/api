@@ -29,10 +29,6 @@ jobs:
   test-e2e:
     uses: ./.github/workflows/e2e-test.yml
 
-  genearte_bot_token:
-    name: Generate Bot Token
-    runs-on: ubuntu-latest
-
   release:
     name: Release Github
     runs-on: ubuntu-latest

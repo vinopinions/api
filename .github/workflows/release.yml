@@ -10,41 +10,41 @@ env:
   SEMANTIC_RELEASE_VERSION: 23
 
 jobs:
-  # codeql:
-  #   uses: ./.github/workflows/codeql.yml
-  #   permissions:
-  #     actions: read
-  #     security-events: write
-  #     contents: read
+  codeql:
+    uses: ./.github/workflows/codeql.yml
+    permissions:
+      actions: read
+      security-events: write
+      contents: read
 
-  # eslint:
-  #   uses: ./.github/workflows/eslint.yml
-  #   permissions:
-  #     security-events: write
-  #     contents: read
+  eslint:
+    uses: ./.github/workflows/eslint.yml
+    permissions:
+      security-events: write
+      contents: read
 
-  # test-unit:
-  #   uses: ./.github/workflows/unit-test.yml
+  test-unit:
+    uses: ./.github/workflows/unit-test.yml
 
-  # test-e2e:
-  #   uses: ./.github/workflows/e2e-test.yml
+  test-e2e:
+    uses: ./.github/workflows/e2e-test.yml
 
-  # genearte_bot_token:
-  #   name: Generate Bot Token
-  #   runs-on: ubuntu-latest
+  genearte_bot_token:
+    name: Generate Bot Token
+    runs-on: ubuntu-latest
 
   release:
-    name: Release
+    name: Release Github
     runs-on: ubuntu-latest
 
     outputs:
       version: ${{ steps.check_version.outputs.RELEASE_VERSION }}
 
-    # needs:
-    # - codeql
-    # - eslint
-    # - test-e2e
-    # - test-unit
+    needs:
+      - codeql
+      - eslint
+      - test-e2e
+      - test-unit
 
     steps:
       - name: Generate token
@@ -78,8 +78,8 @@ jobs:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: npx semantic-release
 
-  create_docker_image:
-    name: Create Docker Image
+  publish_docker:
+    name: Publish Docker
     runs-on: ubuntu-latest
 
     needs:
@@ -118,10 +118,10 @@ jobs:
             ghcr.io/${{ github.repository }}:${{ needs.release.outputs.version }}
 
   deploy:
-    name: Deploy
+    name: Deploy Server
     runs-on: ubuntu-latest
     needs:
-      - create_docker_image
+      - publish_docker
 
     environment:
       name: ${{ contains(github.ref_name, 'master') && 'production' || 'dev' }}

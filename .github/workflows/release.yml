@@ -33,57 +33,17 @@ jobs:
   #   name: Generate Bot Token
   #   runs-on: ubuntu-latest
 
-  evaluate_commits:
-    name: Evaluate Commits
+  create_release:
     runs-on: ubuntu-latest
 
     outputs:
       version: ${{ steps.check_version.outputs.RELEASE_VERSION }}
 
-    steps:
-      # - name: Generate token
-      #   id: generate_token
-      #   uses: tibdex/github-app-token@v2
-      #   with:
-      #     app_id: ${{ vars.RELEASE_BOT_ID }}
-      #     private_key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ vars.NODE_VERSION }}
-
-      # - name: Install dependencies
-      #   run: |
-      #     yarn add \
-      #     @semantic-release/git@10 \
-      #     --ignore-scripts --non-interactive --frozen-lockfile --no-save
-      - name: Check version
-        id: check_version
-        run: echo "RELEASE_VERSION=1.0.0" >> $GITHUB_OUTPUT
-
-        # env:
-        #   BRANCH_NAME: ${{ github.ref_name }}
-        #   GITHUB_TOKEN: '${{ steps.generate_token.outputs.token }}'
-        # run: echo "{RELEASE_VERSION}=$(./scripts/release-version.sh)"
-        # run: npx semantic-release@${{ env.SEMANTIC_RELEASE_VERSION }}
-
-  create_release:
-    name: Create Github Tag/Release for ${{ needs.evaluate_commits.outputs.version }}
-    runs-on: ubuntu-latest
-
-    # check if a new version should be released
-    if: needs.evaluate_commits.outputs.version != ''
-
-    needs:
-      - evaluate_commits
-      # - codeql
-      # - eslint
-      # - test-e2e
-      # - test-unit
+    # needs:
+    # - codeql
+    # - eslint
+    # - test-e2e
+    # - test-unit
 
     steps:
       - name: Generate token
@@ -110,22 +70,35 @@ jobs:
           @semantic-release/git@10 \
           --ignore-scripts --non-interactive --frozen-lockfile
 
+      - name: Check version
+        id: check_version
+        run: echo "RELEASE_VERSION=$(npx semantic-release@$SEMANTIC_RELEASE_VERSION --dry-run | grep 'The next release version is' | awk '{print $NF}')" >> $GITHUB_OUTPUT
+
       - name: Release version
         env:
           BRANCH_NAME: ${{ github.ref_name }}
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        run: echo $(npx semantic-release@$SEMANTIC_RELEASE_VERSION --dry-run | grep 'The next release version is' | awk '{print $NF}')
+        run: npx semantic-release@$SEMANTIC_RELEASE_VERSION
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+
+    needs:
+      - create_release
+
+    steps:
+      - run: echo "${{ needs.create_release.outputs.version }} abc"
 
   create_docker_image:
     name: Create Docker Image for ${{ needs.evaluate_commits.outputs.version }}
     runs-on: ubuntu-latest
 
-    # check if a new version should be released
-    if: needs.evaluate_commits.outputs.version != ''
-
     needs:
       - create_release
-      - evaluate_commits
+
+    # check if a new version should be released
+    if: needs.create_release.outputs.version != ''
 
     environment:
       name: ${{ contains(github.ref_name, 'master') && 'production' || 'dev' }}

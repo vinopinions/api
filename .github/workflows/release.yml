@@ -33,14 +33,14 @@ jobs:
     name: Release Github
     runs-on: ubuntu-latest
 
-    outputs:
-      version: ${{ steps.check_version.outputs.RELEASE_VERSION }}
-
     needs:
       - codeql
       - eslint
       - test-e2e
       - test-unit
+
+    outputs:
+      version: ${{ steps.check_version.outputs.RELEASE_VERSION }}
 
     steps:
       - name: Generate token

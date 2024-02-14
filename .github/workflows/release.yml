@@ -75,7 +75,7 @@ jobs:
       - evaluate_commits
 
     steps:
-      - run: echo ${{ needs.evaluate_commits.outputs.version }}
+      - run: echo "${{ needs.evaluate_commits.outputs.version }} abc"
 
   create_release:
     name: Create Github Tag/Release for ${{ needs.evaluate_commits.outputs.version }}

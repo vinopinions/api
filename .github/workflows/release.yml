@@ -102,15 +102,15 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install \
+          yarn add \
           @semantic-release/git@10 \
-          --ignore-scripts --no-package-lock --no-save
+          --ignore-scripts --non-interactive --frozen-lockfile
 
       - name: Release version
         env:
           BRANCH_NAME: ${{ github.ref_name }}
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        run: npx semantic-release
+        run: npx semantic-release --dry-run
 
   create_docker_image:
     name: Create Docker Image for ${{ needs.evaluate_commits.outputs.version }}

@@ -3,6 +3,7 @@ name: Dependabot Auto-Merge
 on:
   pull_request_target:
     branches: ['developer']
+    types: labeled
 
 jobs:
   test-unit:
@@ -17,7 +18,7 @@ jobs:
 
   merge:
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    if: github.actor == 'dependabot[bot]' && contains( github.event.pull_request.labels.*.name, 'yarn')
     needs:
       - test-e2e
       - test-unit
@@ -32,7 +33,7 @@ jobs:
         with:
           app_id: ${{ vars.RELEASE_BOT_ID }}
           private_key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
-          
+
       - name: Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v1

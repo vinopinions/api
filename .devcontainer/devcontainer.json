@@ -1,0 +1,23 @@
+{
+  "name": "VinopinionsAPI Devcontainer",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "overrideCommand": true,
+  "postCreateCommand": "yarn install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "streetsidesoftware.code-spell-checker",
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "github.vscode-github-actions",
+        "yoavbls.pretty-ts-errors",
+        "meganrogge.template-string-converter",
+        "cweijan.vscode-database-client2",
+        "visualstudioexptteam.vscodeintellicode"
+      ]
+    }
+  }
+}

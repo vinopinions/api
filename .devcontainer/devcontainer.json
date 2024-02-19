@@ -8,14 +8,18 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "streetsidesoftware.code-spell-checker",
-        "ms-azuretools.vscode-docker",
+        // code format/lint/check
         "dbaeumer.vscode-eslint",
+        "streetsidesoftware.code-spell-checker",
         "esbenp.prettier-vscode",
+        // other syntax
+        "ms-azuretools.vscode-docker",
         "github.vscode-github-actions",
+        // database
+        "cweijan.vscode-database-client2",
+        // utils
         "yoavbls.pretty-ts-errors",
         "meganrogge.template-string-converter",
-        "cweijan.vscode-database-client2",
         "visualstudioexptteam.vscodeintellicode"
       ]
     }

@@ -23,7 +23,7 @@ import {
 } from '../constants/url-parameter';
 import { AuthenticatedRequest } from './../auth/auth.guard';
 import { GetUserDto } from './dtos/get-user.dto';
-import { User, UserWithoutRelations } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 const USERS_ENDPOINT_NAME = 'users';
@@ -31,9 +31,9 @@ export const USERS_ENDPOINT = `/${USERS_ENDPOINT_NAME}`;
 const USERS_USERNAME_ENDPOINT_NAME = USERNAME_URL_PARAMETER;
 export const USERS_USERNAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_ENDPOINT_NAME}`;
 const USERS_USERNAME_FRIENDS_ENDPOINT_NAME = `${USERS_USERNAME_ENDPOINT_NAME}/friends`;
-export const USERS_NAME_FRIENDS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_ENDPOINT_NAME}`;
+export const USERS_USERNAME_FRIENDS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_ENDPOINT_NAME}`;
 const USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME = `${USERS_USERNAME_FRIENDS_ENDPOINT_NAME}/${FRIEND_USERNAME_URL_PARAMETER}`;
-export const USERS_NAME_FRIENDS_FRIENDNAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME}`;
+export const USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME}`;
 const USERS_ME_ENDPOINT_NAME = 'me';
 export const USERS_ME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_ENDPOINT_NAME}`;
 
@@ -59,7 +59,6 @@ export class UsersController {
   getCurrentUser(@Req() request: AuthenticatedRequest): Promise<User> {
     return this.usersService.findOne({
       where: { username: request.user.username },
-      relations: ['ratings', 'friends'],
     });
   }
 

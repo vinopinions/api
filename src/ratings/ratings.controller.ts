@@ -19,7 +19,7 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
-import { Rating, RatingWithoutRelation } from './entities/rating.entity';
+import { Rating } from './entities/rating.entity';
 import { RatingsService } from './ratings.service';
 
 const RATINGS_ENDPOINT_NAME = 'ratings';
@@ -52,7 +52,6 @@ export class RatingsController {
   ): Promise<Rating> {
     return this.ratingsService.findOne({
       where: { id },
-      relations: ['wine', 'user'],
     });
   }
 
@@ -61,7 +60,7 @@ export class RatingsController {
   @Get()
   @ApiOkResponse({
     description: 'Ratings have been found',
-    type: RatingWithoutRelation,
+    type: Rating,
     isArray: true,
   })
   findAll(): Promise<Rating[]> {
@@ -73,7 +72,7 @@ export class RatingsController {
   @Delete(RATINGS_ID_URL_PARAMETER)
   @ApiOkResponse({
     description: 'Rating has been deleted',
-    type: RatingWithoutRelation,
+    type: Rating,
   })
   @ApiNotFoundResponse({
     description: 'Rating has not been found',

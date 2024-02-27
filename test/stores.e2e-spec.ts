@@ -9,10 +9,10 @@ import {
   STORES_ID_ENDPOINT,
 } from '../src/stores/stores.controller';
 import { StoresService } from '../src/stores/stores.service';
+import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
 import { clearDatabase, isErrorResponse, login } from './utils';
-import { WinesService } from '../src/wines/wines.service';
-import { WinemakersService } from '../src/winemakers/winemakers.service';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -44,7 +44,7 @@ describe('UsersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(STORES_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -129,7 +129,7 @@ describe('UsersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -229,7 +229,7 @@ describe('UsersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .post(STORES_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -316,7 +316,8 @@ describe('UsersController (e2e)', () => {
         .set(authHeader)
         .expect(HttpStatus.CREATED)
         .expect(({ body }) => {
-          expect(body.wines).toBeUndefined();
+          expect(Array.isArray(body.wines)).toBe(true);
+          expect((body.wines as Array<any>).length).toBe(0);
         });
     });
   });

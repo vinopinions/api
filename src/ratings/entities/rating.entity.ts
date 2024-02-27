@@ -55,7 +55,7 @@ export class Rating {
     description: 'The User that submitted the rating',
     type: () => UserWithoutRelations,
   })
-  @ManyToOne(() => User, (user: User) => user.ratings)
+  @ManyToOne(() => User, (user: User) => user.ratings, { eager: true })
   user: User;
 
   @ApiProperty({
@@ -74,7 +74,7 @@ export class Rating {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-export class RatingWithoutRelation extends OmitType(Rating, [
-  'user',
-  'wine',
-] as const) {}
+
+export const RatingRelations: (keyof Rating)[] = ['user', 'wine'];
+
+export class RatingWithoutRelation extends OmitType(Rating, RatingRelations) {}

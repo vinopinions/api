@@ -59,7 +59,7 @@ describe('RatingsController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(RATINGS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -76,7 +76,7 @@ describe('RatingsController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and rating object without any relations`, async () => {
+    it(`should return ${HttpStatus.OK} and rating object without relations`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
         .get(RATINGS_ENDPOINT)
@@ -90,8 +90,8 @@ describe('RatingsController (e2e)', () => {
             expect(item.text).toEqual(rating.text);
             expect(item.createdAt).toEqual(rating.createdAt.toISOString());
             expect(item.updatedAt).toEqual(rating.updatedAt.toISOString());
-            expect(item.wine).toBeUndefined();
-            expect(item.user).toBeUndefined();
+            expect(item.wine).toBeDefined();
+            expect(item.user).toBeDefined();
           });
         });
     });
@@ -116,7 +116,7 @@ describe('RatingsController (e2e)', () => {
     it('should exist', async () => {
       return request(app.getHttpServer())
         .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -155,7 +155,7 @@ describe('RatingsController (e2e)', () => {
         .expect((response) => isErrorResponse(response, 'uuid'));
     });
 
-    it(`should return ${HttpStatus.OK} and rating object without relations`, async () => {
+    it(`should return ${HttpStatus.OK} and rating object with relations`, async () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
         .get(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))
@@ -195,7 +195,7 @@ describe('RatingsController (e2e)', () => {
       const rating: Rating = await createTestRating();
       return request(app.getHttpServer())
         .delete(RATINGS_ID_ENDPOINT.replace(ID_URL_PARAMETER, rating.id))
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {

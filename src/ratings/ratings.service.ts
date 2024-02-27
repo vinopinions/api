@@ -30,11 +30,17 @@ export class RatingsService {
   }
 
   findMany(options?: FindManyOptions<Rating>) {
-    return this.ratingRepository.find(options);
+    return this.ratingRepository.find({
+      relations: Object.fromEntries(RatingRelations.map((key) => [key, true])),
+      ...options,
+    });
   }
 
   async findOne(options: FindOneOptions<Rating>): Promise<Rating> {
-    const Rating = await this.ratingRepository.findOne(options);
+    const Rating = await this.ratingRepository.findOne({
+      relations: Object.fromEntries(RatingRelations.map((key) => [key, true])),
+      ...options,
+    });
     if (!Rating)
       throw new NotFoundException(
         `Rating with ${JSON.stringify(options.where)} not found`,

@@ -43,6 +43,11 @@ export class RatingsService {
         id,
       },
     });
-    return this.ratingRepository.remove(rating);
+    await this.ratingRepository.remove(rating);
+    return rating;
   }
 }
+  async count(options: FindManyOptions<Rating>): Promise<number> {
+    return await this.ratingRepository.count(options);
+  }
+

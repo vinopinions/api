@@ -1,4 +1,11 @@
-import { Controller, Get, HttpCode, HttpStatus, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Query,
+  Req,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -7,6 +14,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/auth.guard';
+import { PageDto } from '../pagination/page.dto';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
 import { FeedService } from './feed.service';
 
@@ -26,10 +35,12 @@ export class FeedController {
   @Get(FEED_ENDPOINT_NAME)
   @ApiOkResponse({
     description: 'Feed has been created',
-    type: Rating,
-    isArray: true,
+    type: PageDto<Rating>,
   })
-  getCurrentUser(@Req() request: AuthenticatedRequest): Promise<Rating[]> {
-    return this.feedService.getFeedForUser(request.user);
+  async getCurrentUser(
+    @Req() request: AuthenticatedRequest,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Rating>> {
+    return this.feedService.getFeedForUser(request.user, paginationOptionsDto);
   }
 }

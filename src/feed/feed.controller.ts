@@ -32,7 +32,7 @@ export class FeedController {
 
   @ApiOperation({ summary: 'get your feed' })
   @HttpCode(HttpStatus.OK)
-  @Get(FEED_ENDPOINT_NAME)
+  @Get()
   @ApiOkResponse({
     description: 'Feed has been created',
     type: PageDto<Rating>,

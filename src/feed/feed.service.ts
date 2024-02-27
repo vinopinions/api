@@ -27,7 +27,6 @@ export class FeedService {
     const itemCount = await this.ratingsService.count({
       where: findOptionsWhere,
     });
-    console.log({ paginationOptionsDto });
     const ratings: Rating[] = await this.ratingsService.findMany({
       where: findOptionsWhere,
       order: {
@@ -36,7 +35,6 @@ export class FeedService {
       skip: paginationOptionsDto.skip,
       take: paginationOptionsDto.take,
     });
-    console.log(ratings);
 
     const pageMetaDto = new PageMetaDto({ itemCount, paginationOptionsDto });
 

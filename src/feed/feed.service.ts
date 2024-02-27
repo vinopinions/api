@@ -17,14 +17,17 @@ export class FeedService {
   ): Promise<PageDto<Rating>> {
     const findOptionsWhere: FindOptionsWhere<Rating>[] = user.friends.map(
       (friend) => {
-        return { id: friend.id };
+        return {
+          user: {
+            id: friend.id,
+          },
+        };
       },
     );
-
     const itemCount = await this.ratingsService.count({
       where: findOptionsWhere,
     });
-
+    console.log({ paginationOptionsDto });
     const ratings: Rating[] = await this.ratingsService.findMany({
       where: findOptionsWhere,
       order: {
@@ -33,6 +36,7 @@ export class FeedService {
       skip: paginationOptionsDto.skip,
       take: paginationOptionsDto.take,
     });
+    console.log(ratings);
 
     const pageMetaDto = new PageMetaDto({ itemCount, paginationOptionsDto });
 

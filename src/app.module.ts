@@ -14,6 +14,7 @@ import { StoresModule } from './stores/stores.module';
 import { UsersModule } from './users/users.module';
 import { WinemakersModule } from './winemakers/winemakers.module';
 import { WinesModule } from './wines/wines.module';
+import { DummyDataModule } from './dummy-data/dummy-data.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { WinesModule } from './wines/wines.module';
     FriendRequestsModule,
     RatingsModule,
     FeedModule,
+    DummyDataModule,
   ],
   providers: [
     {

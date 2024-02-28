@@ -77,4 +77,6 @@ export class Store {
   updatedAt: Date;
 }
 
-export class StoreWithoutRelation extends OmitType(Store, ['wines']) {}
+export const StoreRelations: (keyof Store)[] = ['wines'];
+
+export class StoreWithoutRelation extends OmitType(Store, StoreRelations) {}

@@ -1,15 +1,53 @@
-name: Dependabot Auto-Merge Minor Versions
+name: Dependabot Auto-Merge
 
 on:
-  pull_request:
-    branches: ['dependencies']
+  pull_request_target:
+    branches: ['developer']
+    types: labeled
 
 jobs:
-  auto-merge:
+  test-unit:
+    uses: ./.github/workflows/unit-test.yml
+    permissions:
+      contents: read # for checkout
+
+  test-e2e:
+    uses: ./.github/workflows/e2e-test.yml
+    permissions:
+      contents: read # for checkout
+
+  merge:
     runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]' && contains( github.event.pull_request.labels.*.name, 'yarn')
+    needs:
+      - test-e2e
+      - test-unit
+    permissions:
+      pull-requests: write
+      contents: write
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: ahmadnassri/action-dependabot-auto-merge@v2.6.6
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v2
         with:
-          target: minor
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          app_id: ${{ vars.RELEASE_BOT_ID }}
+          private_key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Approve
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+
+      - name: Merge
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}

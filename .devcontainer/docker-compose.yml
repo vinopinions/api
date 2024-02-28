@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: vinopinionsapi-devcontainer
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    volumes:
+      - ..:/workspace
+    user: dev
+  db:
+    container_name: vinopinionsapi-devcontainer-db
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+    ports:
+      - 5432:5432
+    volumes:
+      - vinopinionsapi-devcontainer-pgdata:/var/lib/postgresql/data
+volumes:
+  vinopinionsapi-devcontainer-pgdata:

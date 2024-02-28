@@ -8,7 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import { FriendRequest } from './entities/friend-request.entity';
+import {
+  FriendRequest,
+  FriendRequestRelations,
+} from './entities/friend-request.entity';
 
 @Injectable()
 export class FriendRequestsService {
@@ -21,7 +24,12 @@ export class FriendRequestsService {
   async findOne(
     options: FindOneOptions<FriendRequest>,
   ): Promise<FriendRequest> {
-    const friendRequest = await this.friendRequestRepository.findOne(options);
+    const friendRequest = await this.friendRequestRepository.findOne({
+      relations: Object.fromEntries(
+        FriendRequestRelations.map((key) => [key, true]),
+      ),
+      ...options,
+    });
     if (!friendRequest)
       throw new NotFoundException(
         `FriendRequest with ${JSON.stringify(options.where)} not found`,
@@ -30,7 +38,12 @@ export class FriendRequestsService {
   }
 
   findMany(options?: FindManyOptions<FriendRequest>) {
-    return this.friendRequestRepository.find(options);
+    return this.friendRequestRepository.find({
+      relations: Object.fromEntries(
+        FriendRequestRelations.map((key) => [key, true]),
+      ),
+      ...options,
+    });
   }
 
   /**
@@ -65,9 +78,7 @@ export class FriendRequestsService {
       );
 
     // 3. Rule
-    const receiverFriends = await this.usersService.getFriends(receiver);
-
-    if (receiverFriends.includes(sender))
+    if (receiver.friends.includes(sender))
       throw new ConflictException('You are already friends with that user');
 
     // 4. Rule
@@ -95,17 +106,19 @@ export class FriendRequestsService {
       receiver,
     });
 
-    return await this.friendRequestRepository.save(friendRequest);
+    const dbFriendRequest =
+      await this.friendRequestRepository.save(friendRequest);
+    return await this.findOne({
+      where: {
+        id: dbFriendRequest.id,
+      },
+    });
   }
 
   async accept(id: string, acceptingUser: User) {
     const friendRequest: FriendRequest = await this.findOne({
       where: {
         id,
-      },
-      relations: {
-        sender: true,
-        receiver: true,
       },
     });
 
@@ -118,9 +131,16 @@ export class FriendRequestsService {
     await this.friendRequestRepository.remove(friendRequest);
 
     // add as friends
-    await this.usersService.addFriend(acceptingUser, friendRequest.sender);
+    await this.usersService.addFriend(
+      await this.usersService.findOne({
+        where: { id: friendRequest.receiver.id },
+      }),
+      await this.usersService.findOne({
+        where: { id: friendRequest.sender.id },
+      }),
+    );
 
-    return friendRequest.sender;
+    return friendRequest;
   }
 
   async decline(id: string, decliningUser: User) {
@@ -128,17 +148,14 @@ export class FriendRequestsService {
       where: {
         id,
       },
-      relations: {
-        receiver: true,
-        sender: true,
-      },
     });
 
     if (friendRequest.receiver.id !== decliningUser.id)
       throw new ForbiddenException(
         'You can not decline another users friend request',
       );
-    return await this.friendRequestRepository.remove(friendRequest);
+    await this.friendRequestRepository.remove(friendRequest);
+    return friendRequest;
   }
 
   /**
@@ -151,10 +168,6 @@ export class FriendRequestsService {
       where: {
         id,
       },
-      relations: {
-        sender: true,
-        receiver: true,
-      },
     });
 
     if (friendRequest.sender.id !== revokingUser.id)
@@ -162,33 +175,26 @@ export class FriendRequestsService {
         'You can not revoke another users friend request',
       );
 
-    return this.friendRequestRepository.remove(friendRequest);
+    await this.friendRequestRepository.remove(friendRequest);
+    return friendRequest;
   }
 
   async getReceived(user: User): Promise<FriendRequest[]> {
-    return this.friendRequestRepository.find({
+    return await this.findMany({
       where: {
         receiver: {
           id: user.id,
         },
       },
-      relations: {
-        sender: true,
-        receiver: true,
-      },
     });
   }
 
   async getSent(user: User): Promise<FriendRequest[]> {
-    return this.friendRequestRepository.find({
+    return this.findMany({
       where: {
         sender: {
           id: user.id,
         },
-      },
-      relations: {
-        sender: true,
-        receiver: true,
       },
     });
   }

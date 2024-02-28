@@ -86,7 +86,6 @@ export class User {
   updatedAt: Date;
 }
 
-export class UserWithoutRelations extends OmitType(User, [
-  'friends',
-  'ratings',
-] as const) {}
+export const UserRelations: Array<keyof User> = ['ratings', 'friends'];
+
+export class UserWithoutRelations extends OmitType(User, UserRelations) {}

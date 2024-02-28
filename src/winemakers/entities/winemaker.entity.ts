@@ -55,4 +55,9 @@ export class Winemaker {
   updatedAt: Date;
 }
 
-export class WinemakerWithoutRelation extends OmitType(Winemaker, ['wines']) {}
+export const WinemakerRelations: (keyof Winemaker)[] = ['wines'];
+
+export class WinemakerWithoutRelation extends OmitType(
+  Winemaker,
+  WinemakerRelations,
+) {}

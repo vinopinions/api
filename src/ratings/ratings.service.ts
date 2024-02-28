@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Wine } from '../wines/entities/wine.entity';
-import { Rating } from './entities/rating.entity';
+import { Rating, RatingRelations } from './entities/rating.entity';
 
 @Injectable()
 export class RatingsService {
@@ -21,20 +21,35 @@ export class RatingsService {
     rating.wine = wine;
     rating.user = user;
 
-    return this.ratingRepository.save(rating);
+    const dbRating: Rating = await this.ratingRepository.save(rating);
+    return await this.findOne({
+      where: {
+        id: dbRating.id,
+      },
+    });
   }
 
   findMany(options?: FindManyOptions<Rating>) {
-    return this.ratingRepository.find(options);
+    return this.ratingRepository.find({
+      relations: Object.fromEntries(RatingRelations.map((key) => [key, true])),
+      ...options,
+    });
   }
 
   async findOne(options: FindOneOptions<Rating>): Promise<Rating> {
-    const Rating = await this.ratingRepository.findOne(options);
-    if (!Rating)
+    const rating = await this.ratingRepository.findOne({
+      relations: Object.fromEntries(RatingRelations.map((key) => [key, true])),
+      ...options,
+    });
+    if (!rating)
       throw new NotFoundException(
         `Rating with ${JSON.stringify(options.where)} not found`,
       );
-    return Rating;
+    return rating;
+  }
+
+  async count(options: FindManyOptions<Rating>): Promise<number> {
+    return await this.ratingRepository.count(options);
   }
 
   async remove(id: string): Promise<Rating> {
@@ -43,6 +58,7 @@ export class RatingsService {
         id,
       },
     });
-    return this.ratingRepository.remove(rating);
+    await this.ratingRepository.remove(rating);
+    return rating;
   }
 }

@@ -48,7 +48,7 @@ const FRIEND_REQUESTS_ID_REVOKE_ENDPOINT_NAME = `${ID_URL_PARAMETER}/revoke`;
 export const FRIEND_REQUESTS_ID_REVOKE_ENDPOINT = `${FRIEND_REQUESTS_ENDPOINT}/${FRIEND_REQUESTS_ID_REVOKE_ENDPOINT_NAME}`;
 
 @Controller(FRIEND_REQUESTS_ENDPOINT_NAME)
-@ApiTags(FRIEND_REQUESTS_ENDPOINT.replace('-', ' '))
+@ApiTags(FRIEND_REQUESTS_ENDPOINT_NAME.replace('-', ' '))
 @ApiUnauthorizedResponse({
   description: 'Not logged in',
 })
@@ -115,6 +115,7 @@ export class FriendRequestsController {
   })
   @ApiOkResponse({
     description: 'Friend request has been accepted',
+    type: FriendRequest,
   })
   @ApiBadRequestResponse({
     description: 'Invalid uuid',
@@ -122,8 +123,8 @@ export class FriendRequestsController {
   async accept(
     @Req() request: AuthenticatedRequest,
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
-  ): Promise<void> {
-    await this.friendRequestsService.accept(id, request.user);
+  ): Promise<FriendRequest> {
+    return await this.friendRequestsService.accept(id, request.user);
   }
 
   @ApiOperation({ summary: 'decline a sent friend request sent to you' })
@@ -137,6 +138,7 @@ export class FriendRequestsController {
   })
   @ApiOkResponse({
     description: 'Friend request has been declined',
+    type: FriendRequest,
   })
   @ApiBadRequestResponse({
     description: 'Invalid uuid',
@@ -159,6 +161,7 @@ export class FriendRequestsController {
   })
   @ApiOkResponse({
     description: 'Friend request has been revoked',
+    type: FriendRequest,
   })
   @ApiBadRequestResponse({
     description: 'Invalid uuid',
@@ -166,7 +169,7 @@ export class FriendRequestsController {
   async revoke(
     @Req() request: AuthenticatedRequest,
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
-  ) {
-    await this.friendRequestsService.revoke(id, request.user);
+  ): Promise<FriendRequest> {
+    return await this.friendRequestsService.revoke(id, request.user);
   }
 }

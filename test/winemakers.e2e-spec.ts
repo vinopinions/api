@@ -3,18 +3,18 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
+import { Store } from '../src/stores/entities/store.entity';
+import { StoresService } from '../src/stores/stores.service';
 import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
 import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
 import {
   WINEMAKERS_ENDPOINT,
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
 import { clearDatabase, isErrorResponse, login } from './utils';
-import { StoresService } from '../src/stores/stores.service';
-import { WinesService } from '../src/wines/wines.service';
-import { Store } from '../src/stores/entities/store.entity';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
@@ -46,7 +46,7 @@ describe('WinemakersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .get(WINEMAKERS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -128,7 +128,7 @@ describe('WinemakersController (e2e)', () => {
         .get(
           WINEMAKERS_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()),
         )
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -214,7 +214,7 @@ describe('WinemakersController (e2e)', () => {
     it('should exist', () => {
       return request(app.getHttpServer())
         .post(WINEMAKERS_ENDPOINT)
-        .expect((response) => response.status !== HttpStatus.NOT_FOUND);
+        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
     });
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
@@ -283,7 +283,8 @@ describe('WinemakersController (e2e)', () => {
         .set(authHeader)
         .expect(HttpStatus.CREATED)
         .expect(({ body }) => {
-          expect(body.wines).toBeUndefined();
+          expect(Array.isArray(body.wines)).toBe(true);
+          expect((body.wines as Array<any>).length).toBe(0);
         });
     });
   });

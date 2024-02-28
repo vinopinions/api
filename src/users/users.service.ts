@@ -6,14 +6,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
-import { RatingsService } from '../ratings/ratings.service';
-import { User } from './entities/user.entity';
+import { User, UserRelations } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
-    private ratingsService: RatingsService,
   ) {}
 
   async create(username: string, passwordHash: string): Promise<User> {
@@ -25,15 +23,26 @@ export class UsersService {
       throw new ConflictException('username already exists');
 
     const user: User = this.userRepository.create({ username, passwordHash });
-    return this.userRepository.save(user);
+    const dbUser: User = await this.userRepository.save(user);
+    return await this.findOne({
+      where: {
+        id: dbUser.id,
+      },
+    });
   }
 
   findMany(options?: FindManyOptions<User>) {
-    return this.userRepository.find(options);
+    return this.userRepository.find({
+      relations: Object.fromEntries(UserRelations.map((key) => [key, true])),
+      ...options,
+    });
   }
 
   async findOne(options: FindOneOptions<User>): Promise<User> {
-    const user = await this.userRepository.findOne(options);
+    const user = await this.userRepository.findOne({
+      relations: Object.fromEntries(UserRelations.map((key) => [key, true])),
+      ...options,
+    });
     if (!user)
       throw new NotFoundException(
         `User with ${JSON.stringify(options.where)} not found`,
@@ -43,18 +52,8 @@ export class UsersService {
 
   async remove(id: string): Promise<User> {
     const user: User = await this.findOne({ where: { id } });
-    return this.userRepository.remove(user);
-  }
-
-  async getFriends(user: User): Promise<User[]> {
-    const userWithRelation = await this.findOne({
-      where: { id: user.id },
-      relations: {
-        friends: true,
-      },
-    });
-
-    return userWithRelation.friends;
+    const dbUser: User = await this.userRepository.remove(user);
+    return user;
   }
 
   /**
@@ -63,37 +62,21 @@ export class UsersService {
    * @param toBeAddedUser the user who should be added as a friend
    */
   async addFriend(addingUser: User, toBeAddedUser: User) {
-    const addingUserWithRelation = await this.findOne({
-      where: { id: addingUser.id },
-      relations: {
-        friends: true,
-      },
-    });
-    const toBeAddedUserWithRelation = await this.findOne({
-      where: { id: toBeAddedUser.id },
-      relations: {
-        friends: true,
-      },
-    });
-
-    if (addingUserWithRelation.friends.includes(toBeAddedUser))
+    if (addingUser.friends.includes(toBeAddedUser))
       throw new NotFoundException('You already friends');
 
     // add toBeAddedUser to addingUser's friends
-    addingUserWithRelation.friends.push(toBeAddedUser);
+    addingUser.friends.push(toBeAddedUser);
 
-    if (toBeAddedUserWithRelation.friends.includes(addingUser))
+    if (toBeAddedUser.friends.includes(addingUser))
       throw new InternalServerErrorException(
         'User was already in one friend list but not the other',
       );
 
     // add addingUser to toBeAddedUser's friends
-    toBeAddedUserWithRelation.friends.push(addingUser);
+    toBeAddedUser.friends.push(addingUser);
     // Save changes to the database
-    await this.userRepository.save([
-      addingUserWithRelation,
-      toBeAddedUserWithRelation,
-    ]);
+    await this.userRepository.save([addingUser, toBeAddedUser]);
   }
 
   /**
@@ -102,51 +85,24 @@ export class UsersService {
    * @param toBeRemovedUser the user who should be removed as a friend
    */
   async removeFriend(removingUser: User, toBeRemovedUser: User) {
-    const removingUserWithRelation = await this.findOne({
-      where: { id: removingUser.id },
-      relations: {
-        friends: true,
-      },
-    });
-    const toBeRemovedUserWithRelation = await this.findOne({
-      where: {
-        id: toBeRemovedUser.id,
-      },
-      relations: {
-        friends: true,
-      },
-    });
-
-    if (
-      !removingUserWithRelation.friends.find(
-        (user) => user.id == toBeRemovedUser.id,
-      )
-    )
+    if (!removingUser.friends.find((user) => user.id == toBeRemovedUser.id))
       throw new NotFoundException('This user is not your friend');
 
     // remove toBeRemovedUser from removingUser's friends
-    removingUserWithRelation.friends = removingUserWithRelation.friends.filter(
+    removingUser.friends = removingUser.friends.filter(
       (user) => user.id !== toBeRemovedUser.id,
     );
 
-    if (
-      !toBeRemovedUserWithRelation.friends.find(
-        (user) => user.id == removingUser.id,
-      )
-    )
+    if (!toBeRemovedUser.friends.find((user) => user.id == removingUser.id))
       throw new InternalServerErrorException(
         'User were not in both of each others friend lists',
       );
 
     // remove removingUser from toBeRemovedUser's friends
-    toBeRemovedUserWithRelation.friends =
-      toBeRemovedUserWithRelation.friends.filter(
-        (user) => user.id !== removingUser.id,
-      );
+    toBeRemovedUser.friends = toBeRemovedUser.friends.filter(
+      (user) => user.id !== removingUser.id,
+    );
     // Save changes to the database
-    await this.userRepository.save([
-      removingUserWithRelation,
-      toBeRemovedUserWithRelation,
-    ]);
+    await this.userRepository.save([removingUser, toBeRemovedUser]);
   }
 }

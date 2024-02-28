@@ -1,8 +1,10 @@
 import { VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import packagejson from '../package.json';
 import { AppModule } from './app.module';
+import { DummyDataService } from './dummy-data/dummy-data.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +27,18 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
+
+  const generateDummyData = app
+    .get(ConfigService)
+    .get<boolean>('DUMMY_DATA_GENERATION');
+
+  if (generateDummyData) {
+    const dummyDataService = app.get(DummyDataService);
+    console.log('Starting dummy data generation');
+    await dummyDataService.generateAndInsertDummyData(app);
+    console.log('Dummy data generation complete.');
+  }
+
   await app.listen(3000);
 }
 bootstrap();

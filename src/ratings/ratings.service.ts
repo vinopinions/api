@@ -37,15 +37,19 @@ export class RatingsService {
   }
 
   async findOne(options: FindOneOptions<Rating>): Promise<Rating> {
-    const Rating = await this.ratingRepository.findOne({
+    const rating = await this.ratingRepository.findOne({
       relations: Object.fromEntries(RatingRelations.map((key) => [key, true])),
       ...options,
     });
-    if (!Rating)
+    if (!rating)
       throw new NotFoundException(
         `Rating with ${JSON.stringify(options.where)} not found`,
       );
-    return Rating;
+    return rating;
+  }
+
+  async count(options: FindManyOptions<Rating>): Promise<number> {
+    return await this.ratingRepository.count(options);
   }
 
   async remove(id: string): Promise<Rating> {

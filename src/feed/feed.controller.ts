@@ -8,12 +8,12 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/auth.guard';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
@@ -33,10 +33,7 @@ export class FeedController {
   @ApiOperation({ summary: 'get your feed' })
   @HttpCode(HttpStatus.OK)
   @Get()
-  @ApiOkResponse({
-    description: 'Feed has been created',
-    type: PageDto<Rating>,
-  })
+  @ApiPaginationResponse(Rating, { status: HttpStatus.OK })
   async getCurrentUser(
     @Req() request: AuthenticatedRequest,
     @Query() paginationOptionsDto: PaginationOptionsDto,

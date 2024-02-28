@@ -4,6 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { FEED_ENDPOINT } from '../src/feed/feed.controller';
+import {
+  PAGE_DEFAULT_VALUE,
+  TAKE_DEFAULT_VALUE,
+} from '../src/pagination/pagination-options.dto';
 import { STARS_MAX, STARS_MIN } from '../src/ratings/entities/rating.entity';
 import { RatingsService } from '../src/ratings/ratings.service';
 import { Store } from '../src/stores/entities/store.entity';
@@ -18,6 +22,7 @@ import {
   clearDatabase,
   generateRandomValidUsername,
   isErrorResponse,
+  logResponse,
   login,
 } from './utils';
 
@@ -79,11 +84,17 @@ describe('FeedController (e2e)', () => {
         .get(FEED_ENDPOINT)
         .set(authHeader)
         .expect(HttpStatus.OK)
+        .expect(logResponse)
         .expect((res) => {
           expect(Array.isArray(res.body.data)).toBe(true);
           expect((res.body.data as Array<any>).length).toBe(0);
           expect(res.body.meta).toBeDefined();
+          expect(res.body.meta.page).toEqual(PAGE_DEFAULT_VALUE);
+          expect(res.body.meta.take).toEqual(TAKE_DEFAULT_VALUE);
           expect(res.body.meta.itemCount).toEqual(0);
+          expect(res.body.meta.pageCount).toEqual(0);
+          expect(res.body.meta.hasPreviousPage).toEqual(false);
+          expect(res.body.meta.hasNextPage).toEqual(false);
         });
     });
 

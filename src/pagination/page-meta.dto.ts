@@ -12,19 +12,13 @@ export class PageMetaDto {
   readonly itemCount: number;
 
   @ApiProperty()
-  get pageCount(): number {
-    return Math.ceil(this.itemCount / this.take);
-  }
+  readonly pageCount: number;
 
   @ApiProperty()
-  get hasPreviousPage(): boolean {
-    return this.page > 1;
-  }
+  readonly hasPreviousPage: boolean;
 
   @ApiProperty()
-  get hasNextPage(): boolean {
-    return this.page < this.pageCount;
-  }
+  readonly hasNextPage: boolean;
 
   constructor({
     paginationOptionsDto,
@@ -36,5 +30,8 @@ export class PageMetaDto {
     this.page = paginationOptionsDto.page;
     this.take = paginationOptionsDto.take;
     this.itemCount = itemCount;
+    this.pageCount = Math.ceil(this.itemCount / this.take);
+    this.hasPreviousPage = this.page > 1;
+    this.hasNextPage = this.page < this.pageCount;
   }
 }

@@ -26,7 +26,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     const correct: boolean = await bcrypt.compare(password, user.passwordHash);
-    if (!correct) throw new UnauthorizedException();
+    if (!correct) throw new UnauthorizedException('Invalid credentials');
 
     const payload = { sub: user.id, username: user.username };
     return {

@@ -2,11 +2,7 @@ import { faker } from '@faker-js/faker';
 import { INestApplication, Injectable } from '@nestjs/common';
 import { clearDatabase, generateRandomValidUsername } from '../../test/utils';
 import { AuthService } from '../auth/auth.service';
-import {
-  Rating,
-  STARS_MAX,
-  STARS_MIN,
-} from '../ratings/entities/rating.entity';
+import { STARS_MAX, STARS_MIN } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
 import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
@@ -37,7 +33,7 @@ export class DummyDataService {
 
     // create 100 users + 'oskar' and 'tschokri'
     await this.generateAndInsertUsers(100, authService);
-    const users: User[] = await usersService.findMany();
+    let users: User[] = await usersService.findMany();
 
     // create 20 winemakers
     await this.generateAndInsertWinemakers(20, winemakersService);
@@ -53,7 +49,8 @@ export class DummyDataService {
 
     // create 10 ratings per user
     await this.generateAndInsertRatings(10, users, wines, ratingsService);
-    const ratings: Rating[] = await ratingsService.findMany();
+    // refresh users because if you modify another relation the previous one seems to be overriden
+    users = await usersService.findMany();
 
     // assign 10 friends to each user
     await this.generateAndInsertFriendships(10, users, usersService);

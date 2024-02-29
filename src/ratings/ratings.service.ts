@@ -27,7 +27,6 @@ export class RatingsService {
         id: dbRating.id,
       },
     });
-    console.log(newRating);
     return newRating;
   }
 

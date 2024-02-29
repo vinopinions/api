@@ -22,14 +22,15 @@ export class RatingsService {
     rating.user = user;
 
     const dbRating: Rating = await this.ratingRepository.save(rating);
-    return await this.findOne({
+    const newRating = await this.findOne({
       where: {
         id: dbRating.id,
       },
     });
+    return newRating;
   }
 
-  findMany(options?: FindManyOptions<Rating>) {
+  findMany(options?: FindManyOptions<Rating>): Promise<Rating[]> {
     return this.ratingRepository.find({
       relations: Object.fromEntries(RatingRelations.map((key) => [key, true])),
       ...options,

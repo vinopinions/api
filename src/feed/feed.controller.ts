@@ -38,7 +38,6 @@ export class FeedController {
     @Req() request: AuthenticatedRequest,
     @Query() paginationOptionsDto: PaginationOptionsDto,
   ): Promise<PageDto<Rating>> {
-    console.log(paginationOptionsDto);
     return this.feedService.getFeedForUser(request.user, paginationOptionsDto);
   }
 }

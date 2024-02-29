@@ -5,6 +5,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { PageDto } from '../pagination/page.dto';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { buildPageDto } from '../pagination/pagination.utils';
 import { Winemaker, WinemakerRelations } from './entities/winemaker.entity';
 
 @Injectable()
@@ -49,5 +52,15 @@ export class WinemakersService {
       ),
       ...options,
     });
+  }
+
+  async count(options: FindManyOptions<Winemaker>): Promise<number> {
+    return await this.winemakersRepository.count(options);
+  }
+
+  async findAllPaginated(
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Winemaker>> {
+    return buildPageDto(this, paginationOptionsDto, {}, 'createdAt');
   }
 }

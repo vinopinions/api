@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -22,6 +23,8 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { PageDto } from '../pagination/page.dto';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { CreateWinemakerDto } from './dtos/create-winemaker.dto';
 import { Winemaker } from './entities/winemaker.entity';
 import { WinemakersService } from './winemakers.service';
@@ -48,8 +51,10 @@ export class WinemakersController {
   @ApiOperation({ summary: 'get all winemakers' })
   @HttpCode(HttpStatus.OK)
   @Get()
-  findAll(): Promise<Winemaker[]> {
-    return this.winemakersService.findMany();
+  findAll(
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Winemaker>> {
+    return this.winemakersService.findAllPaginated(paginationOptionsDto);
   }
 
   @ApiOperation({ summary: 'get winemaker by id' })

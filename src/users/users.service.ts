@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { PageDto } from '../pagination/page.dto';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { buildPageDto } from '../pagination/pagination.utils';
 import { User, UserRelations } from './entities/user.entity';
 
 @Injectable()
@@ -48,6 +51,16 @@ export class UsersService {
         `User with ${JSON.stringify(options.where)} not found`,
       );
     return user;
+  }
+
+  async count(options: FindManyOptions<User>): Promise<number> {
+    return await this.userRepository.count(options);
+  }
+
+  async findAllPaginated(
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<User>> {
+    return buildPageDto(this, paginationOptionsDto, {}, 'createdAt');
   }
 
   async remove(id: string): Promise<User> {

@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Query,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -21,7 +22,9 @@ import {
   FRIEND_USERNAME_URL_PARAMETER_NAME,
   USERNAME_URL_PARAMETER,
 } from '../constants/url-parameter';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { AuthenticatedRequest } from './../auth/auth.guard';
+import { PageDto } from './../pagination/page.dto';
 import { GetUserDto } from './dtos/get-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -70,8 +73,10 @@ export class UsersController {
     type: User,
     isArray: true,
   })
-  findAll(): Promise<User[]> {
-    return this.usersService.findMany();
+  findAll(
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<User>> {
+    return this.usersService.findAllPaginated(paginationOptionsDto);
   }
 
   @ApiOperation({ summary: 'get information about a user' })

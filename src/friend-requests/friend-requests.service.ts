@@ -5,9 +5,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { buildPageDto } from '../pagination/pagination.utils';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { PageDto } from './../pagination/page.dto';
 import {
   FriendRequest,
   FriendRequestRelations,
@@ -44,6 +52,10 @@ export class FriendRequestsService {
       ),
       ...options,
     });
+  }
+
+  async count(options: FindManyOptions<FriendRequest>): Promise<number> {
+    return await this.friendRequestRepository.count(options);
   }
 
   /**
@@ -179,23 +191,39 @@ export class FriendRequestsService {
     return friendRequest;
   }
 
-  async getReceived(user: User): Promise<FriendRequest[]> {
-    return await this.findMany({
-      where: {
-        receiver: {
-          id: user.id,
-        },
+  async getReceived(
+    user: User,
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<FriendRequest>> {
+    const findOptionsWhere: FindOptionsWhere<FriendRequest> = {
+      receiver: {
+        id: user.id,
       },
-    });
+    };
+
+    return await buildPageDto(
+      this,
+      paginationOptionsDto,
+      findOptionsWhere,
+      'createdAt',
+    );
   }
 
-  async getSent(user: User): Promise<FriendRequest[]> {
-    return this.findMany({
-      where: {
-        sender: {
-          id: user.id,
-        },
+  async getSent(
+    user: User,
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<FriendRequest>> {
+    const findOptionsWhere: FindOptionsWhere<FriendRequest> = {
+      sender: {
+        id: user.id,
       },
-    });
+    };
+
+    return await buildPageDto(
+      this,
+      paginationOptionsDto,
+      findOptionsWhere,
+      'createdAt',
+    );
   }
 }

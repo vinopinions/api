@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { FindOptionsWhere } from 'typeorm';
-import { PageMetaDto } from '../pagination/page-meta.dto';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { buildPageDto } from '../pagination/pagination.utils';
 import { Rating } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
 import { User } from '../users/entities/user.entity';
@@ -24,20 +24,12 @@ export class FeedService {
         };
       },
     );
-    const itemCount = await this.ratingsService.count({
-      where: findOptionsWhere,
-    });
-    const ratings: Rating[] = await this.ratingsService.findMany({
-      where: findOptionsWhere,
-      order: {
-        createdAt: paginationOptionsDto.order,
-      },
-      skip: paginationOptionsDto.skip,
-      take: paginationOptionsDto.take,
-    });
 
-    const pageMetaDto = new PageMetaDto({ itemCount, paginationOptionsDto });
-
-    return new PageDto(ratings, pageMetaDto);
+    return await buildPageDto(
+      this.ratingsService,
+      paginationOptionsDto,
+      findOptionsWhere,
+      'createdAt',
+    );
   }
 }

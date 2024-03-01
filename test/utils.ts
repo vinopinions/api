@@ -62,6 +62,17 @@ export const isErrorResponse = (res: Response, messageContains?: string) => {
   expect(res.body).toHaveProperty('statusCode');
 };
 
+export const isPaginationResponse = (res: Response) => {
+  expect(res.body).toHaveProperty('data');
+  expect(res.body).toHaveProperty('meta');
+  expect(res.body.meta).toHaveProperty('page');
+  expect(res.body.meta).toHaveProperty('take');
+  expect(res.body.meta).toHaveProperty('itemCount');
+  expect(res.body.meta).toHaveProperty('pageCount');
+  expect(res.body.meta).toHaveProperty('hasPreviousPage');
+  expect(res.body.meta).toHaveProperty('hasNextPage');
+};
+
 /**
  * .expect(logResponse)
  */

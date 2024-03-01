@@ -12,7 +12,7 @@ import { StoresService } from '../src/stores/stores.service';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
-import { clearDatabase, isErrorResponse, login } from './utils';
+import { clearDatabase, isErrorResponse, login } from './utils/utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;

@@ -25,7 +25,7 @@ import {
 } from '../src/wines/wines.controller';
 import { WinesService } from '../src/wines/wines.service';
 import { UpdateWineDto } from './../src/wines/dtos/update-wine.dto';
-import { clearDatabase, isErrorResponse, login } from './utils';
+import { clearDatabase, isErrorResponse, login } from './utils/utils';
 
 describe('WinesController (e2e)', () => {
   let app: INestApplication;

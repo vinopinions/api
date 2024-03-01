@@ -2,8 +2,8 @@ import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
 import { Response } from 'supertest';
 import { EntityManager } from 'typeorm';
-import { AuthService } from '../src/auth/auth.service';
-import { User } from '../src/users/entities/user.entity';
+import { AuthService } from '../../src/auth/auth.service';
+import { User } from '../../src/users/entities/user.entity';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get(EntityManager);

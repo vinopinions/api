@@ -32,7 +32,7 @@ import {
   generateRandomValidUsername,
   isErrorResponse,
   login,
-} from './utils';
+} from './utils/utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;

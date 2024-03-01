@@ -24,7 +24,7 @@ import {
   isErrorResponse,
   logResponse,
   login,
-} from './utils';
+} from './utils/utils';
 
 describe('FeedController (e2e)', () => {
   let app: INestApplication;

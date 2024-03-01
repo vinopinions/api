@@ -14,7 +14,7 @@ import {
   WINEMAKERS_ENDPOINT,
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
-import { clearDatabase, isErrorResponse, login } from './utils';
+import { clearDatabase, isErrorResponse, login } from './utils/utils';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;

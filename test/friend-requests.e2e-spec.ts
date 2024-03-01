@@ -22,7 +22,7 @@ import {
   generateRandomValidUsername,
   isErrorResponse,
   login,
-} from './utils';
+} from './utils/utils';
 
 describe('FriendRequestsController (e2e)', () => {
   let app: INestApplication;

@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { PageDto } from '../pagination/page.dto';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { buildPageDto } from '../pagination/pagination.utils';
 import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
 import { Winemaker } from '../winemakers/entities/winemaker.entity';
@@ -64,6 +67,16 @@ export class WinesService {
         `Wine with ${JSON.stringify(options.where)} not found`,
       );
     return wine;
+  }
+
+  async count(options: FindManyOptions<Wine>): Promise<number> {
+    return await this.wineRepository.count(options);
+  }
+
+  async findAllPaginated(
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Wine>> {
+    return buildPageDto(this, paginationOptionsDto, {}, 'createdAt');
   }
 
   async remove(id: string): Promise<Wine> {

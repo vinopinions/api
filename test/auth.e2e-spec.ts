@@ -13,7 +13,7 @@ import { AppModule } from './../src/app.module';
 import {
   buildExpectedErrorResponseMessageArray,
   buildExpectedErrorResponseMessageString,
-  buildExpectedUser,
+  buildExpectedUserResponse,
 } from './utils/expect-builder';
 import { clearDatabase, generateRandomValidUsername } from './utils/utils';
 
@@ -87,7 +87,7 @@ describe('AuthController (e2e)', () => {
 
       expect(response.status).toBe(HttpStatus.CREATED);
       expect(response.body).toEqual(
-        buildExpectedUser({ username: validData.username }),
+        buildExpectedUserResponse({ username: validData.username }),
       );
     });
 
@@ -104,7 +104,7 @@ describe('AuthController (e2e)', () => {
 
         expect(response.status).toBe(HttpStatus.CREATED);
         expect(response.body).toEqual(
-          buildExpectedUser({ username: validData.username }),
+          buildExpectedUserResponse({ username: validData.username }),
         );
       },
     );

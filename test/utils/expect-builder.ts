@@ -178,3 +178,34 @@ export const buildExpectedFriendRequestResponse = ({
     createdAt: createdAt ?? expect.any(String),
   };
 };
+
+export type ExpectedRatingResponse = {
+  id: string;
+  stars: number;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+  wine: any; // TODO: add wine response
+  user: ExpectedUserResponseNoRelation;
+};
+
+export const buildExpectedRatingResponse = ({
+  id,
+  stars,
+  text,
+  createdAt,
+  updatedAt,
+  wine,
+  user,
+}: DeepPartial<ExpectedRatingResponse>): ExpectedRatingResponse => {
+  return {
+    id: id ?? expect.any(String),
+    stars: stars ?? expect.any(Number),
+    text: text ?? expect.any(String),
+    createdAt: createdAt ?? expect.any(String),
+    updatedAt: updatedAt ?? expect.any(String),
+    wine: wine ?? expect.anything(), // TODO: add wine response
+    // wine: buildExpectedWineResponse(wine),
+    user: buildExpectedUserResponseNoRelation(user),
+  };
+};

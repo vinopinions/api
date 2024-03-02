@@ -1,4 +1,6 @@
+import { faker } from '@faker-js/faker';
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   INestApplication,
@@ -55,6 +57,24 @@ export const endpointProtectedTest = async ({
     method,
     exception: new UnauthorizedException(),
   });
+
+export const invalidUUIDTest = async ({
+  app,
+  endpoint,
+  method,
+  idParameter,
+  header,
+  body,
+}: ApiConfig & RequestConfig & { idParameter: string }) => {
+  await complexExceptionThrownMessageStringTest({
+    app,
+    method,
+    endpoint: endpoint.replace(idParameter, faker.string.alphanumeric(10)),
+    header,
+    body,
+    exception: new BadRequestException(),
+  });
+};
 
 export const commonExceptionThrownTest = async ({
   app,

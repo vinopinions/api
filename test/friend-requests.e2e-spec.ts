@@ -11,7 +11,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/auth/auth.service';
-import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { SendFriendRequestDto } from '../src/friend-requests/dtos/send-friend-request.dto';
 import { FriendRequest } from '../src/friend-requests/entities/friend-request.entity';
 import {
@@ -24,12 +23,14 @@ import {
 } from '../src/friend-requests/friend-requests.controller';
 import { FriendRequestsService } from '../src/friend-requests/friend-requests.service';
 import { User } from '../src/users/entities/user.entity';
+import { ID_URL_PARAMETER } from './../src/constants/url-parameter';
 import {
   HttpMethod,
   complexExceptionThrownMessageArrayTest,
   complexExceptionThrownMessageStringTest,
   endpointExistTest,
   endpointProtectedTest,
+  invalidUUIDTest,
 } from './common/tests.common';
 import { buildExpectedFriendRequestResponse } from './utils/expect-builder';
 import {
@@ -387,16 +388,13 @@ describe('FriendRequestsController (e2e)', () => {
         exception: new NotFoundException(),
       }));
 
-    it(`should return ${HttpStatus.BAD_REQUEST} if id parameter is not a uuid`, async () =>
-      await complexExceptionThrownMessageStringTest({
+    it(`should return ${HttpStatus.BAD_REQUEST} if id parameter is not a valid uuid`, async () =>
+      await invalidUUIDTest({
         app,
         method,
-        endpoint: endpoint.replace(
-          ID_URL_PARAMETER,
-          faker.string.alphanumeric(10),
-        ),
+        endpoint,
+        idParameter: ID_URL_PARAMETER,
         header: authHeader,
-        exception: new BadRequestException(),
       }));
 
     it(`should return ${HttpStatus.OK} when accepting a received friend request`, async () => {

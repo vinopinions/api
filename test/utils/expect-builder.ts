@@ -1,8 +1,8 @@
 import { DeepPartial } from 'typeorm';
 
-type ExpectedErrorResponse = {
+export type ExpectedErrorResponseMessageArray = {
   error: string;
-  message: string | string[];
+  message: string[];
   statusCode: number;
 };
 
@@ -14,7 +14,7 @@ export const buildExpectedErrorResponseMessageArray = ({
   error?: string;
   message?: string[];
   statusCode?: number;
-} = {}): ExpectedErrorResponse => {
+} = {}): ExpectedErrorResponseMessageArray => {
   return {
     error: error ?? expect.any(String),
     message: message ?? expect.any(Array),
@@ -22,17 +22,28 @@ export const buildExpectedErrorResponseMessageArray = ({
   };
 };
 
+export type ExpectedErrorResponseMessageArrayNoError = Omit<
+  ExpectedErrorResponseMessageArray,
+  'error'
+>;
+
 export const buildExpectedErrorResponseMessageArrayNoError = ({
   message,
   statusCode,
 }: {
   message?: string[];
   statusCode?: number;
-} = {}): Omit<ExpectedErrorResponse, 'error'> => {
+} = {}): ExpectedErrorResponseMessageArrayNoError => {
   return {
     message: message ?? expect.any(Array),
     statusCode: statusCode ?? expect.any(Number),
   };
+};
+
+export type ExpectedErrorResponseMessageString = {
+  error: string;
+  message: string;
+  statusCode: number;
 };
 
 export const buildExpectedErrorResponseMessageString = ({
@@ -43,7 +54,7 @@ export const buildExpectedErrorResponseMessageString = ({
   error?: string;
   message?: string;
   statusCode?: number;
-} = {}): ExpectedErrorResponse => {
+} = {}): ExpectedErrorResponseMessageString => {
   return {
     error: error ?? expect.any(String),
     message: message ?? expect.any(String),
@@ -51,20 +62,25 @@ export const buildExpectedErrorResponseMessageString = ({
   };
 };
 
+export type ExpectedErrorResponseMessageStringNoError = Omit<
+  ExpectedErrorResponseMessageString,
+  'error'
+>;
+
 export const buildExpectedErrorResponseMessageStringNoError = ({
   message,
   statusCode,
 }: {
   message?: string;
   statusCode?: number;
-} = {}): Omit<ExpectedErrorResponse, 'error'> => {
+} = {}): ExpectedErrorResponseMessageStringNoError => {
   return {
     message: message ?? expect.any(String),
     statusCode: statusCode ?? expect.any(Number),
   };
 };
 
-type ExpectedUserResponse = {
+export type ExpectedUserResponse = {
   id: string;
   username: string;
   createdAt: string;
@@ -72,6 +88,13 @@ type ExpectedUserResponse = {
   // TODO: replace with ExpectedRatingResponse[]
   ratings: any[];
   friends: ExpectedUserResponse[];
+};
+
+export type ExpectedUserResponseNoRelation = {
+  id: string;
+  username: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export const buildExpectedUserResponse = ({
@@ -92,7 +115,21 @@ export const buildExpectedUserResponse = ({
   };
 };
 
-type ExpectedPageResponse<T> = {
+export const buildExpectedUserResponseNoRelation = ({
+  id,
+  username,
+  createdAt,
+  updatedAt,
+}: DeepPartial<ExpectedUserResponseNoRelation> = {}): ExpectedUserResponseNoRelation => {
+  return {
+    id: id ?? expect.any(String),
+    username: username ?? expect.any(String),
+    createdAt: createdAt ?? expect.any(String),
+    updatedAt: updatedAt ?? expect.any(String),
+  };
+};
+
+export type ExpectedPageResponse<T> = {
   data: T[];
   meta: {
     page: number;
@@ -118,5 +155,26 @@ export const buildExpectedPageResponse = <T>({
       hasPreviousPage: meta?.hasPreviousPage ?? expect.any(Boolean),
       hasNextPage: meta?.hasNextPage ?? expect.any(Boolean),
     },
+  };
+};
+
+export type ExpectedFriendRequestResponse = {
+  id: string;
+  receiver: ExpectedUserResponseNoRelation;
+  sender: ExpectedUserResponseNoRelation;
+  createdAt: string;
+};
+
+export const buildExpectedFriendRequestResponse = ({
+  id,
+  receiver,
+  sender,
+  createdAt,
+}: DeepPartial<ExpectedFriendRequestResponse>): ExpectedFriendRequestResponse => {
+  return {
+    id: id ?? expect.any(String),
+    receiver: buildExpectedUserResponseNoRelation(receiver),
+    sender: buildExpectedUserResponseNoRelation(sender),
+    createdAt: createdAt ?? expect.any(String),
   };
 };

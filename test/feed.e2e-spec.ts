@@ -19,9 +19,11 @@ import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { Wine } from '../src/wines/entities/wine.entity';
 import { WinesService } from '../src/wines/wines.service';
 import {
-  buildExpectedErrorResponseMessageStringNoError,
-  buildExpectedPageResponse,
-} from './utils/expect-builder';
+  HttpMethod,
+  endpointExistTest,
+  endpointProtectedTest,
+} from './common/tests.common';
+import { buildExpectedPageResponse } from './utils/expect-builder';
 import {
   clearDatabase,
   generateRandomValidUsername,
@@ -61,31 +63,22 @@ describe('FeedController (e2e)', () => {
   });
 
   describe(FEED_ENDPOINT + ' (GET)', () => {
-    it('should exist', async () => {
-      const response: Response = await request(app.getHttpServer()).get(
-        FEED_ENDPOINT,
-      );
+    const endpoint: string = FEED_ENDPOINT;
+    const method: HttpMethod = 'get';
 
-      expect(response.status).not.toBe(HttpStatus.NOT_FOUND);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint,
+      }));
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      const response: Response = await request(app.getHttpServer()).get(
-        FEED_ENDPOINT,
-      );
-
-      expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
-      expect(response.body).toEqual(
-        buildExpectedErrorResponseMessageStringNoError({
-          message: 'Unauthorized',
-          statusCode: HttpStatus.UNAUTHORIZED,
-        }),
-      );
-    });
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({ app, method, endpoint: endpoint }));
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
       const response: Response = await request(app.getHttpServer())
-        .get(FEED_ENDPOINT)
+        [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
@@ -93,7 +86,7 @@ describe('FeedController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} and empty page response with authorization`, async () => {
       const response: Response = await request(app.getHttpServer())
-        .get(FEED_ENDPOINT)
+        [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
@@ -160,7 +153,7 @@ describe('FeedController (e2e)', () => {
         }
 
         const response: Response = await request(app.getHttpServer())
-          .get(FEED_ENDPOINT + '?take=' + take)
+          [method](endpoint + '?take=' + take)
           .set(authHeader);
 
         expect(response.status).toBe(HttpStatus.OK);

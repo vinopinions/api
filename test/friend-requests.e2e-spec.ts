@@ -1,7 +1,14 @@
 import { faker } from '@faker-js/faker';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  HttpStatus,
+  INestApplication,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
+import request, { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/auth/auth.service';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
@@ -18,9 +25,16 @@ import {
 import { FriendRequestsService } from '../src/friend-requests/friend-requests.service';
 import { User } from '../src/users/entities/user.entity';
 import {
+  HttpMethod,
+  complexExceptionThrownMessageArrayTest,
+  complexExceptionThrownMessageStringTest,
+  endpointExistTest,
+  endpointProtectedTest,
+} from './common/tests.common';
+import { buildExpectedFriendRequestResponse } from './utils/expect-builder';
+import {
   clearDatabase,
   generateRandomValidUsername,
-  isErrorResponse,
   login,
 } from './utils/utils';
 
@@ -51,38 +65,42 @@ describe('FriendRequestsController (e2e)', () => {
   });
 
   describe(FRIEND_REQUESTS_INCOMING_ENDPOINT + ' (GET)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = FRIEND_REQUESTS_INCOMING_ENDPOINT;
+    const method: HttpMethod = 'get';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK);
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 1 with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect((res.body as Array<any>).length).toBe(0);
-        });
+    it(`should return ${HttpStatus.OK} and array with length of 0`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(0);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
         const sender: User = await authService.signUp(
           faker.internet.userName(),
@@ -91,17 +109,16 @@ describe('FriendRequestsController (e2e)', () => {
         await friendRequestsService.send(sender, user);
       }
 
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect((res.body as Array<any>).length).toBe(10);
-        });
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} a valid friend requests with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} a valid friend request`, async () => {
       const sender: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -111,77 +128,65 @@ describe('FriendRequestsController (e2e)', () => {
         user,
       );
 
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(1);
-          (body as Array<any>).forEach((item) => {
-            expect(item.id).toEqual(friendRequest.id);
-            expect(item.sender.id).toEqual(friendRequest.sender.id);
-            expect(item.receiver.id).toEqual(friendRequest.receiver.id);
-            expect(item.createdAt).toEqual(
-              friendRequest.createdAt.toISOString(),
-            );
-          });
-        });
-    });
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
 
-    it(`should return ${HttpStatus.OK} a valid friend requests that does not contain passwordHash for sender/receiver with authorization`, async () => {
-      const sender: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toEqual(
+        buildExpectedFriendRequestResponse({
+          id: friendRequest.id,
+          sender: {
+            id: friendRequest.sender.id,
+          },
+          receiver: {
+            id: friendRequest.receiver.id,
+          },
+          createdAt: friendRequest.createdAt.toISOString(),
+        }),
       );
-      await friendRequestsService.send(sender, user);
-
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_INCOMING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(1);
-          (body as Array<any>).forEach((item) => {
-            expect(item.sender.passwordHash).toBeUndefined();
-            expect(item.receiver.passwordHash).toBeUndefined();
-          });
-        });
     });
   });
 
   describe(FRIEND_REQUESTS_OUTGOING_ENDPOINT + ' (GET)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_OUTGOING_ENDPOINT)
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = FRIEND_REQUESTS_OUTGOING_ENDPOINT;
+    const method: HttpMethod = 'get';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_OUTGOING_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_OUTGOING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK);
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).not.toBe(HttpStatus.NOT_FOUND);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 1 with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_OUTGOING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect((res.body as Array<any>).length).toBe(0);
-        });
+    it(`should return ${HttpStatus.OK} and array with length of 1`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(0);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
         const receiver: User = await authService.signUp(
           faker.internet.userName(),
@@ -190,17 +195,16 @@ describe('FriendRequestsController (e2e)', () => {
         await friendRequestsService.send(user, receiver);
       }
 
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_OUTGOING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect((res.body as Array<any>).length).toBe(10);
-        });
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} a valid friend requests with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} a valid friend requests`, async () => {
       const receiver: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -210,91 +214,83 @@ describe('FriendRequestsController (e2e)', () => {
         receiver,
       );
 
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_OUTGOING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(1);
-          (body as Array<any>).forEach((item) => {
-            expect(item.id).toEqual(friendRequest.id);
-            expect(item.sender.id).toEqual(friendRequest.sender.id);
-            expect(item.receiver.id).toEqual(friendRequest.receiver.id);
-            expect(item.createdAt).toEqual(
-              friendRequest.createdAt.toISOString(),
-            );
-          });
-        });
-    });
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
 
-    it(`should return ${HttpStatus.OK} a valid friend requests that does not contain passwordHash for sender/receiver with authorization`, async () => {
-      const receiver: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toEqual(
+        buildExpectedFriendRequestResponse({
+          id: friendRequest.id,
+          sender: {
+            id: friendRequest.sender.id,
+          },
+          receiver: {
+            id: friendRequest.receiver.id,
+          },
+          createdAt: friendRequest.createdAt.toISOString(),
+        }),
       );
-      await friendRequestsService.send(user, receiver);
-
-      return request(app.getHttpServer())
-        .get(FRIEND_REQUESTS_OUTGOING_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(1);
-          (body as Array<any>).forEach((item) => {
-            expect(item.sender.passwordHash).toBeUndefined();
-            expect(item.receiver.passwordHash).toBeUndefined();
-          });
-        });
     });
   });
 
   describe(FRIEND_REQUESTS_SEND_ENDPOINT + ' (POST)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .post(FRIEND_REQUESTS_SEND_ENDPOINT)
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = FRIEND_REQUESTS_SEND_ENDPOINT;
+    const method: HttpMethod = 'post';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(FRIEND_REQUESTS_SEND_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
 
     it(`should return ${HttpStatus.BAD_REQUEST} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(FRIEND_REQUESTS_SEND_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data and with authorization`, async () => {
-      const invalidData = {
-        username: 123,
-      };
-      return request(app.getHttpServer())
-        .post(FRIEND_REQUESTS_SEND_ENDPOINT)
-        .send(invalidData)
-        .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect(isErrorResponse);
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: 123,
+        },
+        header: authHeader,
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.NOT_FOUND} when sending a friend request to non existing user with authorization`, async () => {
-      const validData: SendFriendRequestDto = {
-        username: generateRandomValidUsername(),
-      };
-      return request(app.getHttpServer())
-        .post(FRIEND_REQUESTS_SEND_ENDPOINT)
-        .send(validData)
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND)
-        .expect(isErrorResponse);
+    it(`should return ${HttpStatus.NOT_FOUND} when sending a friend request to non existing user`, async () => {
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: generateRandomValidUsername(),
+        },
+        header: authHeader,
+        exception: new NotFoundException(),
+      });
     });
 
-    it(`should return ${HttpStatus.CREATED} when sending friend request with authorization`, async () => {
+    it(`should return ${HttpStatus.CREATED} when sending friend request`, async () => {
       const receiver: User = await authService.signUp(
         generateRandomValidUsername(),
         faker.internet.password(),
@@ -302,14 +298,15 @@ describe('FriendRequestsController (e2e)', () => {
       const data: SendFriendRequestDto = {
         username: receiver.username,
       };
-      return request(app.getHttpServer())
-        .post(FRIEND_REQUESTS_SEND_ENDPOINT)
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
         .send(data)
-        .set(authHeader)
-        .expect(HttpStatus.CREATED);
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
     });
 
-    it(`should return ${HttpStatus.CONFLICT} when already sent a friend request with authorization`, async () => {
+    it(`should return ${HttpStatus.CONFLICT} when already sent a friend request`, async () => {
       const receiver: User = await authService.signUp(
         generateRandomValidUsername(),
         faker.internet.password(),
@@ -320,15 +317,17 @@ describe('FriendRequestsController (e2e)', () => {
 
       await friendRequestsService.send(user, receiver);
 
-      return request(app.getHttpServer())
-        .post(FRIEND_REQUESTS_SEND_ENDPOINT)
-        .send(data)
-        .set(authHeader)
-        .expect(HttpStatus.CONFLICT)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageStringTest({
+        app,
+        endpoint,
+        method,
+        body: data,
+        header: authHeader,
+        exception: new ConflictException(),
+      });
     });
 
-    it(`should return ${HttpStatus.CONFLICT} when already received a friend request from sender and try to send one to him with authorization`, async () => {
+    it(`should return ${HttpStatus.CONFLICT} when already received a friend request from sender and try to send one to him`, async () => {
       const sender: User = await authService.signUp(
         generateRandomValidUsername(),
         faker.internet.password(),
@@ -339,78 +338,68 @@ describe('FriendRequestsController (e2e)', () => {
         username: sender.username,
       };
 
-      return request(app.getHttpServer())
-        .post(FRIEND_REQUESTS_SEND_ENDPOINT)
-        .send(data)
-        .set(authHeader)
-        .expect(HttpStatus.CONFLICT)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: data,
+        header: authHeader,
+        exception: new ConflictException(),
+        message: 'The user already sent a friend request to you. Accept that.',
+      });
     });
   });
 
   describe(FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT + ' (POST)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
+    const endpoint: string = FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT;
+    const method: HttpMethod = 'post';
+
+    it('should exist', async () => {
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      });
     });
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
 
-    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
-    });
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
 
-    it(`should return ${HttpStatus.NOT_FOUND} with random uuid authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND)
-        .expect(isErrorResponse);
-    });
+    it(`should return ${HttpStatus.NOT_FOUND} with random uuid`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
 
-    it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.alphanumeric(10),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect((res) => isErrorResponse(res, 'uuid'));
-    });
+    it(`should return ${HttpStatus.BAD_REQUEST} if id parameter is not a uuid`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(
+          ID_URL_PARAMETER,
+          faker.string.alphanumeric(10),
+        ),
+        header: authHeader,
+        exception: new BadRequestException(),
+      }));
 
-    it(`should return ${HttpStatus.OK} when accepting a received friend request with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} when accepting a received friend request`, async () => {
       const sender: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -419,18 +408,14 @@ describe('FriendRequestsController (e2e)', () => {
         sender,
         user,
       );
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK);
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, friendRequest.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.FORBIDDEN} when accepting a friend request that you sent yourself with authorization`, async () => {
+    it(`should return ${HttpStatus.FORBIDDEN} when accepting a friend request that you have sent to another user`, async () => {
       const receiver: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -440,19 +425,16 @@ describe('FriendRequestsController (e2e)', () => {
         receiver,
       );
 
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.FORBIDDEN)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, friendRequest.id),
+        header: authHeader,
+        exception: new ForbiddenException(),
+      });
     });
 
-    it(`should return ${HttpStatus.FORBIDDEN} when trying to accept another users friend request with authorization`, async () => {
+    it(`should return ${HttpStatus.FORBIDDEN} when trying to accept another users friend request`, async () => {
       const sender: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -466,99 +448,69 @@ describe('FriendRequestsController (e2e)', () => {
         receiver,
       );
 
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_ACCEPT_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.FORBIDDEN)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, friendRequest.id),
+        header: authHeader,
+        exception: new ForbiddenException(),
+      });
     });
   });
 
   describe(FRIEND_REQUESTS_ID_DECLINE_ENDPOINT + ' (POST)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = FRIEND_REQUESTS_ID_DECLINE_ENDPOINT;
+    const method: HttpMethod = 'post';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
 
-    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
-    });
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
 
-    it(`should return ${HttpStatus.NOT_FOUND} with random uuid authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND)
-        .expect(isErrorResponse);
-    });
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
 
-    it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.alphanumeric(10),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect((res) => isErrorResponse(res, 'uuid'));
-    });
+    it(`should return ${HttpStatus.BAD_REQUEST} if id parameter is not a uuid`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(
+          ID_URL_PARAMETER,
+          faker.string.alphanumeric(10),
+        ),
+        header: authHeader,
+        exception: new BadRequestException(),
+      }));
 
-    it(`should return ${HttpStatus.OK} when declining a received friend request with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} when declining a received friend request`, async () => {
       const sender: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
       );
       const friendRequest = await friendRequestsService.send(sender, user);
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK);
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, friendRequest.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.FORBIDDEN} when declining a friend request that you sent yourself with authorization`, async () => {
+    it(`should return ${HttpStatus.FORBIDDEN} when declining a friend request that you sent yourself`, async () => {
       const receiver: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -568,19 +520,16 @@ describe('FriendRequestsController (e2e)', () => {
         receiver,
       );
 
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.FORBIDDEN)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, friendRequest.id),
+        header: authHeader,
+        exception: new ForbiddenException(),
+      });
     });
 
-    it(`should return ${HttpStatus.FORBIDDEN} when trying to decline another users friend request with authorization`, async () => {
+    it(`should return ${HttpStatus.FORBIDDEN} when trying to decline another users friend request`, async () => {
       const sender: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -594,82 +543,65 @@ describe('FriendRequestsController (e2e)', () => {
         receiver,
       );
 
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_DECLINE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.FORBIDDEN)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, friendRequest.id),
+        header: authHeader,
+        exception: new ForbiddenException(),
+      });
     });
   });
 
   describe(FRIEND_REQUESTS_ID_REVOKE_ENDPOINT + ' (POST)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = FRIEND_REQUESTS_ID_REVOKE_ENDPOINT;
+    const method: HttpMethod = 'post';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
 
-    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND);
-    });
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
 
-    it(`should return ${HttpStatus.NOT_FOUND} with random uuid authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.uuid(),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND)
-        .expect(isErrorResponse);
-    });
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
 
-    it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.alphanumeric(10),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect((res) => isErrorResponse(res, 'uuid'));
-    });
+    it(`should return ${HttpStatus.NOT_FOUND} with random uuid`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
 
-    it(`should return ${HttpStatus.OK} when revoking a friend request that you sent yourself with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} if id parameter is not a uuid`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(
+          ID_URL_PARAMETER,
+          faker.string.alphanumeric(10),
+        ),
+        header: authHeader,
+        exception: new BadRequestException(),
+      }));
+
+    it(`should return ${HttpStatus.OK} when revoking a friend request that you sent yourself`, async () => {
       const receiver: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -679,36 +611,30 @@ describe('FriendRequestsController (e2e)', () => {
         receiver,
       );
 
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.OK);
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, friendRequest.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.FORBIDDEN} when revoking a received friend request with authorization`, async () => {
+    it(`should return ${HttpStatus.FORBIDDEN} when revoking a received friend request that wasn't sent by the user`, async () => {
       const sender: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
       );
       const friendRequest = await friendRequestsService.send(sender, user);
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.FORBIDDEN)
-        .expect(isErrorResponse);
+
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, friendRequest.id),
+        header: authHeader,
+        exception: new ForbiddenException(),
+      });
     });
 
-    it(`should return ${HttpStatus.FORBIDDEN} when trying to revoking another users friend request with authorization`, async () => {
+    it(`should return ${HttpStatus.FORBIDDEN} when trying to revoking another users friend request`, async () => {
       const sender: User = await authService.signUp(
         faker.internet.userName(),
         faker.internet.password(),
@@ -722,16 +648,13 @@ describe('FriendRequestsController (e2e)', () => {
         receiver,
       );
 
-      return request(app.getHttpServer())
-        .post(
-          FRIEND_REQUESTS_ID_REVOKE_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            friendRequest.id,
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.FORBIDDEN)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, friendRequest.id),
+        header: authHeader,
+        exception: new ForbiddenException(),
+      });
     });
   });
 });

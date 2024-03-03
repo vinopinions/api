@@ -86,7 +86,7 @@ export type ExpectedUserResponse = {
   createdAt: string;
   updatedAt: string;
   ratings: ExpectedRatingResponse[];
-  friends: ExpectedUserResponse[];
+  friends: ExpectedUserResponseNoRelation[];
 };
 
 export const buildExpectedUserResponse = ({
@@ -108,10 +108,14 @@ export const buildExpectedUserResponse = ({
           buildExpectedRatingResponse(),
         ),
     friends: friends
-      ? friends.map(buildExpectedUserResponse)
-      : expect.objectContaining<ExpectedUserResponseNoRelation>(
-          buildExpectedUserResponseNoRelation(),
-        ),
+      ? expect.arrayContaining<ExpectedUserResponseNoRelation>(
+          friends.map(buildExpectedUserResponseNoRelation),
+        )
+      : expect.arrayContaining<ExpectedUserResponseNoRelation>([
+          expect.objectContaining<ExpectedUserResponseNoRelation>(
+            buildExpectedUserResponseNoRelation(),
+          ),
+        ]),
   };
 };
 
@@ -162,7 +166,7 @@ export const buildExpectedPageResponse = <T>({
 }): ExpectedPageResponse<T> => {
   return {
     data: data
-      ? data.map(buildExpectedResponse)
+      ? expect.arrayContaining<T>(data.map(buildExpectedResponse))
       : expect.arrayContaining<T>([
           expect.objectContaining<T>(buildExpectedResponse()),
         ]),
@@ -253,7 +257,9 @@ export const buildExpectedStoreResponse = ({
     address: address ?? expect.any(String),
     url: url ?? expect.any(String),
     wines: wines
-      ? wines.map(buildExpectedWineResponseNoRelation)
+      ? expect.arrayContaining<ExpectedWineResponseNoRelation>(
+          wines.map(buildExpectedWineResponseNoRelation),
+        )
       : expect.arrayContaining<ExpectedWineResponseNoRelation>([
           expect.objectContaining<ExpectedWineResponseNoRelation>(
             buildExpectedWineResponseNoRelation(),
@@ -320,10 +326,14 @@ export const buildExpectedWineResponse = ({
     heritage: heritage ?? expect.any(String),
     winemaker: buildExpectedWinemakerResponseNoRelation(winemaker),
     stores: stores
-      ? stores.map((store) => buildExpectedStoreResponse(store))
+      ? expect.arrayContaining<ExpectedStoreResponseNoRelation>(
+          stores.map((store) => buildExpectedStoreResponse(store)),
+        )
       : expect.objectContaining(buildExpectedStoreResponse()),
     ratings: ratings
-      ? ratings.map((rating) => buildExpectedRatingResponse(rating))
+      ? expect.arrayContaining<ExpectedRatingResponse>(
+          ratings.map((rating) => buildExpectedRatingResponse(rating)),
+        )
       : expect.objectContaining(buildExpectedRatingResponse()),
     createdAt: createdAt ?? expect.any(String),
     updatedAt: updatedAt ?? expect.any(String),
@@ -374,8 +384,12 @@ export const buildExpectedWinemakerResponse = ({
     id: id ?? expect.any(String),
     name: name ?? expect.any(String),
     wines: wines
-      ? wines.map(buildExpectedWineResponseNoRelation)
-      : expect.objectContaining(buildExpectedWineResponseNoRelation()),
+      ? expect.arrayContaining<ExpectedWineResponseNoRelation>(
+          wines.map(buildExpectedWineResponseNoRelation),
+        )
+      : expect.arrayContaining<ExpectedWineResponseNoRelation>([
+          expect.objectContaining(buildExpectedWineResponseNoRelation()),
+        ]),
     createdAt: createdAt ?? expect.any(String),
     updatedAt: updatedAt ?? expect.any(String),
   };

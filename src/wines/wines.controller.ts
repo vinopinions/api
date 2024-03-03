@@ -26,6 +26,7 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
 import { RatingsService } from '../ratings/ratings.service';
@@ -72,10 +73,9 @@ export class WinesController {
 
   @ApiOperation({ summary: 'get all wines' })
   @Get()
-  @ApiOkResponse({
-    description: 'Wines have been found',
-    type: Wine,
-    isArray: true,
+  @ApiPaginationResponse(Wine, {
+    description: 'Incoming friend requests have been found',
+    status: HttpStatus.OK,
   })
   findAll(
     @Query() paginationOptionsDto: PaginationOptionsDto,

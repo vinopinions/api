@@ -23,6 +23,7 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { CreateWinemakerDto } from './dtos/create-winemaker.dto';
@@ -43,13 +44,11 @@ export const WINEMAKERS_ID_ENDPOINT = `${WINEMAKERS_ENDPOINT}/${WINEMAKERS_ID_UR
 export class WinemakersController {
   constructor(private winemakersService: WinemakersService) {}
 
-  @ApiOkResponse({
-    description: 'Winemakers have been found',
-    type: Winemaker,
-    isArray: true,
+  @ApiPaginationResponse(Winemaker, {
+    description: 'Incoming friend requests have been found',
+    status: HttpStatus.OK,
   })
   @ApiOperation({ summary: 'get all winemakers' })
-  @HttpCode(HttpStatus.OK)
   @Get()
   findAll(
     @Query() paginationOptionsDto: PaginationOptionsDto,

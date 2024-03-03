@@ -5,12 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  FindManyOptions,
-  FindOneOptions,
-  FindOptionsWhere,
-  Repository,
-} from 'typeorm';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { buildPageDto } from '../pagination/pagination.utils';
 import { User } from '../users/entities/user.entity';
@@ -195,16 +190,14 @@ export class FriendRequestsService {
     user: User,
     paginationOptionsDto: PaginationOptionsDto,
   ): Promise<PageDto<FriendRequest>> {
-    const findOptionsWhere: FindOptionsWhere<FriendRequest> = {
-      receiver: {
-        id: user.id,
-      },
-    };
-
     return await buildPageDto(
       this,
       paginationOptionsDto,
-      findOptionsWhere,
+      {
+        receiver: {
+          id: user.id,
+        },
+      },
       'createdAt',
     );
   }
@@ -213,16 +206,14 @@ export class FriendRequestsService {
     user: User,
     paginationOptionsDto: PaginationOptionsDto,
   ): Promise<PageDto<FriendRequest>> {
-    const findOptionsWhere: FindOptionsWhere<FriendRequest> = {
-      sender: {
-        id: user.id,
-      },
-    };
-
     return await buildPageDto(
       this,
       paginationOptionsDto,
-      findOptionsWhere,
+      {
+        sender: {
+          id: user.id,
+        },
+      },
       'createdAt',
     );
   }

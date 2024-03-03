@@ -23,6 +23,7 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { PageDto } from './../pagination/page.dto';
 import { CreateStoreDto } from './dtos/create-store.dto';
@@ -61,10 +62,9 @@ export class StoresController {
   @ApiOperation({ summary: 'get all stores' })
   @HttpCode(HttpStatus.OK)
   @Get()
-  @ApiOkResponse({
-    description: 'Stores have been found',
-    type: Store,
-    isArray: true,
+  @ApiPaginationResponse(Store, {
+    description: 'Incoming friend requests have been found',
+    status: HttpStatus.OK,
   })
   findAll(
     @Query() paginationOptionsDto: PaginationOptionsDto,

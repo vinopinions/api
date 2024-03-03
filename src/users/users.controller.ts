@@ -23,6 +23,7 @@ import {
   FRIEND_USERNAME_URL_PARAMETER_NAME,
   USERNAME_URL_PARAMETER,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { AuthenticatedRequest } from './../auth/auth.guard';
 import { PageDto } from './../pagination/page.dto';
@@ -69,10 +70,9 @@ export class UsersController {
   @ApiOperation({ summary: 'get all user' })
   @HttpCode(HttpStatus.OK)
   @Get()
-  @ApiOkResponse({
-    description: 'Users have been found',
-    type: User,
-    isArray: true,
+  @ApiPaginationResponse(User, {
+    description: 'Incoming friend requests have been found',
+    status: HttpStatus.OK,
   })
   findAll(
     @Query() paginationOptionsDto: PaginationOptionsDto,

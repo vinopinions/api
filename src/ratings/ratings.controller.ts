@@ -20,6 +20,7 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from './entities/rating.entity';
@@ -61,10 +62,9 @@ export class RatingsController {
   @ApiOperation({ summary: 'get all ratings' })
   @HttpCode(HttpStatus.OK)
   @Get()
-  @ApiOkResponse({
+  @ApiPaginationResponse(Rating, {
     description: 'Ratings have been found',
-    type: Rating,
-    isArray: true,
+    status: HttpStatus.OK,
   })
   findAll(
     @Query() paginationOptionsDto: PaginationOptionsDto,

@@ -327,9 +327,11 @@ export const buildExpectedWineResponse = ({
     winemaker: buildExpectedWinemakerResponseNoRelation(winemaker),
     stores: stores
       ? expect.arrayContaining<ExpectedStoreResponseNoRelation>(
-          stores.map((store) => buildExpectedStoreResponse(store)),
+          stores.map((store) => buildExpectedStoreResponseNoRelation(store)),
         )
-      : expect.objectContaining(buildExpectedStoreResponse()),
+      : expect.objectContaining<ExpectedStoreResponseNoRelation>(
+          buildExpectedStoreResponseNoRelation(),
+        ),
     ratings: ratings
       ? expect.arrayContaining<ExpectedRatingResponse>(
           ratings.map((rating) => buildExpectedRatingResponse(rating)),

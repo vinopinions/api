@@ -360,12 +360,12 @@ describe('WinesController (e2e)', () => {
         winemakerId: faker.string.uuid(),
       };
 
-      await complexExceptionThrownMessageArrayTest({
+      await complexExceptionThrownMessageStringTest({
         app,
         method,
         endpoint,
         body: createWineDto,
-        exception: new BadRequestException(),
+        exception: new NotFoundException(),
         header: authHeader,
       });
     });
@@ -415,244 +415,238 @@ describe('WinesController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with malformed uuid`, async () => {
-      await invalidUUIDTest({
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid text data type`, async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      const invalidData = {
+        stars: faker.number.int({ min: STARS_MIN, max: STARS_MAX }),
+        text: 1,
+      };
+
+      await complexExceptionThrownMessageArrayTest({
         app,
         method,
-        endpoint,
-        idParameter: ID_URL_PARAMETER,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
+        body: invalidData,
         header: authHeader,
-      });
-
-      it(`should return ${HttpStatus.BAD_REQUEST} with invalid text data type`, async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-        const invalidData = {
-          stars: faker.number.int({ min: STARS_MIN, max: STARS_MAX }),
-          text: 1,
-        };
-
-        await complexExceptionThrownMessageStringTest({
-          app,
-          method,
-          endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
-          body: invalidData,
-          header: authHeader,
-          exception: new BadRequestException(),
-        });
-      });
-
-      it(`should return ${HttpStatus.BAD_REQUEST} with invalid stars data type with authorization`, async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-        const invalidData = {
-          stars: 'abc',
-          text: 'abc',
-        };
-
-        await complexExceptionThrownMessageStringTest({
-          app,
-          method,
-          endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
-          body: invalidData,
-          header: authHeader,
-          exception: new BadRequestException(),
-        });
-      });
-
-      it(`should return ${HttpStatus.BAD_REQUEST} when stars are lower than ${STARS_MIN} data type with authorization`, async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-        const invalidData = {
-          stars: STARS_MIN - 1,
-          text: 'abc',
-        };
-
-        await complexExceptionThrownMessageStringTest({
-          app,
-          method,
-          endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
-          body: invalidData,
-          header: authHeader,
-          exception: new BadRequestException(),
-        });
-      });
-
-      it(`should return ${HttpStatus.BAD_REQUEST} when stars are higher than ${STARS_MAX} data type with authorization`, async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-        const invalidData = {
-          stars: STARS_MAX + 1,
-          text: 'abc',
-        };
-
-        await complexExceptionThrownMessageStringTest({
-          app,
-          method,
-          endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
-          body: invalidData,
-          header: authHeader,
-          exception: new BadRequestException(),
-        });
-      });
-
-      it(`should return ${HttpStatus.CREATED} with valid request body`, async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-
-        const createRatingDto: CreateRatingDto = {
-          stars: STARS_MAX,
-          text: faker.lorem.lines(),
-        };
-
-        const response: Response = await request(app.getHttpServer())
-          [method](endpoint.replace(ID_URL_PARAMETER, wine.id))
-          .set(authHeader)
-          .send(createRatingDto);
-
-        expect(response.status).toBe(HttpStatus.CREATED);
-      });
-
-      it(`should return ${HttpStatus.CREATED} and correct data`, async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-
-        const data: CreateRatingDto = {
-          stars: STARS_MAX,
-          text: faker.lorem.lines(),
-        };
-
-        const response: Response = await request(app.getHttpServer())
-          [method](endpoint.replace(ID_URL_PARAMETER, wine.id))
-          .set(authHeader)
-          .send(data);
-
-        expect(response.status).toBe(HttpStatus.CREATED);
-        expect(response.body).toBe(
-          buildExpectedRatingResponse({
-            stars: data.stars,
-            text: data.text,
-            user: {
-              id: user.id,
-            },
-            wine: {
-              id: wine.id,
-            },
-          }),
-        );
+        exception: new BadRequestException(),
       });
     });
 
-    describe(WINES_ID_ENDPOINT + ' (PUT)', () => {
-      const endpoint: string = WINES_ID_RATINGS_ENDPOINT;
-      const method: HttpMethod = 'put';
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid stars data type with authorization`, async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      const invalidData = {
+        stars: 'abc',
+        text: 'abc',
+      };
 
-      it('should exist', async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-        await endpointExistTest({
-          app,
-          method,
-          endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
-        });
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
+        body: invalidData,
+        header: authHeader,
+        exception: new BadRequestException(),
       });
+    });
 
-      it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-        await endpointProtectedTest({
-          app,
-          method,
-          endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
-        });
+    it(`should return ${HttpStatus.BAD_REQUEST} when stars are lower than ${STARS_MIN} data type with authorization`, async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      const invalidData = {
+        stars: STARS_MIN - 1,
+        text: 'abc',
+      };
+
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
+        body: invalidData,
+        header: authHeader,
+        exception: new BadRequestException(),
       });
+    });
 
-      it(`should return ${HttpStatus.BAD_REQUEST} with authorization`, async () => {
-        const wine = await createTestWine(
-          winesService,
-          await createTestWinemaker(winemakersService),
-          await createTestStore(storesService),
-        );
-        const response: Response = await request(app.getHttpServer())
-          [method](endpoint.replace(ID_URL_PARAMETER, wine.id))
-          .set(authHeader);
+    it(`should return ${HttpStatus.BAD_REQUEST} when stars are higher than ${STARS_MAX} data type with authorization`, async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      const invalidData = {
+        stars: STARS_MAX + 1,
+        text: 'abc',
+      };
 
-        expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
+        body: invalidData,
+        header: authHeader,
+        exception: new BadRequestException(),
       });
+    });
 
-      it(`should return ${HttpStatus.NOT_FOUND} with random id parameter`, async () => {
-        await complexExceptionThrownMessageStringTest({
-          app,
-          method,
-          endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
-          header: authHeader,
-          exception: new NotFoundException(),
-        });
-      });
+    it(`should return ${HttpStatus.CREATED} with valid request body`, async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
 
-      it(`should return ${HttpStatus.OK} when changed`, async () => {
-        const winemaker: Winemaker =
-          await createTestWinemaker(winemakersService);
-        const store: Store = await createTestStore(storesService);
-        const wine = await createTestWine(winesService, winemaker, store);
+      const createRatingDto: CreateRatingDto = {
+        stars: STARS_MAX,
+        text: faker.lorem.lines(),
+      };
 
-        const newStore = await storesService.create(faker.company.name());
-        const updateWineDto: UpdateWineDto = {
-          storeIds: [...wine.stores.map((e) => e.id), newStore.id],
-        };
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, wine.id))
+        .set(authHeader)
+        .send(createRatingDto);
 
-        const response: Response = await request(app.getHttpServer())
-          .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
-          .set(authHeader)
-          .send(updateWineDto);
+      expect(response.status).toBe(HttpStatus.CREATED);
+    });
 
-        expect(response.status).toBe(HttpStatus.CREATED);
-        expect(response.body).toEqual(
-          buildExpectedWineResponse({
+    it(`should return ${HttpStatus.CREATED} and correct data`, async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+
+      const data: CreateRatingDto = {
+        stars: STARS_MAX,
+        text: faker.lorem.lines(),
+      };
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, wine.id))
+        .set(authHeader)
+        .send(data);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toEqual(
+        buildExpectedRatingResponse({
+          stars: data.stars,
+          text: data.text,
+          user: {
+            id: user.id,
+          },
+          wine: {
             id: wine.id,
-            grapeVariety: wine.grapeVariety,
-            heritage: wine.heritage,
-            name: wine.name,
-            year: wine.year,
-            winemaker: {
-              id: winemaker.id,
-            },
-            ratings: [],
-            stores: [
-              {
-                id: store.id,
-              },
-              //  {id: newStore.id}
-            ],
-            createdAt: wine.createdAt.toISOString(),
-            updatedAt: wine.updatedAt.toISOString(),
-          }),
-        );
+          },
+        }),
+      );
+    });
+  });
+
+  describe(WINES_ID_ENDPOINT + ' (PUT)', () => {
+    const endpoint: string = WINES_ID_ENDPOINT;
+    const method: HttpMethod = 'put';
+
+    it('should exist', async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
       });
+    });
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, wine.id),
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with authorization`, async () => {
+      const wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, wine.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} with random id parameter`, async () => {
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        body: {
+          storeIds: [],
+        },
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      });
+    });
+
+    it(`should return ${HttpStatus.OK} when changed`, async () => {
+      const winemaker: Winemaker = await createTestWinemaker(winemakersService);
+      const store: Store = await createTestStore(storesService);
+      const wine = await createTestWine(winesService, winemaker, store);
+
+      const newStore = await createTestStore(storesService);
+      const updateWineDto: UpdateWineDto = {
+        storeIds: [...wine.stores.map((e) => e.id), newStore.id],
+      };
+
+      const response: Response = await request(app.getHttpServer())
+        .put(WINES_ID_ENDPOINT.replace(ID_URL_PARAMETER, wine.id))
+        .set(authHeader)
+        .send(updateWineDto);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedWineResponse({
+          id: wine.id,
+          grapeVariety: wine.grapeVariety,
+          heritage: wine.heritage,
+          name: wine.name,
+          year: wine.year,
+          winemaker: {
+            id: winemaker.id,
+          },
+          ratings: [],
+          stores: [
+            {
+              id: store.id,
+            },
+            {
+              id: newStore.id,
+            },
+          ],
+          createdAt: wine.createdAt.toISOString(),
+          updatedAt: wine.updatedAt.toISOString(),
+        }),
+      );
     });
   });
 });

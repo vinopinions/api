@@ -249,7 +249,17 @@ describe('UsersController (e2e)', () => {
       });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data and with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} with no data`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, async () => {
       await complexExceptionThrownMessageArrayTest({
         app,
         method,

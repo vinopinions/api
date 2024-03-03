@@ -136,7 +136,7 @@ describe('WinesController (e2e)', () => {
       expect(response.body).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} and wine with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and wine`, async () => {
       const winemaker: Winemaker = await createTestWinemaker(winemakersService);
       const store: Store = await createTestStore(storesService);
       const wine: Wine = await createTestWine(winesService, winemaker, store);
@@ -257,7 +257,7 @@ describe('WinesController (e2e)', () => {
       );
     });
 
-    it(`should return ${HttpStatus.NOT_FOUND} with random id parameter with authorization`, async () => {
+    it(`should return ${HttpStatus.NOT_FOUND} with random id parameter`, async () => {
       await complexExceptionThrownMessageStringTest({
         app,
         method,
@@ -306,7 +306,7 @@ describe('WinesController (e2e)', () => {
       });
     });
 
-    it(`should return ${HttpStatus.CREATED} with authorization`, async () => {
+    it(`should return ${HttpStatus.CREATED}`, async () => {
       const store: Store = await createTestStore(storesService);
       const winemaker = await createTestWinemaker(winemakersService);
 
@@ -436,7 +436,7 @@ describe('WinesController (e2e)', () => {
       });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with invalid stars data type with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid stars data type`, async () => {
       const wine = await createTestWine(
         winesService,
         await createTestWinemaker(winemakersService),
@@ -457,7 +457,7 @@ describe('WinesController (e2e)', () => {
       });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} when stars are lower than ${STARS_MIN} data type with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} when stars are lower than ${STARS_MIN} data type`, async () => {
       const wine = await createTestWine(
         winesService,
         await createTestWinemaker(winemakersService),

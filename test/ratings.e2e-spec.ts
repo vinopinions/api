@@ -9,19 +9,22 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
-import { Rating, STARS_MIN } from '../src/ratings/entities/rating.entity';
+import { Rating } from '../src/ratings/entities/rating.entity';
 import {
   RATINGS_ENDPOINT,
   RATINGS_ID_ENDPOINT,
 } from '../src/ratings/ratings.controller';
 import { RatingsService } from '../src/ratings/ratings.service';
-import { Store } from '../src/stores/entities/store.entity';
 import { StoresService } from '../src/stores/stores.service';
 import { User } from '../src/users/entities/user.entity';
-import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
-import { Wine } from '../src/wines/entities/wine.entity';
 import { WinesService } from '../src/wines/wines.service';
+import {
+  createTestRating,
+  createTestStore,
+  createTestWine,
+  createTestWinemaker,
+} from './common/creator.common';
 import {
   HttpMethod,
   complexExceptionThrownMessageStringTest,
@@ -93,7 +96,15 @@ describe('RatingsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} and rating object`, async () => {
-      const rating: Rating = await createTestRating();
+      const rating: Rating = await createTestRating(
+        ratingsService,
+        user,
+        await createTestWine(
+          winesService,
+          await createTestWinemaker(winemakersService),
+          await createTestStore(storesService),
+        ),
+      );
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
@@ -139,7 +150,15 @@ describe('RatingsController (e2e)', () => {
       }));
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      const rating: Rating = await createTestRating();
+      const rating: Rating = await createTestRating(
+        ratingsService,
+        user,
+        await createTestWine(
+          winesService,
+          await createTestWinemaker(winemakersService),
+          await createTestStore(storesService),
+        ),
+      );
       const response: Response = await request(app.getHttpServer())
         .delete(endpoint.replace(ID_URL_PARAMETER, rating.id))
         .set(authHeader);
@@ -170,7 +189,15 @@ describe('RatingsController (e2e)', () => {
       }));
 
     it(`should return ${HttpStatus.OK} and rating object`, async () => {
-      const rating: Rating = await createTestRating();
+      const rating: Rating = await createTestRating(
+        ratingsService,
+        user,
+        await createTestWine(
+          winesService,
+          await createTestWinemaker(winemakersService),
+          await createTestStore(storesService),
+        ),
+      );
 
       const response: Response = await request(app.getHttpServer())
         [method](endpoint.replace(ID_URL_PARAMETER, rating.id))
@@ -215,7 +242,16 @@ describe('RatingsController (e2e)', () => {
       }));
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      const rating: Rating = await createTestRating();
+      const rating: Rating = await createTestRating(
+        ratingsService,
+        user,
+        await createTestWine(
+          winesService,
+          await createTestWinemaker(winemakersService),
+          await createTestStore(storesService),
+        ),
+      );
+
       const response: Response = await request(app.getHttpServer())
         .delete(endpoint.replace(ID_URL_PARAMETER, rating.id))
         .set(authHeader);
@@ -242,7 +278,15 @@ describe('RatingsController (e2e)', () => {
       }));
 
     it(`should return ${HttpStatus.OK} when deleting a rating and should not exist anymore in the database after deletion`, async () => {
-      const rating: Rating = await createTestRating();
+      const rating: Rating = await createTestRating(
+        ratingsService,
+        user,
+        await createTestWine(
+          winesService,
+          await createTestWinemaker(winemakersService),
+          await createTestStore(storesService),
+        ),
+      );
 
       const response: Response = await request(app.getHttpServer())
         [method](endpoint.replace(ID_URL_PARAMETER, rating.id))
@@ -254,26 +298,4 @@ describe('RatingsController (e2e)', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
-
-  const createTestRating = async (): Promise<Rating> => {
-    const winemaker: Winemaker = await winemakersService.create(
-      faker.person.fullName(),
-    );
-    const store: Store = await storesService.create(faker.company.name());
-    const wine: Wine = await winesService.create(
-      faker.word.noun(),
-      faker.date.past().getFullYear(),
-      winemaker.id,
-      [store.id],
-      faker.word.noun(),
-      faker.location.country(),
-    );
-
-    return ratingsService.create(
-      faker.number.int({ min: STARS_MIN, max: STARS_MIN }),
-      faker.lorem.text(),
-      user,
-      wine,
-    );
-  };
 });

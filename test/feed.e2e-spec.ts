@@ -88,7 +88,7 @@ describe('FeedController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and empty page response with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
@@ -115,7 +115,7 @@ describe('FeedController (e2e)', () => {
       { friendAmount: 3, ratingsPerFriend: 5, take: 10 },
       { friendAmount: 3, ratingsPerFriend: 5, take: 20 },
     ])(
-      `should return ${HttpStatus.OK} with $friendAmount friends, $ratingsPerFriend and $take take page response with authorization`,
+      `should return ${HttpStatus.OK} with $friendAmount friends, $ratingsPerFriend and $take take page response`,
       async ({ friendAmount, ratingsPerFriend, take }) => {
         // create wines
         const wines: Wine[] = [];

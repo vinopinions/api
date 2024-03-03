@@ -114,7 +114,7 @@ describe('UsersController (e2e)', () => {
       expect(response.body).toHaveLength(1);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
       // create 9 users since one is already created while login
       for (let i = 0; i < 9; i++) {
         const userData: SignUpDto = {
@@ -133,7 +133,7 @@ describe('UsersController (e2e)', () => {
       expect(response.body).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} and a user with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and a user`, async () => {
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
@@ -264,7 +264,7 @@ describe('UsersController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and user including friends and ratings with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and user including friends and ratings`, async () => {
       const ratings: Rating[] = [];
       for (let i = 0; i < 3; i++) {
         ratings.push(await createRating());
@@ -315,7 +315,7 @@ describe('UsersController (e2e)', () => {
       );
     });
 
-    it(`should return ${HttpStatus.NOT_FOUND} with random username as parameter with authorization`, async () => {
+    it(`should return ${HttpStatus.NOT_FOUND} with random username as parameter`, async () => {
       await complexExceptionThrownMessageStringTest({
         app,
         method,

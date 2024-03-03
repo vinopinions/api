@@ -90,7 +90,7 @@ describe('WinemakersController (e2e)', () => {
       expect(response.body).toHaveLength(0);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
         const name = faker.person.fullName();
         await winemakersService.create(name);
@@ -162,7 +162,7 @@ describe('WinemakersController (e2e)', () => {
         header: authHeader,
       }));
 
-    it(`should return ${HttpStatus.OK} and a valid winemaker including wines relation if id parameter is valid with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and a valid winemaker including wines relation if id parameter is valid`, async () => {
       let winemaker: Winemaker = await winemakersService.create(
         faker.person.fullName(),
       );
@@ -230,7 +230,7 @@ describe('WinemakersController (e2e)', () => {
       });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data and with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data and`, async () => {
       const invalidData = {
         name: 123,
       };

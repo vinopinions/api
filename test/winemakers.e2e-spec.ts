@@ -7,6 +7,10 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
+import {
+  PAGE_DEFAULT_VALUE,
+  TAKE_DEFAULT_VALUE,
+} from '../src/pagination/pagination-options.dto';
 import { Store } from '../src/stores/entities/store.entity';
 import { StoresService } from '../src/stores/stores.service';
 import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
@@ -18,6 +22,7 @@ import {
   WINEMAKERS_ENDPOINT,
   WINEMAKERS_ID_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
+import { createTestWinemaker } from './common/creator.common';
 import {
   HttpMethod,
   complexExceptionThrownMessageArrayTest,
@@ -25,7 +30,11 @@ import {
   endpointProtectedTest,
   invalidUUIDTest,
 } from './common/tests.common';
-import { buildExpectedWinemakerResponse } from './utils/expect-builder';
+import {
+  ExpectedWinemakerResponse,
+  buildExpectedPageResponse,
+  buildExpectedWinemakerResponse,
+} from './utils/expect-builder';
 import { clearDatabase, login } from './utils/utils';
 
 describe('WinemakersController (e2e)', () => {
@@ -80,20 +89,32 @@ describe('WinemakersController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 0`, async () => {
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(0);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWinemakerResponse>({
+          data: [],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 0,
+            pageCount: 0,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWinemakerResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(0);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
+    it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
-        const name = faker.person.fullName();
-        await winemakersService.create(name);
+        await createTestWinemaker(winemakersService);
       }
 
       const response: Response = await request(app.getHttpServer())
@@ -101,21 +122,37 @@ describe('WinemakersController (e2e)', () => {
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(10);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWinemakerResponse>({
+          data: [
+            {
+              wines: [],
+            },
+          ],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 10,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWinemakerResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} and a winemaker`, async () => {
-      const winemaker = await winemakersService.create(faker.person.fullName());
+    it(`should return ${HttpStatus.OK} a valid winemaker`, async () => {
+      const winemaker: Winemaker = await createTestWinemaker(winemakersService);
 
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0]).toEqual(
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toEqual(
         buildExpectedWinemakerResponse({
           id: winemaker.id,
           name: winemaker.name,

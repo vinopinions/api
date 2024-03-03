@@ -8,7 +8,12 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
+import {
+  PAGE_DEFAULT_VALUE,
+  TAKE_DEFAULT_VALUE,
+} from '../src/pagination/pagination-options.dto';
 import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
+import { Store } from '../src/stores/entities/store.entity';
 import {
   STORES_ENDPOINT,
   STORES_ID_ENDPOINT,
@@ -17,6 +22,7 @@ import { StoresService } from '../src/stores/stores.service';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
+import { createTestStore } from './common/creator.common';
 import {
   HttpMethod,
   complexExceptionThrownMessageArrayTest,
@@ -25,7 +31,11 @@ import {
   endpointProtectedTest,
   invalidUUIDTest,
 } from './common/tests.common';
-import { buildExpectedStoreResponse } from './utils/expect-builder';
+import {
+  ExpectedStoreResponse,
+  buildExpectedPageResponse,
+  buildExpectedStoreResponse,
+} from './utils/expect-builder';
 import { clearDatabase, login } from './utils/utils';
 
 describe('UsersController (e2e)', () => {
@@ -80,23 +90,32 @@ describe('UsersController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 0`, async () => {
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(0);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedStoreResponse>({
+          data: [],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 0,
+            pageCount: 0,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedStoreResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(0);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
+    it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
-        await storesService.create(
-          faker.company.name(),
-          faker.location.streetAddress(),
-          faker.internet.url(),
-        );
+        await createTestStore(storesService);
       }
 
       const response: Response = await request(app.getHttpServer())
@@ -104,25 +123,33 @@ describe('UsersController (e2e)', () => {
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(10);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedStoreResponse>({
+          data: [{ wines: [] }],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 10,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedStoreResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} and a store`, async () => {
-      const store = await storesService.create(
-        faker.company.name(),
-        faker.location.streetAddress(),
-        faker.internet.url(),
-      );
+    it(`should return ${HttpStatus.OK} a valid store`, async () => {
+      const store: Store = await createTestStore(storesService);
 
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0]).toEqual(
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toEqual(
         buildExpectedStoreResponse({
           id: store.id,
           name: store.name,

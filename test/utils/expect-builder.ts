@@ -103,10 +103,14 @@ export const buildExpectedUserResponse = ({
     createdAt: createdAt ?? expect.any(String),
     updatedAt: updatedAt ?? expect.any(String),
     ratings: ratings
-      ? ratings.map(buildExpectedRatingResponse)
-      : expect.objectContaining<ExpectedRatingResponse>(
-          buildExpectedRatingResponse(),
-        ),
+      ? expect.arrayContaining<ExpectedRatingResponse>(
+          ratings.map(buildExpectedRatingResponse),
+        )
+      : expect.arrayContaining<ExpectedRatingResponse>([
+          expect.objectContaining<ExpectedRatingResponse>(
+            buildExpectedRatingResponse(),
+          ),
+        ]),
     friends: friends
       ? expect.arrayContaining<ExpectedUserResponseNoRelation>(
           friends.map(buildExpectedUserResponseNoRelation),
@@ -329,14 +333,18 @@ export const buildExpectedWineResponse = ({
       ? expect.arrayContaining<ExpectedStoreResponseNoRelation>(
           stores.map((store) => buildExpectedStoreResponseNoRelation(store)),
         )
-      : expect.objectContaining<ExpectedStoreResponseNoRelation>(
-          buildExpectedStoreResponseNoRelation(),
-        ),
+      : expect.arrayContaining<ExpectedStoreResponseNoRelation>([
+          expect.objectContaining<ExpectedStoreResponseNoRelation>(
+            buildExpectedStoreResponseNoRelation(),
+          ),
+        ]),
     ratings: ratings
       ? expect.arrayContaining<ExpectedRatingResponse>(
           ratings.map((rating) => buildExpectedRatingResponse(rating)),
         )
-      : expect.objectContaining(buildExpectedRatingResponse()),
+      : expect.arrayContaining<ExpectedRatingResponse>([
+          expect.objectContaining(buildExpectedRatingResponse()),
+        ]),
     createdAt: createdAt ?? expect.any(String),
     updatedAt: updatedAt ?? expect.any(String),
   };

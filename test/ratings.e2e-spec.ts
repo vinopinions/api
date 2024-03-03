@@ -9,6 +9,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
+import {
+  PAGE_DEFAULT_VALUE,
+  TAKE_DEFAULT_VALUE,
+} from '../src/pagination/pagination-options.dto';
 import { Rating } from '../src/ratings/entities/rating.entity';
 import {
   RATINGS_ENDPOINT,
@@ -32,7 +36,11 @@ import {
   endpointProtectedTest,
   invalidUUIDTest,
 } from './common/tests.common';
-import { buildExpectedRatingResponse } from './utils/expect-builder';
+import {
+  ExpectedRatingResponse,
+  buildExpectedPageResponse,
+  buildExpectedRatingResponse,
+} from './utils/expect-builder';
 import { clearDatabase, login } from './utils/utils';
 
 describe('RatingsController (e2e)', () => {
@@ -95,7 +103,64 @@ describe('RatingsController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and rating object`, async () => {
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedRatingResponse>({
+          data: [],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 0,
+            pageCount: 0,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedRatingResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
+      for (let i = 0; i < 10; i++) {
+        await createTestRating(
+          ratingsService,
+          user,
+          await createTestWine(
+            winesService,
+            await createTestWinemaker(winemakersService),
+            await createTestStore(storesService),
+          ),
+        );
+      }
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedRatingResponse>({
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 10,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedRatingResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(10);
+    });
+
+    it(`should return ${HttpStatus.OK} a valid rating`, async () => {
       const rating: Rating = await createTestRating(
         ratingsService,
         user,
@@ -105,24 +170,23 @@ describe('RatingsController (e2e)', () => {
           await createTestStore(storesService),
         ),
       );
+
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0]).toEqual(
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toEqual(
         buildExpectedRatingResponse({
           id: rating.id,
           stars: rating.stars,
           text: rating.text,
           createdAt: rating.createdAt.toISOString(),
           updatedAt: rating.updatedAt.toISOString(),
-          // TODO: Add wine
-          // wine: {
-          //   id: rating.wine.id
-          // },
+          wine: {
+            id: rating.wine.id,
+          },
           user: {
             id: rating.user.id,
           },
@@ -211,10 +275,9 @@ describe('RatingsController (e2e)', () => {
           text: rating.text,
           createdAt: rating.createdAt.toISOString(),
           updatedAt: rating.updatedAt.toISOString(),
-          // TODO: Add wine
-          // wine: {
-          //   id: rating.wine.id
-          // },
+          wine: {
+            id: rating.wine.id,
+          },
           user: {
             id: rating.user.id,
           },

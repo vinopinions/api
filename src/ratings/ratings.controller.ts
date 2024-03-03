@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,6 +20,9 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
+import { PageDto } from '../pagination/page.dto';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from './entities/rating.entity';
 import { RatingsService } from './ratings.service';
 
@@ -58,13 +62,14 @@ export class RatingsController {
   @ApiOperation({ summary: 'get all ratings' })
   @HttpCode(HttpStatus.OK)
   @Get()
-  @ApiOkResponse({
+  @ApiPaginationResponse(Rating, {
     description: 'Ratings have been found',
-    type: Rating,
-    isArray: true,
+    status: HttpStatus.OK,
   })
-  findAll(): Promise<Rating[]> {
-    return this.ratingsService.findMany();
+  findAll(
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Rating>> {
+    return this.ratingsService.findAllPaginated(paginationOptionsDto);
   }
 
   @ApiOperation({ summary: 'delete a rating' })

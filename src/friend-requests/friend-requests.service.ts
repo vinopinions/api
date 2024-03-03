@@ -6,8 +6,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { buildPageDto } from '../pagination/pagination.utils';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { PageDto } from './../pagination/page.dto';
 import {
   FriendRequest,
   FriendRequestRelations,
@@ -44,6 +47,10 @@ export class FriendRequestsService {
       ),
       ...options,
     });
+  }
+
+  async count(options: FindManyOptions<FriendRequest>): Promise<number> {
+    return await this.friendRequestRepository.count(options);
   }
 
   /**
@@ -179,23 +186,35 @@ export class FriendRequestsService {
     return friendRequest;
   }
 
-  async getReceived(user: User): Promise<FriendRequest[]> {
-    return await this.findMany({
-      where: {
+  async getReceived(
+    user: User,
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<FriendRequest>> {
+    return await buildPageDto(
+      this,
+      paginationOptionsDto,
+      {
         receiver: {
           id: user.id,
         },
       },
-    });
+      'createdAt',
+    );
   }
 
-  async getSent(user: User): Promise<FriendRequest[]> {
-    return this.findMany({
-      where: {
+  async getSent(
+    user: User,
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<FriendRequest>> {
+    return await buildPageDto(
+      this,
+      paginationOptionsDto,
+      {
         sender: {
           id: user.id,
         },
       },
-    });
+      'createdAt',
+    );
   }
 }

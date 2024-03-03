@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import {
@@ -26,6 +27,9 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
+import { PageDto } from '../pagination/page.dto';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { SendFriendRequestDto } from './dtos/send-friend-request.dto';
@@ -61,26 +65,34 @@ export class FriendRequestsController {
 
   @ApiOperation({ summary: 'get all friend requests sent to you' })
   @Get(FRIEND_REQUESTS_INCOMING_ENDPOINT_NAME)
-  @ApiOkResponse({
+  @ApiPaginationResponse(FriendRequest, {
     description: 'Incoming friend requests have been found',
-    type: FriendRequest,
-    isArray: true,
+    status: HttpStatus.OK,
   })
   async getIncoming(
     @Req() request: AuthenticatedRequest,
-  ): Promise<FriendRequest[]> {
-    return await this.friendRequestsService.getReceived(request.user);
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<FriendRequest>> {
+    return await this.friendRequestsService.getReceived(
+      request.user,
+      paginationOptionsDto,
+    );
   }
 
   @ApiOperation({ summary: 'get all friend requests sent by you' })
   @Get(FRIEND_REQUESTS_OUTGOING_ENDPOINT_NAME)
-  @ApiOkResponse({
+  @ApiPaginationResponse(FriendRequest, {
     description: 'Outgoing friend requests have been found',
-    type: FriendRequest,
-    isArray: true,
+    status: HttpStatus.OK,
   })
-  async getOutgoing(@Req() request: AuthenticatedRequest) {
-    return await this.friendRequestsService.getSent(request.user);
+  async getOutgoing(
+    @Req() request: AuthenticatedRequest,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<FriendRequest>> {
+    return await this.friendRequestsService.getSent(
+      request.user,
+      paginationOptionsDto,
+    );
   }
 
   @ApiOperation({ summary: 'send a friend request' })

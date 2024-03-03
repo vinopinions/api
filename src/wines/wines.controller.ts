@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import {
@@ -25,8 +26,11 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
 import { RatingsService } from '../ratings/ratings.service';
+import { PageDto } from './../pagination/page.dto';
 import { Rating } from './../ratings/entities/rating.entity';
 import { CreateWineDto } from './dtos/create-wine.dto';
 import { UpdateWineDto } from './dtos/update-wine.dto';
@@ -69,13 +73,14 @@ export class WinesController {
 
   @ApiOperation({ summary: 'get all wines' })
   @Get()
-  @ApiOkResponse({
-    description: 'Wines have been found',
-    type: Wine,
-    isArray: true,
+  @ApiPaginationResponse(Wine, {
+    description: 'Incoming friend requests have been found',
+    status: HttpStatus.OK,
   })
-  findAll(): Promise<Wine[]> {
-    return this.winesService.findMany();
+  findAll(
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Wine>> {
+    return this.winesService.findAllPaginated(paginationOptionsDto);
   }
 
   @ApiOperation({ summary: 'create a wine' })

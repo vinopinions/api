@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -22,6 +23,9 @@ import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
+import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { PageDto } from './../pagination/page.dto';
 import { CreateStoreDto } from './dtos/create-store.dto';
 import { Store } from './entities/store.entity';
 import { StoresService } from './stores.service';
@@ -58,13 +62,14 @@ export class StoresController {
   @ApiOperation({ summary: 'get all stores' })
   @HttpCode(HttpStatus.OK)
   @Get()
-  @ApiOkResponse({
-    description: 'Stores have been found',
-    type: Store,
-    isArray: true,
+  @ApiPaginationResponse(Store, {
+    description: 'Incoming friend requests have been found',
+    status: HttpStatus.OK,
   })
-  findAll(): Promise<Store[]> {
-    return this.storesService.findMany();
+  findAll(
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Store>> {
+    return this.storesService.findAllPaginated(paginationOptionsDto);
   }
 
   @ApiOperation({ summary: 'create a store' })

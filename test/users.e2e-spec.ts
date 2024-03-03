@@ -8,11 +8,14 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { AuthService } from '../src/auth/auth.service';
-import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import {
   FRIEND_USERNAME_URL_PARAMETER,
   USERNAME_URL_PARAMETER,
 } from '../src/constants/url-parameter';
+import {
+  PAGE_DEFAULT_VALUE,
+  TAKE_DEFAULT_VALUE,
+} from '../src/pagination/pagination-options.dto';
 import {
   Rating,
   STARS_MAX,
@@ -31,13 +34,18 @@ import { UsersService } from '../src/users/users.service';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
+import { createTestUser } from './common/creator.common';
 import {
   HttpMethod,
   complexExceptionThrownMessageStringTest,
   endpointExistTest,
   endpointProtectedTest,
 } from './common/tests.common';
-import { buildExpectedUserResponse } from './utils/expect-builder';
+import {
+  ExpectedUserResponse,
+  buildExpectedPageResponse,
+  buildExpectedUserResponse,
+} from './utils/expect-builder';
 import {
   clearDatabase,
   generateRandomValidUsername,
@@ -104,24 +112,33 @@ describe('UsersController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 1`, async () => {
+    it(`should return ${HttpStatus.OK} and non empty page response`, async () => {
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(1);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedUserResponse>({
+          data: [],
+          meta: {
+            page: 1,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 1,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedUserResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(1);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
-      // create 9 users since one is already created while login
+    it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
+      // only create 9 because one user already exists
       for (let i = 0; i < 9; i++) {
-        const userData: SignUpDto = {
-          username: generateRandomValidUsername(),
-          password: faker.internet.password(),
-        };
-        await authService.signUp(userData.username, userData.password);
+        await createTestUser(authService);
       }
 
       const response: Response = await request(app.getHttpServer())
@@ -129,19 +146,36 @@ describe('UsersController (e2e)', () => {
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(10);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedUserResponse>({
+          data: [
+            {
+              friends: [],
+              ratings: [],
+            },
+          ],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 10,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedUserResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} and a user`, async () => {
+    it(`should return ${HttpStatus.OK} a valid user`, async () => {
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toBeInstanceOf(Array);
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0]).toEqual(
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toEqual(
         buildExpectedUserResponse({
           id: user.id,
           username: user.username,

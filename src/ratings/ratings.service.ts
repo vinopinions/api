@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { PageDto } from '../pagination/page.dto';
+import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { buildPageDto } from '../pagination/pagination.utils';
 import { User } from '../users/entities/user.entity';
 import { Wine } from '../wines/entities/wine.entity';
 import { Rating, RatingRelations } from './entities/rating.entity';
@@ -35,6 +38,12 @@ export class RatingsService {
       relations: Object.fromEntries(RatingRelations.map((key) => [key, true])),
       ...options,
     });
+  }
+
+  async findAllPaginated(
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Rating>> {
+    return await buildPageDto(this, paginationOptionsDto, {}, 'createdAt');
   }
 
   async findOne(options: FindOneOptions<Rating>): Promise<Rating> {

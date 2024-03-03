@@ -38,7 +38,7 @@ export class AuthService {
     // Weird setup but since findOneByUsername throws an exception when no user is found it makes sense
     try {
       if (await this.usersService.findOne({ where: { username } }))
-        throw new ConflictException();
+        throw new ConflictException('This username is already taken');
     } catch (NotFoundException) {
       const hash: string = await bcrypt.hash(password, 12);
 

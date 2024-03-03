@@ -48,14 +48,14 @@ export class Rating {
     description: 'The rated Wine',
     type: WineWithoutRelations,
   })
-  @ManyToOne(() => Wine, (wine) => wine.ratings)
+  @ManyToOne(() => Wine, (wine) => wine.ratings, { eager: true })
   wine: Wine;
 
   @ApiProperty({
     description: 'The User that submitted the rating',
     type: () => UserWithoutRelations,
   })
-  @ManyToOne(() => User, (user: User) => user.ratings)
+  @ManyToOne(() => User, (user: User) => user.ratings, { eager: true })
   user: User;
 
   @ApiProperty({

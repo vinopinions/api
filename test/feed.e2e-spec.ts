@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
+import request, { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { FEED_ENDPOINT } from '../src/feed/feed.controller';
 import {
@@ -19,12 +19,20 @@ import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { Wine } from '../src/wines/entities/wine.entity';
 import { WinesService } from '../src/wines/wines.service';
 import {
+  HttpMethod,
+  endpointExistTest,
+  endpointProtectedTest,
+} from './common/tests.common';
+import {
+  ExpectedRatingResponse,
+  buildExpectedPageResponse,
+  buildExpectedRatingResponse,
+} from './utils/expect-builder';
+import {
   clearDatabase,
   generateRandomValidUsername,
-  isErrorResponse,
-  logResponse,
   login,
-} from './utils';
+} from './utils/utils';
 
 describe('FeedController (e2e)', () => {
   let app: INestApplication;
@@ -59,43 +67,47 @@ describe('FeedController (e2e)', () => {
   });
 
   describe(FEED_ENDPOINT + ' (GET)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .get(FEED_ENDPOINT)
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = FEED_ENDPOINT;
+    const method: HttpMethod = 'get';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FEED_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({ app, method, endpoint: endpoint }));
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FEED_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK);
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and empty page response with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(FEED_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(logResponse)
-        .expect((res) => {
-          expect(Array.isArray(res.body.data)).toBe(true);
-          expect((res.body.data as Array<any>).length).toBe(0);
-          expect(res.body.meta).toBeDefined();
-          expect(res.body.meta.page).toEqual(PAGE_DEFAULT_VALUE);
-          expect(res.body.meta.take).toEqual(TAKE_DEFAULT_VALUE);
-          expect(res.body.meta.itemCount).toEqual(0);
-          expect(res.body.meta.pageCount).toEqual(0);
-          expect(res.body.meta.hasPreviousPage).toEqual(false);
-          expect(res.body.meta.hasNextPage).toEqual(false);
-        });
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedRatingResponse>({
+          data: [],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 0,
+            pageCount: 0,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedRatingResponse,
+        }),
+      );
     });
 
     it.each([
@@ -103,7 +115,7 @@ describe('FeedController (e2e)', () => {
       { friendAmount: 3, ratingsPerFriend: 5, take: 10 },
       { friendAmount: 3, ratingsPerFriend: 5, take: 20 },
     ])(
-      `should return ${HttpStatus.OK}a with $friendAmount friends, $ratingsPerFriend and $take take page response with authorization`,
+      `should return ${HttpStatus.OK} with $friendAmount friends, $ratingsPerFriend and $take take page response`,
       async ({ friendAmount, ratingsPerFriend, take }) => {
         // create wines
         const wines: Wine[] = [];
@@ -145,21 +157,23 @@ describe('FeedController (e2e)', () => {
           }
         }
 
-        return request(app.getHttpServer())
-          .get(FEED_ENDPOINT + '?take=' + take)
-          .set(authHeader)
-          .expect(HttpStatus.OK)
-          .expect((res) => {
-            expect(Array.isArray(res.body.data)).toEqual(true);
-            expect((res.body.data as Array<any>).length).toEqual(
-              Math.min(friendAmount * ratingsPerFriend, take),
-            );
-            expect(res.body.meta).toBeDefined();
-            expect(res.body.meta.take).toEqual(take);
-            expect(res.body.meta.itemCount).toEqual(
-              friendAmount * ratingsPerFriend,
-            );
-          });
+        const response: Response = await request(app.getHttpServer())
+          [method](endpoint + '?take=' + take)
+          .set(authHeader);
+
+        expect(response.status).toBe(HttpStatus.OK);
+        expect(response.body).toEqual(
+          buildExpectedPageResponse<ExpectedRatingResponse>({
+            meta: {
+              take,
+              itemCount: friendAmount * ratingsPerFriend,
+            },
+            buildExpectedResponse: buildExpectedRatingResponse,
+          }),
+        );
+        expect(response.body.data).toHaveLength(
+          Math.min(friendAmount * ratingsPerFriend, take),
+        );
       },
     );
   });

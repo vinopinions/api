@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { INestApplication, Injectable } from '@nestjs/common';
-import { clearDatabase, generateRandomValidUsername } from '../../test/utils';
+import {
+  clearDatabase,
+  generateRandomValidUsername,
+} from '../../test/utils/utils';
 import { AuthService } from '../auth/auth.service';
 import { STARS_MAX, STARS_MIN } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';

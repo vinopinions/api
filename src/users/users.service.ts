@@ -23,7 +23,7 @@ export class UsersService {
     });
 
     if (existingUser !== null)
-      throw new ConflictException('username already exists');
+      throw new ConflictException('This username is already taken');
 
     const user: User = this.userRepository.create({ username, passwordHash });
     const dbUser: User = await this.userRepository.save(user);

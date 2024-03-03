@@ -1,16 +1,17 @@
 import {
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Query,
   Req,
-  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -103,7 +104,7 @@ export class UsersController {
   @ApiOkResponse({
     description: 'Friend has been deleted',
   })
-  @ApiUnauthorizedResponse({
+  @ApiForbiddenResponse({
     description: 'You can not delete another users friendship',
   })
   @ApiNotFoundResponse({
@@ -121,9 +122,7 @@ export class UsersController {
     });
 
     if (removingUser.id !== request.user.id)
-      throw new UnauthorizedException(
-        'You can not delete another users friend',
-      );
+      throw new ForbiddenException('You can not delete another users friend');
 
     const toBeRemovedUser: User = await this.usersService.findOne({
       where: {

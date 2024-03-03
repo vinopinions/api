@@ -1,9 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
-import { Response } from 'supertest';
 import { EntityManager } from 'typeorm';
-import { AuthService } from '../src/auth/auth.service';
-import { User } from '../src/users/entities/user.entity';
+import { AuthService } from '../../src/auth/auth.service';
+import { User } from '../../src/users/entities/user.entity';
 
 export const clearDatabase = async (app: INestApplication): Promise<void> => {
   const entityManager = app.get(EntityManager);
@@ -44,40 +43,6 @@ export const login = async (
     },
     user,
   };
-};
-
-export const isErrorResponse = (res: Response, messageContains?: string) => {
-  expect(res.body).toHaveProperty('message');
-  if (messageContains) {
-    if (Array.isArray(res.body!.message)) {
-      expect(
-        (res.body!.message as Array<string>).some((value) =>
-          value.includes(messageContains),
-        ),
-      ).toBe(true);
-    } else {
-      expect(res.body!.message).toContain(messageContains);
-    }
-  }
-  expect(res.body).toHaveProperty('statusCode');
-};
-
-export const isPaginationResponse = (res: Response) => {
-  expect(res.body).toHaveProperty('data');
-  expect(res.body).toHaveProperty('meta');
-  expect(res.body.meta).toHaveProperty('page');
-  expect(res.body.meta).toHaveProperty('take');
-  expect(res.body.meta).toHaveProperty('itemCount');
-  expect(res.body.meta).toHaveProperty('pageCount');
-  expect(res.body.meta).toHaveProperty('hasPreviousPage');
-  expect(res.body.meta).toHaveProperty('hasNextPage');
-};
-
-/**
- * .expect(logResponse)
- */
-export const logResponse = (res: Response) => {
-  console.log(JSON.stringify(res.body, null, 2));
 };
 
 export const generateRandomValidUsername = (): string => {

@@ -1,7 +1,13 @@
 import { faker } from '@faker-js/faker';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpStatus,
+  INestApplication,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
+import request, { Response } from 'supertest';
 import {
   AUTH_LOGIN_ENDPOINT,
   AUTH_SIGNUP_ENDPOINT,
@@ -11,10 +17,13 @@ import { SignInDto } from '../src/auth/dtos/sign-in.dto';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
 import {
-  clearDatabase,
-  generateRandomValidUsername,
-  isErrorResponse,
-} from './utils';
+  HttpMethod,
+  complexExceptionThrownMessageArrayTest,
+  complexExceptionThrownMessageStringTest,
+  endpointExistTest,
+} from './common/tests.common';
+import { buildExpectedUserResponse } from './utils/expect-builder';
+import { clearDatabase, generateRandomValidUsername } from './utils/utils';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -36,53 +45,76 @@ describe('AuthController (e2e)', () => {
   });
 
   describe(AUTH_SIGNUP_ENDPOINT + ' (POST)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
+    const endpoint: string = AUTH_SIGNUP_ENDPOINT;
+    const method: HttpMethod = 'post';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when no data was sent`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with no data`, () => {
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect(isErrorResponse);
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when invalid data was sent`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: 123,
+          password: false,
+        },
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, () => {
-      const invalidData = {
-        username: 123,
-        password: false,
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(invalidData)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect(isErrorResponse);
-    });
-
-    it(`should return ${HttpStatus.CREATED} with valid data`, () => {
+    it(`should return ${HttpStatus.CREATED} and user when valid data was sent`, async () => {
       const validData: SignUpDto = {
         username: generateRandomValidUsername(),
         password: faker.internet.password(),
       };
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.CREATED);
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send(validData);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toEqual(
+        buildExpectedUserResponse({
+          username: validData.username,
+          friends: [],
+          ratings: [],
+        }),
+      );
     });
 
     it.each(['us_er', 'u1s2.3e4r', 'username', 'user35'])(
       `should return ${HttpStatus.CREATED} with valid usernames`,
-      (username: string) => {
+      async (username: string) => {
         const validData: SignUpDto = {
           username,
           password: faker.internet.password(),
         };
-        return request(app.getHttpServer())
-          .post(AUTH_SIGNUP_ENDPOINT)
-          .send(validData)
-          .expect(HttpStatus.CREATED);
+        const response: Response = await request(app.getHttpServer())
+          [method](endpoint)
+          .send(validData);
+
+        expect(response.status).toBe(HttpStatus.CREATED);
+        expect(response.body).toEqual(
+          buildExpectedUserResponse({
+            username: validData.username,
+            friends: [],
+            ratings: [],
+          }),
+        );
       },
     );
 
@@ -98,60 +130,71 @@ describe('AuthController (e2e)', () => {
       '.user',
     ])(
       `should return ${HttpStatus.BAD_REQUEST} with invalid usernames`,
-      (username: string) => {
-        const validData: SignUpDto = {
-          username,
-          password: faker.internet.password(),
-        };
-        return request(app.getHttpServer())
-          .post(AUTH_SIGNUP_ENDPOINT)
-          .send(validData)
-          .expect(HttpStatus.BAD_REQUEST);
+
+      async (username: string) => {
+        await complexExceptionThrownMessageArrayTest({
+          app,
+          method,
+          endpoint,
+          body: {
+            username,
+            password: faker.internet.password(),
+          },
+          exception: new BadRequestException(),
+        });
       },
     );
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, () => {
-      const validData: SignUpDto = {
-        username: faker.string.alphanumeric(2),
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.BAD_REQUEST);
+    it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: faker.string.alphanumeric(2),
+          password: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, () => {
-      const validData: SignUpDto = {
-        username: faker.string.alphanumeric(21),
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.BAD_REQUEST);
+    it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: faker.string.alphanumeric(21),
+          password: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, () => {
-      const validData: SignUpDto = {
-        username: '$$$$$$',
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.BAD_REQUEST);
+    it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: '$$$$$$',
+          password: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, () => {
-      const validData: SignUpDto = {
-        username: faker.internet.userName().toUpperCase(),
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.BAD_REQUEST);
+    it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: generateRandomValidUsername().toUpperCase(),
+          password: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
     });
 
     it(`should return ${HttpStatus.CONFLICT} when using the same username twice`, async () => {
@@ -161,94 +204,117 @@ describe('AuthController (e2e)', () => {
       };
       await authService.signUp(validData.username, validData.password);
 
-      return request(app.getHttpServer())
-        .post(AUTH_SIGNUP_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.CONFLICT)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: validData.username,
+          password: faker.internet.password(),
+        },
+        exception: new ConflictException(),
+        message: 'This username is already taken',
+      });
     });
   });
 
   describe(AUTH_LOGIN_ENDPOINT + ' (POST)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
+    const endpoint: string = AUTH_LOGIN_ENDPOINT;
+    const method: HttpMethod = 'post';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with no data`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with no data`, () => {
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect(isErrorResponse);
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: 123,
+          password: false,
+        },
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, () => {
-      const invalidData = {
-        username: 123,
-        password: false,
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .send(invalidData)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect(isErrorResponse);
+    it(`should return ${HttpStatus.UNAUTHORIZED} with valid data but no signup before`, async () => {
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: generateRandomValidUsername(),
+          password: faker.internet.password(),
+        },
+        exception: new UnauthorizedException(),
+        message: 'Invalid credentials',
+      });
     });
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} with valid data but no signup before`, () => {
-      const validData: SignInDto = {
-        username: generateRandomValidUsername(),
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
+    it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: faker.string.alphanumeric(2),
+          password: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, () => {
-      const validData: SignInDto = {
-        username: faker.string.alphanumeric(2),
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.BAD_REQUEST);
+    it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: faker.string.alphanumeric(21),
+          password: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, () => {
-      const validData: SignInDto = {
-        username: faker.string.alphanumeric(21),
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.BAD_REQUEST);
+    it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: '$$$$$$',
+          password: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, () => {
-      const validData: SignInDto = {
-        username: '$$$$$$',
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.BAD_REQUEST);
-    });
-
-    it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, () => {
-      const validData: SignInDto = {
-        username: faker.internet.userName().toUpperCase(),
-        password: faker.internet.password(),
-      };
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.BAD_REQUEST);
+    it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: generateRandomValidUsername().toUpperCase(),
+          password: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
     });
 
     it(`should return ${HttpStatus.CREATED} and access_token with valid data and signup before`, async () => {
@@ -259,11 +325,12 @@ describe('AuthController (e2e)', () => {
 
       await authService.signUp(validData.username, validData.password);
 
-      return request(app.getHttpServer())
-        .post(AUTH_LOGIN_ENDPOINT)
-        .send(validData)
-        .expect(HttpStatus.CREATED)
-        .expect((res) => expect(res.body).toHaveProperty('access_token'));
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send(validData);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toHaveProperty('access_token');
     });
   });
 });

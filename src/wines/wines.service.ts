@@ -86,12 +86,13 @@ export class WinesService {
   }
 
   async update(id: string, storeIds: string[]): Promise<Wine> {
-    const wine = await this.wineRepository.findOneOrFail({
+    const wine = await this.findOne({
       where: { id },
     });
 
-    if (!storeIds || storeIds.length < 0) wine.stores = [];
-    else {
+    if (!storeIds || storeIds.length < 0) {
+      wine.stores = [];
+    } else {
       const stores: Store[] = await Promise.all(
         storeIds.map(async (storeId: string) => {
           const store: Store | null = await this.storesService.findOne({

@@ -108,7 +108,7 @@ describe('UsersController (e2e)', () => {
       expect(response.body).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} and a store with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and a store`, async () => {
       const store = await storesService.create(
         faker.company.name(),
         faker.location.streetAddress(),

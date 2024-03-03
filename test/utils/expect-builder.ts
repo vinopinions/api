@@ -85,16 +85,8 @@ export type ExpectedUserResponse = {
   username: string;
   createdAt: string;
   updatedAt: string;
-  // TODO: replace with ExpectedRatingResponse[]
-  ratings: any[];
+  ratings: ExpectedRatingResponse[];
   friends: ExpectedUserResponse[];
-};
-
-export type ExpectedUserResponseNoRelation = {
-  id: string;
-  username: string;
-  createdAt: string;
-  updatedAt: string;
 };
 
 export const buildExpectedUserResponse = ({
@@ -110,10 +102,23 @@ export const buildExpectedUserResponse = ({
     username: username ?? expect.any(String),
     createdAt: createdAt ?? expect.any(String),
     updatedAt: updatedAt ?? expect.any(String),
-    ratings: ratings ?? expect.any(Array),
-    friends: friends ?? expect.any(Array),
+    ratings: ratings
+      ? ratings.map(buildExpectedRatingResponse)
+      : expect.objectContaining<ExpectedRatingResponse>(
+          buildExpectedRatingResponse(),
+        ),
+    friends: friends
+      ? friends.map(buildExpectedUserResponse)
+      : expect.objectContaining<ExpectedUserResponseNoRelation>(
+          buildExpectedUserResponseNoRelation(),
+        ),
   };
 };
+
+export type ExpectedUserResponseNoRelation = Omit<
+  ExpectedUserResponse,
+  'ratings' | 'friends'
+>;
 
 export const buildExpectedUserResponseNoRelation = ({
   id,
@@ -141,12 +146,26 @@ export type ExpectedPageResponse<T> = {
   };
 };
 
+/**
+ * Build an object that matches an expected page response
+ *
+ * NOTE: if you expect no data to be contained in the page, then you need to set data to an empty array
+ *
+ * @returns
+ */
 export const buildExpectedPageResponse = <T>({
-  data,
-  meta,
-}: DeepPartial<ExpectedPageResponse<T>> & {}): ExpectedPageResponse<T> => {
+  data = undefined,
+  meta = undefined,
+  buildExpectedResponse,
+}: DeepPartial<ExpectedPageResponse<T>> & {
+  buildExpectedResponse: (expected?: DeepPartial<T>) => T;
+}): ExpectedPageResponse<T> => {
   return {
-    data: data ?? expect.any(Array),
+    data: data
+      ? data.map(buildExpectedResponse)
+      : expect.arrayContaining<T>([
+          expect.objectContaining<T>(buildExpectedResponse()),
+        ]),
     meta: {
       page: meta?.page ?? expect.any(Number),
       take: meta?.take ?? expect.any(Number),
@@ -170,7 +189,7 @@ export const buildExpectedFriendRequestResponse = ({
   receiver,
   sender,
   createdAt,
-}: DeepPartial<ExpectedFriendRequestResponse>): ExpectedFriendRequestResponse => {
+}: DeepPartial<ExpectedFriendRequestResponse> = {}): ExpectedFriendRequestResponse => {
   return {
     id: id ?? expect.any(String),
     receiver: buildExpectedUserResponseNoRelation(receiver),
@@ -185,7 +204,7 @@ export type ExpectedRatingResponse = {
   text: string;
   createdAt: string;
   updatedAt: string;
-  wine: any; // TODO: add wine response
+  wine: ExpectedWineResponseNoRelation;
   user: ExpectedUserResponseNoRelation;
 };
 
@@ -197,15 +216,186 @@ export const buildExpectedRatingResponse = ({
   updatedAt,
   wine,
   user,
-}: DeepPartial<ExpectedRatingResponse>): ExpectedRatingResponse => {
+}: DeepPartial<ExpectedRatingResponse> = {}): ExpectedRatingResponse => {
   return {
     id: id ?? expect.any(String),
     stars: stars ?? expect.any(Number),
     text: text ?? expect.any(String),
     createdAt: createdAt ?? expect.any(String),
     updatedAt: updatedAt ?? expect.any(String),
-    wine: wine ?? expect.anything(), // TODO: add wine response
-    // wine: buildExpectedWineResponse(wine),
+    wine: buildExpectedWineResponseNoRelation(wine),
     user: buildExpectedUserResponseNoRelation(user),
+  };
+};
+
+export type ExpectedStoreResponse = {
+  id: string;
+  name: string;
+  address: string;
+  url: string;
+  wines: ExpectedWineResponseNoRelation[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const buildExpectedStoreResponse = ({
+  id,
+  name,
+  address,
+  url,
+  wines,
+  createdAt,
+  updatedAt,
+}: DeepPartial<ExpectedStoreResponse> = {}): ExpectedStoreResponse => {
+  return {
+    id: id ?? expect.any(String),
+    name: name ?? expect.any(String),
+    address: address ?? expect.any(String),
+    url: url ?? expect.any(String),
+    wines: wines
+      ? wines.map(buildExpectedWineResponseNoRelation)
+      : expect.arrayContaining<ExpectedWineResponseNoRelation>([
+          expect.objectContaining<ExpectedWineResponseNoRelation>(
+            buildExpectedWineResponseNoRelation(),
+          ),
+        ]),
+    createdAt: createdAt ?? expect.any(String),
+    updatedAt: updatedAt ?? expect.any(String),
+  };
+};
+
+export type ExpectedStoreResponseNoRelation = Omit<
+  ExpectedStoreResponse,
+  'wines'
+>;
+
+export const buildExpectedStoreResponseNoRelation = ({
+  id,
+  name,
+  address,
+  url,
+  createdAt,
+  updatedAt,
+}: DeepPartial<ExpectedStoreResponseNoRelation> = {}): ExpectedStoreResponseNoRelation => {
+  return {
+    id: id ?? expect.any(String),
+    name: name ?? expect.any(String),
+    address: address ?? expect.any(String),
+    url: url ?? expect.any(String),
+    createdAt: createdAt ?? expect.any(String),
+    updatedAt: updatedAt ?? expect.any(String),
+  };
+};
+
+export type ExpectedWineResponse = {
+  id: string;
+  name: string;
+  year: number;
+  grapeVariety: string;
+  heritage: string;
+  winemaker: ExpectedWinemakerResponseNoRelation;
+  stores: ExpectedStoreResponseNoRelation[];
+  ratings: ExpectedRatingResponse[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const buildExpectedWineResponse = ({
+  id,
+  name,
+  year,
+  grapeVariety,
+  heritage,
+  winemaker,
+  stores,
+  ratings,
+  createdAt,
+  updatedAt,
+}: DeepPartial<ExpectedWineResponse> = {}): ExpectedWineResponse => {
+  return {
+    id: id ?? expect.any(String),
+    name: name ?? expect.any(String),
+    year: year ?? expect.any(Number),
+    grapeVariety: grapeVariety ?? expect.any(String),
+    heritage: heritage ?? expect.any(String),
+    winemaker: buildExpectedWinemakerResponseNoRelation(winemaker),
+    stores: stores
+      ? stores.map((store) => buildExpectedStoreResponse(store))
+      : expect.objectContaining(buildExpectedStoreResponse()),
+    ratings: ratings
+      ? ratings.map((rating) => buildExpectedRatingResponse(rating))
+      : expect.objectContaining(buildExpectedRatingResponse()),
+    createdAt: createdAt ?? expect.any(String),
+    updatedAt: updatedAt ?? expect.any(String),
+  };
+};
+
+export type ExpectedWineResponseNoRelation = Omit<
+  ExpectedWineResponse,
+  'winemaker' | 'stores' | 'ratings'
+>;
+
+export const buildExpectedWineResponseNoRelation = ({
+  id,
+  name,
+  year,
+  grapeVariety,
+  heritage,
+  createdAt,
+  updatedAt,
+}: DeepPartial<ExpectedWineResponseNoRelation> = {}): ExpectedWineResponseNoRelation => {
+  return {
+    id: id ?? expect.any(String),
+    name: name ?? expect.any(String),
+    year: year ?? expect.any(Number),
+    grapeVariety: grapeVariety ?? expect.any(String),
+    heritage: heritage ?? expect.any(String),
+    createdAt: createdAt ?? expect.any(String),
+    updatedAt: updatedAt ?? expect.any(String),
+  };
+};
+
+export type ExpectedWinemakerResponse = {
+  id: string;
+  name: string;
+  wines: ExpectedWineResponseNoRelation[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const buildExpectedWinemakerResponse = ({
+  id,
+  name,
+  wines,
+  createdAt,
+  updatedAt,
+}: DeepPartial<ExpectedWinemakerResponse> = {}): ExpectedWinemakerResponse => {
+  return {
+    id: id ?? expect.any(String),
+    name: name ?? expect.any(String),
+    wines: wines
+      ? wines.map(buildExpectedWineResponseNoRelation)
+      : expect.objectContaining(buildExpectedWineResponseNoRelation()),
+    createdAt: createdAt ?? expect.any(String),
+    updatedAt: updatedAt ?? expect.any(String),
+  };
+};
+
+export type ExpectedWinemakerResponseNoRelation = Omit<
+  ExpectedWinemakerResponse,
+  'wines'
+>;
+
+export const buildExpectedWinemakerResponseNoRelation = ({
+  id,
+  name,
+  createdAt,
+  updatedAt,
+}: DeepPartial<ExpectedWinemakerResponseNoRelation> = {}) => {
+  return {
+    id: id ?? expect.any(String),
+    name: name ?? expect.any(String),
+    createdAt: createdAt ?? expect.any(String),
+    updatedAt: updatedAt ?? expect.any(String),
   };
 };

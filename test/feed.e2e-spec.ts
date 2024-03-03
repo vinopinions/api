@@ -23,7 +23,11 @@ import {
   endpointExistTest,
   endpointProtectedTest,
 } from './common/tests.common';
-import { buildExpectedPageResponse } from './utils/expect-builder';
+import {
+  ExpectedRatingResponse,
+  buildExpectedPageResponse,
+  buildExpectedRatingResponse,
+} from './utils/expect-builder';
 import {
   clearDatabase,
   generateRandomValidUsername,
@@ -91,7 +95,7 @@ describe('FeedController (e2e)', () => {
 
       expect(response.status).toBe(HttpStatus.OK);
       expect(response.body).toEqual(
-        buildExpectedPageResponse({
+        buildExpectedPageResponse<ExpectedRatingResponse>({
           data: [],
           meta: {
             page: PAGE_DEFAULT_VALUE,
@@ -101,6 +105,7 @@ describe('FeedController (e2e)', () => {
             hasPreviousPage: false,
             hasNextPage: false,
           },
+          buildExpectedResponse: buildExpectedRatingResponse,
         }),
       );
     });
@@ -158,11 +163,12 @@ describe('FeedController (e2e)', () => {
 
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body).toEqual(
-          buildExpectedPageResponse({
+          buildExpectedPageResponse<ExpectedRatingResponse>({
             meta: {
               take,
               itemCount: friendAmount * ratingsPerFriend,
             },
+            buildExpectedResponse: buildExpectedRatingResponse,
           }),
         );
         expect(response.body.data).toHaveLength(

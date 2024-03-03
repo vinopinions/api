@@ -1,7 +1,12 @@
 import { faker } from '@faker-js/faker';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  INestApplication,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
+import request, { Response } from 'supertest';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
 import { CreateStoreDto } from '../src/stores/dtos/create-store.dto';
 import {
@@ -12,7 +17,16 @@ import { StoresService } from '../src/stores/stores.service';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
 import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
-import { clearDatabase, isErrorResponse, login } from './utils/utils';
+import {
+  HttpMethod,
+  complexExceptionThrownMessageArrayTest,
+  complexExceptionThrownMessageStringTest,
+  endpointExistTest,
+  endpointProtectedTest,
+  invalidUUIDTest,
+} from './common/tests.common';
+import { buildExpectedStoreResponse } from './utils/expect-builder';
+import { clearDatabase, login } from './utils/utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -41,38 +55,42 @@ describe('UsersController (e2e)', () => {
   });
 
   describe(STORES_ENDPOINT + ' (GET)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .get(STORES_ENDPOINT)
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = STORES_ENDPOINT;
+    const method: HttpMethod = 'get';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(STORES_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
 
     it(`should return ${HttpStatus.OK} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(STORES_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK);
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 0 with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(STORES_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect((res.body as Array<any>).length).toBe(0);
-        });
+    it(`should return ${HttpStatus.OK} and array with length of 0`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(0);
     });
 
-    it(`should return ${HttpStatus.OK} and array with length of 10 with authorization`, async () => {
+    it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
         await storesService.create(
           faker.company.name(),
@@ -81,14 +99,13 @@ describe('UsersController (e2e)', () => {
         );
       }
 
-      return request(app.getHttpServer())
-        .get(STORES_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect((res.body as Array<any>).length).toBe(10);
-        });
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(10);
     });
 
     it(`should return ${HttpStatus.OK} and a store with authorization`, async () => {
@@ -98,69 +115,68 @@ describe('UsersController (e2e)', () => {
         faker.internet.url(),
       );
 
-      return request(app.getHttpServer())
-        .get(STORES_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect((body as Array<any>).length).toBe(1);
-          (body as Array<any>).forEach((item) => {
-            expect(item.id).toEqual(store.id);
-            expect(item.address).toEqual(store.address);
-            expect(item.url).toEqual(store.url);
-            expect(item.updatedAt).toEqual(store.updatedAt.toISOString());
-            expect(item.createdAt).toEqual(store.createdAt.toISOString());
-          });
-        });
-    });
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
 
-    it(`should return ${HttpStatus.OK} and a store with no wines with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(STORES_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect((res) => {
-          expect(res.body.wines).toBeUndefined();
-        });
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toEqual(
+        buildExpectedStoreResponse({
+          id: store.id,
+          name: store.name,
+          address: store.address,
+          url: store.url,
+          wines: store.wines.map((wine) => {
+            return {
+              id: wine.id,
+            };
+          }),
+          createdAt: store.createdAt.toISOString(),
+          updatedAt: store.updatedAt.toISOString(),
+        }),
+      );
     });
   });
 
   describe(STORES_ID_ENDPOINT + ' (GET)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = STORES_ID_ENDPOINT;
+    const method: HttpMethod = 'get';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
 
-    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, faker.string.uuid()))
-        .set(authHeader)
-        .expect(HttpStatus.NOT_FOUND)
-        .expect(isErrorResponse);
-    });
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
 
-    it(`should return ${HttpStatus.BAD_REQUEST} and a response containing "uuid" if id parameter is not a uuid with authorization`, async () => {
-      return request(app.getHttpServer())
-        .get(
-          STORES_ID_ENDPOINT.replace(
-            ID_URL_PARAMETER,
-            faker.string.alphanumeric(10),
-          ),
-        )
-        .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect((res) => isErrorResponse(res, 'uuid'));
-    });
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
 
-    it(`should return ${HttpStatus.OK} and a valid store if id parameter is valid with authorization`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} if id parameter is not a valid uuid`, async () =>
+      await invalidUUIDTest({
+        app,
+        method,
+        endpoint,
+        idParameter: ID_URL_PARAMETER,
+        header: authHeader,
+      }));
+
+    it(`should return ${HttpStatus.OK} and a valid store if id parameter is valid`, async () => {
       const winemaker = await winemakersService.create(faker.person.fullName());
       const store = await storesService.create(
         faker.company.name(),
@@ -182,143 +198,109 @@ describe('UsersController (e2e)', () => {
       }
       store.wines = wines;
 
-      return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, store.id))
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect(body.id).toEqual(store.id);
-          expect(body.name).toEqual(store.name);
-          expect(body.address).toEqual(store.address);
-          expect(body.url).toEqual(store.url);
-          expect(body.createdAt).toEqual(store.createdAt.toISOString());
-          expect(body.updatedAt).toEqual(store.updatedAt.toISOString());
-          (body.wines as Array<any>).forEach((wine, index) => {
-            expect(wine.id).toEqual(store.wines[index].id);
-            expect(wine.name).toEqual(store.wines[index].name);
-            expect(wine.year).toEqual(store.wines[index].year);
-            expect(wine.grapeVariety).toEqual(store.wines[index].grapeVariety);
-            expect(wine.heritage).toEqual(store.wines[index].heritage);
-            expect(wine.createdAt).toEqual(
-              store.wines[index].createdAt.toISOString(),
-            );
-            expect(wine.updatedAt).toEqual(
-              store.wines[index].updatedAt.toISOString(),
-            );
-          });
-        });
-    });
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, store.id))
+        .set(authHeader);
 
-    it(`should return ${HttpStatus.OK} and no wines with authorization`, async () => {
-      const store = await storesService.create(
-        faker.company.name(),
-        faker.location.streetAddress(),
-        faker.internet.url(),
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedStoreResponse({
+          id: store.id,
+          name: store.name,
+          address: store.address,
+          url: store.url,
+          wines: store.wines.map((wine) => {
+            return {
+              id: wine.id,
+            };
+          }),
+          createdAt: store.createdAt.toISOString(),
+          updatedAt: store.updatedAt.toISOString(),
+        }),
       );
-      return request(app.getHttpServer())
-        .get(STORES_ID_ENDPOINT.replace(ID_URL_PARAMETER, store.id))
-        .set(authHeader)
-        .expect(HttpStatus.OK)
-        .expect(({ body }) => {
-          expect(body.wines).toEqual([]);
-        });
     });
   });
 
   describe(STORES_ENDPOINT + ' (POST)', () => {
-    it('should exist', () => {
-      return request(app.getHttpServer())
-        .post(STORES_ENDPOINT)
-        .expect(({ status }) => expect(status).not.toBe(HttpStatus.NOT_FOUND));
-    });
+    const endpoint: string = STORES_ENDPOINT;
+    const method: HttpMethod = 'post';
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(STORES_ENDPOINT)
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect(isErrorResponse);
-    });
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with no data and with authorization`, async () => {
-      return request(app.getHttpServer())
-        .post(STORES_ENDPOINT)
-        .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect(isErrorResponse);
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with authorization`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with invalid data and with authorization`, async () => {
-      const invalidData = {
-        name: 123,
-      };
-      return request(app.getHttpServer())
-        .post(STORES_ENDPOINT)
-        .send(invalidData)
-        .set(authHeader)
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect(isErrorResponse);
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          name: 123,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
     });
 
-    it(`should return ${HttpStatus.CREATED} with max valid data`, () => {
+    it(`should return ${HttpStatus.CREATED} with max valid data`, async () => {
       const validData: CreateStoreDto = {
         name: faker.person.fullName(),
         address: faker.location.streetAddress(),
         url: faker.internet.url(),
       };
-      return request(app.getHttpServer())
-        .post(STORES_ENDPOINT)
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
         .send(validData)
-        .set(authHeader)
-        .expect(HttpStatus.CREATED);
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
     });
 
-    it(`should return ${HttpStatus.CREATED} with min valid data`, () => {
+    it(`should return ${HttpStatus.CREATED} with min valid data`, async () => {
       const validData: CreateStoreDto = {
         name: faker.person.fullName(),
       };
-      return request(app.getHttpServer())
-        .post(STORES_ENDPOINT)
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
         .send(validData)
-        .set(authHeader)
-        .expect(HttpStatus.CREATED);
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
     });
 
-    it(`should return ${HttpStatus.CREATED} a valid store with valid data`, () => {
-      const validData: CreateStoreDto = {
-        name: faker.person.fullName(),
-        address: faker.location.streetAddress(),
-        url: faker.internet.url(),
-      };
-      return request(app.getHttpServer())
-        .post(STORES_ENDPOINT)
-        .send(validData)
-        .set(authHeader)
-        .expect(HttpStatus.CREATED)
-        .expect(({ body }) => {
-          expect(body.id).toBeDefined();
-          expect(body.name).toEqual(validData.name);
-          expect(body.address).toEqual(validData.address);
-          expect(body.url).toEqual(validData.url);
-          expect(body.createdAt).toBeDefined();
-          expect(body.updatedAt).toBeDefined();
-        });
-    });
-
-    it(`should return ${HttpStatus.CREATED} and no wines with authorization`, async () => {
+    it(`should return ${HttpStatus.CREATED} a valid store with valid data`, async () => {
       const validData: CreateStoreDto = {
         name: faker.person.fullName(),
         address: faker.location.streetAddress(),
         url: faker.internet.url(),
       };
-      return request(app.getHttpServer())
-        .post(STORES_ENDPOINT)
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
         .send(validData)
-        .set(authHeader)
-        .expect(HttpStatus.CREATED)
-        .expect(({ body }) => {
-          expect(Array.isArray(body.wines)).toBe(true);
-          expect((body.wines as Array<any>).length).toBe(0);
-        });
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toEqual(buildExpectedStoreResponse({ wines: [] }));
     });
   });
 });

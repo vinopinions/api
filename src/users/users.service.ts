@@ -9,12 +9,15 @@ import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { buildPageDto } from '../pagination/pagination.utils';
-import { User, UserRelations } from './entities/user.entity';
+import { Rating } from '../ratings/entities/rating.entity';
+import { RatingsService } from '../ratings/ratings.service';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private ratingsService: RatingsService,
   ) {}
 
   async create(username: string, passwordHash: string): Promise<User> {
@@ -35,17 +38,11 @@ export class UsersService {
   }
 
   findMany(options?: FindManyOptions<User>) {
-    return this.userRepository.find({
-      relations: Object.fromEntries(UserRelations.map((key) => [key, true])),
-      ...options,
-    });
+    return this.userRepository.find(options);
   }
 
   async findOne(options: FindOneOptions<User>): Promise<User> {
-    const user = await this.userRepository.findOne({
-      relations: Object.fromEntries(UserRelations.map((key) => [key, true])),
-      ...options,
-    });
+    const user = await this.userRepository.findOne(options);
     if (!user)
       throw new NotFoundException(
         `User with ${JSON.stringify(options.where)} not found`,
@@ -53,19 +50,47 @@ export class UsersService {
     return user;
   }
 
-  async count(options: FindManyOptions<User>): Promise<number> {
-    return await this.userRepository.count(options);
+  async findManyPaginated(
+    paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<User>,
+  ): Promise<PageDto<User>> {
+    return await buildPageDto(
+      this.userRepository,
+      paginationOptionsDto,
+      'createdAt',
+      options,
+    );
   }
 
   async findAllPaginated(
     paginationOptionsDto: PaginationOptionsDto,
   ): Promise<PageDto<User>> {
-    return buildPageDto(this, paginationOptionsDto, {}, 'createdAt');
+    return await this.findManyPaginated(paginationOptionsDto);
+  }
+
+  async findFriendsPaginated(
+    user: User,
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<User>> {
+    return await this.findManyPaginated(paginationOptionsDto, {
+      relations: ['friends'],
+      where: { friends: { id: user.id } },
+    });
+  }
+
+  async findRatingsPaginated(
+    user: User,
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Rating>> {
+    return await this.ratingsService.findManyByUserPaginated(
+      user,
+      paginationOptionsDto,
+    );
   }
 
   async remove(id: string): Promise<User> {
     const user: User = await this.findOne({ where: { id } });
-    const dbUser: User = await this.userRepository.remove(user);
+    await this.userRepository.remove(user);
     return user;
   }
 
@@ -75,6 +100,16 @@ export class UsersService {
    * @param toBeAddedUser the user who should be added as a friend
    */
   async addFriend(addingUser: User, toBeAddedUser: User) {
+    // load relations
+    addingUser = await this.findOne({
+      where: { id: addingUser.id },
+      relations: ['friends'],
+    });
+    toBeAddedUser = await this.findOne({
+      where: { id: toBeAddedUser.id },
+      relations: ['friends'],
+    });
+
     if (addingUser.friends.includes(toBeAddedUser))
       throw new NotFoundException('You already friends');
 
@@ -98,6 +133,21 @@ export class UsersService {
    * @param toBeRemovedUser the user who should be removed as a friend
    */
   async removeFriend(removingUser: User, toBeRemovedUser: User) {
+    // load relations
+    removingUser = await this.findOne({
+      where: {
+        id: removingUser.id,
+      },
+      relations: ['friends'],
+    });
+
+    toBeRemovedUser = await this.findOne({
+      where: {
+        id: toBeRemovedUser.id,
+      },
+      relations: ['friends'],
+    });
+
     if (!removingUser.friends.find((user) => user.id == toBeRemovedUser.id))
       throw new NotFoundException('This user is not your friend');
 

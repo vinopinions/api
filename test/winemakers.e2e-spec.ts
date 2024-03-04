@@ -3,6 +3,7 @@ import {
   BadRequestException,
   HttpStatus,
   INestApplication,
+  NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
@@ -16,23 +17,32 @@ import { StoresService } from '../src/stores/stores.service';
 import { CreateWinemakerDto } from '../src/winemakers/dtos/create-winemaker.dto';
 import { Winemaker } from '../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { Wine } from '../src/wines/entities/wine.entity';
 import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
 import {
   WINEMAKERS_ENDPOINT,
   WINEMAKERS_ID_ENDPOINT,
+  WINEMAKERS_ID_WINES_ENDPOINT,
 } from './../src/winemakers/winemakers.controller';
-import { createTestWinemaker } from './common/creator.common';
+import {
+  createTestStore,
+  createTestWine,
+  createTestWinemaker,
+} from './common/creator.common';
 import {
   HttpMethod,
   complexExceptionThrownMessageArrayTest,
+  complexExceptionThrownMessageStringTest,
   endpointExistTest,
   endpointProtectedTest,
   invalidUUIDTest,
 } from './common/tests.common';
 import {
+  ExpectedWineResponse,
   ExpectedWinemakerResponse,
   buildExpectedPageResponse,
+  buildExpectedWineResponse,
   buildExpectedWinemakerResponse,
 } from './utils/expect-builder';
 import { clearDatabase, login } from './utils/utils';
@@ -124,11 +134,6 @@ describe('WinemakersController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.OK);
       expect(response.body).toEqual(
         buildExpectedPageResponse<ExpectedWinemakerResponse>({
-          data: [
-            {
-              wines: [],
-            },
-          ],
           meta: {
             page: PAGE_DEFAULT_VALUE,
             take: TAKE_DEFAULT_VALUE,
@@ -156,7 +161,6 @@ describe('WinemakersController (e2e)', () => {
         buildExpectedWinemakerResponse({
           id: winemaker.id,
           name: winemaker.name,
-          wines: [],
           createdAt: winemaker.createdAt.toISOString(),
           updatedAt: winemaker.updatedAt.toISOString(),
         }),
@@ -227,13 +231,127 @@ describe('WinemakersController (e2e)', () => {
         buildExpectedWinemakerResponse({
           id: winemaker.id,
           name: winemaker.name,
-          wines: winemaker.wines.map((wine) => {
-            return {
-              id: wine.id,
-            };
-          }),
           createdAt: winemaker.createdAt.toISOString(),
           updatedAt: winemaker.updatedAt.toISOString(),
+        }),
+      );
+    });
+  });
+
+  describe(WINEMAKERS_ID_WINES_ENDPOINT + ' (GET)', () => {
+    const endpoint: string = WINEMAKERS_ID_WINES_ENDPOINT;
+    const method: HttpMethod = 'get';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
+
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} if id parameter is not a valid uuid`, async () =>
+      await invalidUUIDTest({
+        app,
+        method,
+        endpoint,
+        idParameter: ID_URL_PARAMETER,
+        header: authHeader,
+      }));
+
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
+      const winemaker: Winemaker = await createTestWinemaker(winemakersService);
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, winemaker.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWineResponse>({
+          data: [],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 0,
+            pageCount: 0,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWineResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
+      const winemaker: Winemaker = await createTestWinemaker(winemakersService);
+      for (let i = 0; i < 10; i++) {
+        await createTestWine(
+          winesService,
+          winemaker,
+          await createTestStore(storesService),
+        );
+      }
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, winemaker.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWineResponse>({
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 10,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWineResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(10);
+    });
+
+    it(`should return ${HttpStatus.OK} a valid wine`, async () => {
+      const winemaker: Winemaker = await createTestWinemaker(winemakersService);
+      const wine: Wine = await createTestWine(
+        winesService,
+        winemaker,
+        await createTestStore(storesService),
+      );
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, winemaker.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toEqual(
+        buildExpectedWineResponse({
+          id: wine.id,
+          name: wine.name,
+          heritage: wine.heritage,
+          grapeVariety: wine.grapeVariety,
+          year: wine.year,
+          createdAt: wine.createdAt.toISOString(),
+          updatedAt: wine.updatedAt.toISOString(),
         }),
       );
     });
@@ -305,7 +423,6 @@ describe('WinemakersController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.CREATED);
       buildExpectedWinemakerResponse({
         name: validData.name,
-        wines: [],
       });
     });
   });

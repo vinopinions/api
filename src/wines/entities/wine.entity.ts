@@ -1,4 +1,5 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import { IsDate, IsNumber, IsString, IsUUID } from 'class-validator';
 import {
   Column,
@@ -11,18 +12,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {
-  Rating,
-  RatingWithoutRelation,
-} from '../../ratings/entities/rating.entity';
-import {
-  Store,
-  StoreWithoutRelation,
-} from '../../stores/entities/store.entity';
-import {
-  Winemaker,
-  WinemakerWithoutRelation,
-} from '../../winemakers/entities/winemaker.entity';
+import { Rating } from '../../ratings/entities/rating.entity';
+import { Store } from '../../stores/entities/store.entity';
+import { Winemaker } from '../../winemakers/entities/winemaker.entity';
 
 @Entity()
 export class Wine {
@@ -73,16 +65,12 @@ export class Wine {
 
   @ApiProperty({
     description: 'The winemaker of the wine',
-    type: WinemakerWithoutRelation,
+    type: Winemaker,
   })
-  @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines)
+  @ManyToOne(() => Winemaker, (winemaker) => winemaker.wines, { eager: true })
   winemaker: Winemaker;
 
-  @ApiProperty({
-    description: 'The stores where the wine can be bought at',
-    type: StoreWithoutRelation,
-    isArray: true,
-  })
+  @Exclude()
   @ManyToMany(() => Store, (store) => store.wines, {
     nullable: false,
   })
@@ -99,11 +87,7 @@ export class Wine {
   })
   stores: Store[];
 
-  @ApiProperty({
-    description: 'Ratings that got submitted for the wine',
-    type: RatingWithoutRelation,
-    isArray: true,
-  })
+  @Exclude()
   @OneToMany(() => Rating, (rating) => rating.wine)
   ratings: Rating[];
 
@@ -123,7 +107,3 @@ export class Wine {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-
-export const WineRelations: (keyof Wine)[] = ['ratings', 'stores', 'winemaker'];
-
-export class WineWithoutRelations extends OmitType(Wine, WineRelations) {}

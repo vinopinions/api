@@ -17,12 +17,18 @@ import { Store } from '../src/stores/entities/store.entity';
 import {
   STORES_ENDPOINT,
   STORES_ID_ENDPOINT,
+  STORES_ID_WINES_ENDPOINT,
 } from '../src/stores/stores.controller';
 import { StoresService } from '../src/stores/stores.service';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { Wine } from '../src/wines/entities/wine.entity';
 import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
-import { createTestStore } from './common/creator.common';
+import {
+  createTestStore,
+  createTestWine,
+  createTestWinemaker,
+} from './common/creator.common';
 import {
   HttpMethod,
   complexExceptionThrownMessageArrayTest,
@@ -32,9 +38,13 @@ import {
   invalidUUIDTest,
 } from './common/tests.common';
 import {
+  ExpectedRatingResponse,
   ExpectedStoreResponse,
+  ExpectedWineResponse,
   buildExpectedPageResponse,
+  buildExpectedRatingResponse,
   buildExpectedStoreResponse,
+  buildExpectedWineResponse,
 } from './utils/expect-builder';
 import { clearDatabase, login } from './utils/utils';
 
@@ -125,7 +135,6 @@ describe('UsersController (e2e)', () => {
       expect(response.status).toBe(HttpStatus.OK);
       expect(response.body).toEqual(
         buildExpectedPageResponse<ExpectedStoreResponse>({
-          data: [{ wines: [] }],
           meta: {
             page: PAGE_DEFAULT_VALUE,
             take: TAKE_DEFAULT_VALUE,
@@ -155,11 +164,6 @@ describe('UsersController (e2e)', () => {
           name: store.name,
           address: store.address,
           url: store.url,
-          wines: store.wines.map((wine) => {
-            return {
-              id: wine.id,
-            };
-          }),
           createdAt: store.createdAt.toISOString(),
           updatedAt: store.updatedAt.toISOString(),
         }),
@@ -175,14 +179,14 @@ describe('UsersController (e2e)', () => {
       await endpointExistTest({
         app,
         method,
-        endpoint,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
       }));
 
     it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
       await endpointProtectedTest({
         app,
         method,
-        endpoint,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
       }));
 
     it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () =>
@@ -204,26 +208,7 @@ describe('UsersController (e2e)', () => {
       }));
 
     it(`should return ${HttpStatus.OK} and a valid store if id parameter is valid`, async () => {
-      const winemaker = await winemakersService.create(faker.person.fullName());
-      const store = await storesService.create(
-        faker.company.name(),
-        faker.location.streetAddress(),
-        faker.internet.url(),
-      );
-      const wines = [];
-      for (let i = 0; i < 3; i++) {
-        wines.push(
-          await winesService.create(
-            faker.person.fullName(),
-            faker.date.past().getFullYear(),
-            winemaker.id,
-            [store.id],
-            faker.word.noun(),
-            faker.location.country(),
-          ),
-        );
-      }
-      store.wines = wines;
+      const store = await createTestStore(storesService);
 
       const response: Response = await request(app.getHttpServer())
         [method](endpoint.replace(ID_URL_PARAMETER, store.id))
@@ -236,13 +221,127 @@ describe('UsersController (e2e)', () => {
           name: store.name,
           address: store.address,
           url: store.url,
-          wines: store.wines.map((wine) => {
-            return {
-              id: wine.id,
-            };
-          }),
           createdAt: store.createdAt.toISOString(),
           updatedAt: store.updatedAt.toISOString(),
+        }),
+      );
+    });
+  });
+
+  describe(STORES_ID_WINES_ENDPOINT + ' (GET)', () => {
+    const endpoint: string = STORES_ID_WINES_ENDPOINT;
+    const method: HttpMethod = 'get';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+      }));
+
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(ID_URL_PARAMETER, faker.string.uuid()),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} if id parameter is not a valid uuid`, async () =>
+      await invalidUUIDTest({
+        app,
+        method,
+        endpoint,
+        idParameter: ID_URL_PARAMETER,
+        header: authHeader,
+      }));
+
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
+      const store: Store = await createTestStore(storesService);
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, store.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedRatingResponse>({
+          data: [],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 0,
+            pageCount: 0,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedRatingResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
+      const store: Store = await createTestStore(storesService);
+      for (let i = 0; i < 10; i++) {
+        await createTestWine(
+          winesService,
+          await createTestWinemaker(winemakersService),
+          store,
+        );
+      }
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, store.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWineResponse>({
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 10,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWineResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(10);
+    });
+
+    it(`should return ${HttpStatus.OK} a valid wine`, async () => {
+      const store: Store = await createTestStore(storesService);
+      const wine: Wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        store,
+      );
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(ID_URL_PARAMETER, store.id))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toEqual(
+        buildExpectedWineResponse({
+          id: wine.id,
+          name: wine.name,
+          heritage: wine.heritage,
+          grapeVariety: wine.grapeVariety,
+          year: wine.year,
+          createdAt: wine.createdAt.toISOString(),
+          updatedAt: wine.updatedAt.toISOString(),
         }),
       );
     });
@@ -337,7 +436,6 @@ describe('UsersController (e2e)', () => {
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.CREATED);
-      expect(response.body).toEqual(buildExpectedStoreResponse({ wines: [] }));
     });
   });
 });

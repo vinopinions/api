@@ -90,8 +90,6 @@ describe('AuthController (e2e)', () => {
       expect(response.body).toEqual(
         buildExpectedUserResponse({
           username: validData.username,
-          friends: [],
-          ratings: [],
         }),
       );
     });
@@ -111,8 +109,6 @@ describe('AuthController (e2e)', () => {
         expect(response.body).toEqual(
           buildExpectedUserResponse({
             username: validData.username,
-            friends: [],
-            ratings: [],
           }),
         );
       },

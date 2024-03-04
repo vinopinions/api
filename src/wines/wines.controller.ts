@@ -29,7 +29,7 @@ import {
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
-import { RatingsService } from '../ratings/ratings.service';
+import { Store } from '../stores/entities/store.entity';
 import { PageDto } from './../pagination/page.dto';
 import { Rating } from './../ratings/entities/rating.entity';
 import { CreateWineDto } from './dtos/create-wine.dto';
@@ -41,8 +41,10 @@ const WINES_ENDPOINT_NAME = 'wines';
 export const WINES_ENDPOINT = `/${WINES_ENDPOINT_NAME}`;
 const WINES_ID_URL_PARAMETER = ID_URL_PARAMETER;
 export const WINES_ID_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_URL_PARAMETER}`;
-const WINES_ID_RATINGS_NAME = `${WINES_ID_URL_PARAMETER}/ratings`;
-export const WINES_ID_RATINGS_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_RATINGS_NAME}`;
+const WINES_ID_RATINGS_ENDPOINT_NAME = `${WINES_ID_URL_PARAMETER}/ratings`;
+export const WINES_ID_RATINGS_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_RATINGS_ENDPOINT_NAME}`;
+const WINES_ID_STORES_ENDPOINT_NAME = `${WINES_ID_URL_PARAMETER}/stores`;
+export const WINES_ID_STORES_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_STORES_ENDPOINT_NAME}`;
 
 @Controller(WINES_ENDPOINT_NAME)
 @ApiTags(WINES_ENDPOINT_NAME)
@@ -51,10 +53,7 @@ export const WINES_ID_RATINGS_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_RATINGS_N
 })
 @ApiBearerAuth()
 export class WinesController {
-  constructor(
-    private winesService: WinesService,
-    private ratingsService: RatingsService,
-  ) {}
+  constructor(private winesService: WinesService) {}
 
   @ApiOperation({ summary: 'get wine by id' })
   @Get(WINES_ID_URL_PARAMETER)
@@ -74,13 +73,61 @@ export class WinesController {
   @ApiOperation({ summary: 'get all wines' })
   @Get()
   @ApiPaginationResponse(Wine, {
-    description: 'Incoming friend requests have been found',
+    description: 'Wines have been found',
     status: HttpStatus.OK,
   })
   findAll(
     @Query() paginationOptionsDto: PaginationOptionsDto,
   ): Promise<PageDto<Wine>> {
     return this.winesService.findAllPaginated(paginationOptionsDto);
+  }
+
+  @ApiOperation({ summary: 'get stores of wine' })
+  @Get(WINES_ID_STORES_ENDPOINT_NAME)
+  @ApiPaginationResponse(Store, {
+    description: 'Stores of the wine',
+    status: HttpStatus.OK,
+  })
+  @ApiNotFoundResponse({
+    description: 'Wine could not be found',
+  })
+  async findAllStores(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Store>> {
+    const wine: Wine = await this.winesService.findOne({
+      where: {
+        id,
+      },
+    });
+    return await this.winesService.findStoresPaginated(
+      wine,
+      paginationOptionsDto,
+    );
+  }
+
+  @ApiOperation({ summary: 'get ratings of wine' })
+  @Get(WINES_ID_RATINGS_ENDPOINT_NAME)
+  @ApiPaginationResponse(Rating, {
+    description: 'Ratings of the wine',
+    status: HttpStatus.OK,
+  })
+  @ApiNotFoundResponse({
+    description: 'Wine could not be found',
+  })
+  async findAllRatings(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Rating>> {
+    const wine: Wine = await this.winesService.findOne({
+      where: {
+        id,
+      },
+    });
+    return await this.winesService.findRatingsPaginated(
+      wine,
+      paginationOptionsDto,
+    );
   }
 
   @ApiOperation({ summary: 'create a wine' })
@@ -116,15 +163,18 @@ export class WinesController {
   @ApiNotFoundResponse({
     description: 'Wine or store has not been found',
   })
-  update(
+  async update(
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
     @Body() updateWineDto: UpdateWineDto,
   ) {
-    return this.winesService.update(id, updateWineDto.storeIds);
+    const wine = await this.winesService.findOne({
+      where: { id },
+    });
+    return this.winesService.update(wine, updateWineDto.storeIds);
   }
 
   @ApiOperation({ summary: 'rate a wine' })
-  @Post(WINES_ID_RATINGS_NAME)
+  @Post(WINES_ID_RATINGS_ENDPOINT_NAME)
   @ApiCreatedResponse({
     description: 'Ratings has been added to the wine',
     type: Rating,
@@ -143,6 +193,6 @@ export class WinesController {
     const wine: Wine = await this.winesService.findOne({
       where: { id: wineId },
     });
-    return this.ratingsService.create(stars, text, request.user, wine);
+    return this.winesService.createRating(stars, text, request.user, wine);
   }
 }

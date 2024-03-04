@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsInt, IsString, IsUUID, Max, Min } from 'class-validator';
 import {
   Column,
@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User, UserWithoutRelations } from '../../users/entities/user.entity';
-import { Wine, WineWithoutRelations } from '../../wines/entities/wine.entity';
+import { User } from '../../users/entities/user.entity';
+import { Wine } from '../../wines/entities/wine.entity';
 
 export const STARS_MIN = 1;
 export const STARS_MAX = 5;
@@ -46,14 +46,14 @@ export class Rating {
 
   @ApiProperty({
     description: 'The rated Wine',
-    type: WineWithoutRelations,
+    type: Wine,
   })
   @ManyToOne(() => Wine, (wine) => wine.ratings, { eager: true })
   wine: Wine;
 
   @ApiProperty({
     description: 'The User that submitted the rating',
-    type: () => UserWithoutRelations,
+    type: () => User,
   })
   @ManyToOne(() => User, (user: User) => user.ratings, { eager: true })
   user: User;
@@ -74,7 +74,3 @@ export class Rating {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-
-export const RatingRelations: (keyof Rating)[] = ['user', 'wine'];
-
-export class RatingWithoutRelation extends OmitType(Rating, RatingRelations) {}

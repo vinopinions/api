@@ -11,10 +11,7 @@ import { buildPageDto } from '../pagination/pagination.utils';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { PageDto } from './../pagination/page.dto';
-import {
-  FriendRequest,
-  FriendRequestRelations,
-} from './entities/friend-request.entity';
+import { FriendRequest } from './entities/friend-request.entity';
 
 @Injectable()
 export class FriendRequestsService {
@@ -27,12 +24,7 @@ export class FriendRequestsService {
   async findOne(
     options: FindOneOptions<FriendRequest>,
   ): Promise<FriendRequest> {
-    const friendRequest = await this.friendRequestRepository.findOne({
-      relations: Object.fromEntries(
-        FriendRequestRelations.map((key) => [key, true]),
-      ),
-      ...options,
-    });
+    const friendRequest = await this.friendRequestRepository.findOne(options);
     if (!friendRequest)
       throw new NotFoundException(
         `FriendRequest with ${JSON.stringify(options.where)} not found`,
@@ -41,16 +33,25 @@ export class FriendRequestsService {
   }
 
   findMany(options?: FindManyOptions<FriendRequest>) {
-    return this.friendRequestRepository.find({
-      relations: Object.fromEntries(
-        FriendRequestRelations.map((key) => [key, true]),
-      ),
-      ...options,
-    });
+    return this.friendRequestRepository.find(options);
   }
 
-  async count(options: FindManyOptions<FriendRequest>): Promise<number> {
-    return await this.friendRequestRepository.count(options);
+  async findManyPaginated(
+    paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<FriendRequest>,
+  ): Promise<PageDto<FriendRequest>> {
+    return await buildPageDto(
+      this.friendRequestRepository,
+      paginationOptionsDto,
+      'createdAt',
+      options,
+    );
+  }
+
+  async findAllPaginated(
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<FriendRequest>> {
+    return await this.findManyPaginated(paginationOptionsDto);
   }
 
   /**
@@ -61,6 +62,21 @@ export class FriendRequestsService {
    *    4. A user can not send a friend request to a user that has sent him a friend request already
    */
   async send(sender: User, receiver: User): Promise<FriendRequest> {
+    // load relations
+    sender = await this.usersService.findOne({
+      where: {
+        id: sender.id,
+      },
+      relations: ['friends'],
+    });
+
+    receiver = await this.usersService.findOne({
+      where: {
+        id: receiver.id,
+      },
+      relations: ['friends'],
+    });
+
     // 1. Rule
     if (sender.id == receiver.id)
       throw new ConflictException('You can not send yourself a friend request');
@@ -190,31 +206,25 @@ export class FriendRequestsService {
     user: User,
     paginationOptionsDto: PaginationOptionsDto,
   ): Promise<PageDto<FriendRequest>> {
-    return await buildPageDto(
-      this,
-      paginationOptionsDto,
-      {
+    return await this.findManyPaginated(paginationOptionsDto, {
+      where: {
         receiver: {
           id: user.id,
         },
       },
-      'createdAt',
-    );
+    });
   }
 
   async getSent(
     user: User,
     paginationOptionsDto: PaginationOptionsDto,
   ): Promise<PageDto<FriendRequest>> {
-    return await buildPageDto(
-      this,
-      paginationOptionsDto,
-      {
+    return await this.findManyPaginated(paginationOptionsDto, {
+      where: {
         sender: {
           id: user.id,
         },
       },
-      'createdAt',
-    );
+    });
   }
 }

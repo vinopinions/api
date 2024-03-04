@@ -1,4 +1,5 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import { IsDate, IsOptional, IsString, IsUUID, IsUrl } from 'class-validator';
 import {
   Column,
@@ -8,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Wine, WineWithoutRelations } from '../../wines/entities/wine.entity';
+import { Wine } from '../../wines/entities/wine.entity';
 
 @Entity()
 export class Store {
@@ -52,11 +53,7 @@ export class Store {
   @Column({ nullable: true })
   url?: string;
 
-  @ApiProperty({
-    description: 'List of wines that the store sells',
-    type: WineWithoutRelations,
-    isArray: true,
-  })
+  @Exclude()
   @ManyToMany(() => Wine, (wine) => wine.stores)
   wines: Wine[];
 
@@ -76,7 +73,3 @@ export class Store {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-
-export const StoreRelations: (keyof Store)[] = ['wines'];
-
-export class StoreWithoutRelation extends OmitType(Store, StoreRelations) {}

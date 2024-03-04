@@ -25,6 +25,7 @@ import {
 } from '../constants/url-parameter';
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { Wine } from '../wines/entities/wine.entity';
 import { PageDto } from './../pagination/page.dto';
 import { CreateStoreDto } from './dtos/create-store.dto';
 import { Store } from './entities/store.entity';
@@ -33,7 +34,10 @@ import { StoresService } from './stores.service';
 const STORES_ENDPOINT_NAME = 'stores';
 export const STORES_ENDPOINT = `/${STORES_ENDPOINT_NAME}`;
 const STORES_ID_URL_PARAMETER = ID_URL_PARAMETER;
-export const STORES_ID_ENDPOINT = `/${STORES_ENDPOINT_NAME}/${STORES_ID_URL_PARAMETER}`;
+export const STORES_ID_ENDPOINT = `${STORES_ENDPOINT}/${STORES_ID_URL_PARAMETER}`;
+const STORES_ID_WINES_ENDPOINT_NAME = `${STORES_ID_URL_PARAMETER}/wines`;
+export const STORES_ID_WINES_ENDPOINT = `${STORES_ENDPOINT}/${STORES_ID_WINES_ENDPOINT_NAME}`;
+
 @Controller(STORES_ENDPOINT_NAME)
 @ApiTags(STORES_ENDPOINT_NAME)
 @ApiUnauthorizedResponse({
@@ -60,7 +64,6 @@ export class StoresController {
   }
 
   @ApiOperation({ summary: 'get all stores' })
-  @HttpCode(HttpStatus.OK)
   @Get()
   @ApiPaginationResponse(Store, {
     description: 'Incoming friend requests have been found',
@@ -70,6 +73,30 @@ export class StoresController {
     @Query() paginationOptionsDto: PaginationOptionsDto,
   ): Promise<PageDto<Store>> {
     return this.storesService.findAllPaginated(paginationOptionsDto);
+  }
+
+  @ApiOperation({ summary: 'get wines of store' })
+  @Get(STORES_ID_WINES_ENDPOINT_NAME)
+  @ApiPaginationResponse(Wine, {
+    description: 'Wines of the store',
+    status: HttpStatus.OK,
+  })
+  @ApiNotFoundResponse({
+    description: 'Store could not be found',
+  })
+  async findAllWines(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Wine>> {
+    const store: Store = await this.storesService.findOne({
+      where: {
+        id,
+      },
+    });
+    return await this.storesService.findWinesPaginated(
+      store,
+      paginationOptionsDto,
+    );
   }
 
   @ApiOperation({ summary: 'create a store' })

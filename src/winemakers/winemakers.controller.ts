@@ -26,6 +26,7 @@ import {
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { Wine } from '../wines/entities/wine.entity';
 import { CreateWinemakerDto } from './dtos/create-winemaker.dto';
 import { Winemaker } from './entities/winemaker.entity';
 import { WinemakersService } from './winemakers.service';
@@ -34,6 +35,8 @@ const WINEMAKERS_ENDPOINT_NAME = 'winemakers';
 export const WINEMAKERS_ENDPOINT = `/${WINEMAKERS_ENDPOINT_NAME}`;
 const WINEMAKERS_ID_URL_PARAMETER = ID_URL_PARAMETER;
 export const WINEMAKERS_ID_ENDPOINT = `${WINEMAKERS_ENDPOINT}/${WINEMAKERS_ID_URL_PARAMETER}`;
+const WINEMAKERS_ID_WINES_ENDPOINT_NAME = `${WINEMAKERS_ID_URL_PARAMETER}/wines`;
+export const WINEMAKERS_ID_WINES_ENDPOINT = `${WINEMAKERS_ENDPOINT}/${WINEMAKERS_ID_WINES_ENDPOINT_NAME}`;
 
 @Controller(WINEMAKERS_ENDPOINT_NAME)
 @ApiTags(WINEMAKERS_ENDPOINT_NAME)
@@ -72,6 +75,31 @@ export class WinemakersController {
     return this.winemakersService.findOne({
       where: { id },
     });
+  }
+
+  @ApiOperation({ summary: 'get wines of a winemaker' })
+  @HttpCode(HttpStatus.OK)
+  @Get(WINEMAKERS_ID_WINES_ENDPOINT_NAME)
+  @ApiPaginationResponse(Wine, {
+    description: 'Friend of user have been found',
+    status: HttpStatus.OK,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+  })
+  async findRatingsOfUser(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Wine>> {
+    const winemaker: Winemaker = await this.winemakersService.findOne({
+      where: {
+        id,
+      },
+    });
+    return await this.winemakersService.findWinesPaginated(
+      winemaker,
+      paginationOptionsDto,
+    );
   }
 
   @ApiOperation({ summary: 'create a winemaker' })

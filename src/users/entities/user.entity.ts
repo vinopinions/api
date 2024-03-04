@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { IsDate, IsUUID, Matches } from 'class-validator';
 import {
@@ -11,12 +11,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {
-  Rating,
-  RatingWithoutRelation,
-} from '../../ratings/entities/rating.entity';
+import { Rating } from '../../ratings/entities/rating.entity';
 
 export const USERNAME_REGEX = /^([a-z]+[a-z0-9]*([\._][a-z0-9]+)?){3,20}$/;
+const USERNAME_REGEX_PATTERN = USERNAME_REGEX.toString().substring(
+  1,
+  USERNAME_REGEX.toString().length - 1,
+);
 
 @Entity()
 export class User {
@@ -35,7 +36,7 @@ export class User {
     type: String,
     minLength: 3,
     maxLength: 20,
-    pattern: USERNAME_REGEX.toString(),
+    pattern: USERNAME_REGEX_PATTERN,
   })
   @Matches(USERNAME_REGEX, {
     message:
@@ -48,11 +49,7 @@ export class User {
   @Column()
   passwordHash: string;
 
-  @ApiProperty({
-    description: 'Friends of the user',
-    type: OmitType(User, ['friends', 'ratings'] as const),
-    isArray: true,
-  })
+  @Exclude()
   @ManyToMany(() => User)
   @JoinTable({
     name: 'friends',
@@ -61,11 +58,7 @@ export class User {
   })
   friends: User[];
 
-  @ApiProperty({
-    description: 'Friends the user submitted',
-    type: RatingWithoutRelation,
-    isArray: true,
-  })
+  @Exclude()
   @OneToMany(() => Rating, (rating: Rating) => rating.user)
   ratings: Rating[];
 
@@ -85,7 +78,3 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-
-export const UserRelations: Array<keyof User> = ['ratings', 'friends'];
-
-export class UserWithoutRelations extends OmitType(User, UserRelations) {}

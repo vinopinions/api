@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsUUID } from 'class-validator';
 import {
   CreateDateColumn,
@@ -6,7 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User, UserWithoutRelations } from '../../users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class FriendRequest {
@@ -21,14 +21,14 @@ export class FriendRequest {
 
   @ApiProperty({
     description: 'The user who received the friend request',
-    type: UserWithoutRelations,
+    type: User,
   })
   @ManyToOne(() => User, { eager: true })
   receiver: User;
 
   @ApiProperty({
     description: 'The user who sent the friend request',
-    type: UserWithoutRelations,
+    type: User,
   })
   @ManyToOne(() => User, { eager: true })
   sender: User;
@@ -41,13 +41,3 @@ export class FriendRequest {
   @CreateDateColumn()
   createdAt: Date;
 }
-
-export const FriendRequestRelations: Array<keyof FriendRequest> = [
-  'sender',
-  'receiver',
-];
-
-export class FriendRequestWithoutRelations extends OmitType(
-  FriendRequest,
-  FriendRequestRelations,
-) {}

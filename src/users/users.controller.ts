@@ -25,6 +25,7 @@ import {
 } from '../constants/url-parameter';
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { Rating } from '../ratings/entities/rating.entity';
 import { AuthenticatedRequest } from './../auth/auth.guard';
 import { PageDto } from './../pagination/page.dto';
 import { GetUserDto } from './dtos/get-user.dto';
@@ -39,6 +40,8 @@ const USERS_USERNAME_FRIENDS_ENDPOINT_NAME = `${USERS_USERNAME_ENDPOINT_NAME}/fr
 export const USERS_USERNAME_FRIENDS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_ENDPOINT_NAME}`;
 const USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME = `${USERS_USERNAME_FRIENDS_ENDPOINT_NAME}/${FRIEND_USERNAME_URL_PARAMETER}`;
 export const USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME}`;
+const USERS_USERNAME_RATINGS_ENDPOINT_NAME = `${USERS_USERNAME_ENDPOINT_NAME}/ratings`;
+export const USERS_USERNAME_RATINGS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_RATINGS_ENDPOINT_NAME}`;
 const USERS_ME_ENDPOINT_NAME = 'me';
 export const USERS_ME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_ENDPOINT_NAME}`;
 
@@ -96,6 +99,56 @@ export class UsersController {
         username,
       },
     });
+  }
+
+  @ApiOperation({ summary: 'get friends of a user' })
+  @HttpCode(HttpStatus.OK)
+  @Get(USERS_USERNAME_FRIENDS_ENDPOINT_NAME)
+  @ApiPaginationResponse(User, {
+    description: 'Friend of user have been found',
+    status: HttpStatus.OK,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+  })
+  async findFriendOfUser(
+    @Param() { username }: GetUserDto,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<User>> {
+    const user: User = await this.usersService.findOne({
+      where: {
+        username,
+      },
+    });
+    return await this.usersService.findFriendsPaginated(
+      user,
+      paginationOptionsDto,
+    );
+  }
+
+  @ApiOperation({ summary: 'get ratings of a user' })
+  @HttpCode(HttpStatus.OK)
+  @Get(USERS_USERNAME_RATINGS_ENDPOINT_NAME)
+  @ApiPaginationResponse(User, {
+    description: 'Friend of user have been found',
+    status: HttpStatus.OK,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+  })
+  async findRatingsOfUser(
+    @Param() { username }: GetUserDto,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Rating>> {
+    const user: User = await this.usersService.findOne({
+      where: {
+        username,
+      },
+    });
+    return await this.usersService.findRatingsPaginated(
+      user,
+      paginationOptionsDto,
+    );
   }
 
   @ApiOperation({ summary: 'remove a friend' })

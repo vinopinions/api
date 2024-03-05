@@ -63,14 +63,14 @@ export class DummyDataService {
     amount: number,
     authService: AuthService,
   ) => {
+    await authService.signUp('tschokri', 'test');
+    await authService.signUp('oskar', 'test');
     for (let i = 0; i < amount; i++) {
       await authService.signUp(
         generateRandomValidUsername(),
         faker.internet.password(),
       );
     }
-    await authService.signUp('tschokri', 'test');
-    await authService.signUp('oskar', 'test');
   };
 
   private generateAndInsertWinemakers = async (

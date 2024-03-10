@@ -17,12 +17,10 @@ async function bootstrap() {
     .setDescription('Documentation of the Vinopinions API')
     .setVersion(packagejson.version)
     .addBearerAuth({
-      type: 'apiKey',
-      in: 'header',
-      name: 'Authorization',
+      type: 'http',
       bearerFormat: 'JWT',
       scheme: 'bearer',
-      description: 'Session ID. Can be retrieved by logging in.',
+      description: 'Session token. Can be retrieved by logging in.',
     })
     .build();
   const document = SwaggerModule.createDocument(app, config);

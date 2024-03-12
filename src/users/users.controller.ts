@@ -18,12 +18,14 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ILike } from 'typeorm';
 import {
   FRIEND_USERNAME_URL_PARAMETER,
   FRIEND_USERNAME_URL_PARAMETER_NAME,
   USERNAME_URL_PARAMETER,
 } from '../constants/url-parameter';
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
+import { FilterPaginationOptionsDto } from '../pagination/filter-pagination-options.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
 import { AuthenticatedRequest } from './../auth/auth.guard';
@@ -70,19 +72,21 @@ export class UsersController {
     });
   }
 
-  @ApiOperation({ summary: 'get all user' })
-  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'get all users' })
   @Get()
   @ApiPaginationResponse(User, {
-    description: 'Incoming friend requests have been found',
+    description: 'Users have been found',
     status: HttpStatus.OK,
   })
   findAll(
-    @Query() paginationOptionsDto: PaginationOptionsDto,
+    @Query() filterPaginationOptionsDto: FilterPaginationOptionsDto,
   ): Promise<PageDto<User>> {
-    return this.usersService.findAllPaginated(paginationOptionsDto);
+    return this.usersService.findManyPaginated(filterPaginationOptionsDto, {
+      where: {
+        username: ILike(`%${filterPaginationOptionsDto.filter}%`),
+      },
+    });
   }
-
   @ApiOperation({ summary: 'get information about a user' })
   @HttpCode(HttpStatus.OK)
   @Get(USERS_USERNAME_ENDPOINT_NAME)

@@ -19,11 +19,13 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ILike } from 'typeorm';
 import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
+import { FilterPaginationOptionsDto } from '../pagination/filter-pagination-options.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Wine } from '../wines/entities/wine.entity';
 import { PageDto } from './../pagination/page.dto';
@@ -66,15 +68,18 @@ export class StoresController {
   @ApiOperation({ summary: 'get all stores' })
   @Get()
   @ApiPaginationResponse(Store, {
-    description: 'Incoming friend requests have been found',
+    description: 'Stores have been found',
     status: HttpStatus.OK,
   })
   findAll(
-    @Query() paginationOptionsDto: PaginationOptionsDto,
+    @Query() filterPaginationOptionsDto: FilterPaginationOptionsDto,
   ): Promise<PageDto<Store>> {
-    return this.storesService.findAllPaginated(paginationOptionsDto);
+    return this.storesService.findManyPaginated(filterPaginationOptionsDto, {
+      where: {
+        name: ILike(`%${filterPaginationOptionsDto.filter}%`),
+      },
+    });
   }
-
   @ApiOperation({ summary: 'get wines of store' })
   @Get(STORES_ID_WINES_ENDPOINT_NAME)
   @ApiPaginationResponse(Wine, {

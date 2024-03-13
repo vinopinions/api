@@ -1,5 +1,7 @@
 import { CommonService } from './common.service';
 
 describe('CommonService', () => {
-  expect(CommonService).toBeDefined();
+  it('should be defined', () => {
+    expect(CommonService).toBeDefined();
+  });
 });

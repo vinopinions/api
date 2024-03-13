@@ -42,12 +42,12 @@ export class UsersService extends CommonService<User> {
   async findFriendsPaginated(
     user: User,
     paginationOptionsDto: PaginationOptionsDto,
-    options: FindManyOptions<User>,
+    options?: FindManyOptions<User>,
   ): Promise<PageDto<User>> {
     return await this.findManyPaginated(paginationOptionsDto, {
       relations: ['friends'],
-      where: { friends: { id: user.id } },
       ...options,
+      where: { ...options?.where, ...{ friends: { id: user.id } } },
     });
   }
 

@@ -65,7 +65,8 @@ export class WinesService extends CommonService<Wine> {
   ): Promise<PageDto<Wine>> {
     return await this.findManyPaginated(paginationOptionsDto, {
       relations: ['stores'],
-      where: { ...{ stores: { id: store.id }, ...options } },
+      ...options,
+      where: { ...options?.where, ...{ stores: { id: store.id } } },
     });
   }
 
@@ -76,8 +77,8 @@ export class WinesService extends CommonService<Wine> {
   ): Promise<PageDto<Wine>> {
     return await this.findManyPaginated(paginationOptionsDto, {
       relations: ['winemaker'],
-      where: { winemaker: { id: winemaker.id } },
       ...options,
+      where: { ...options?.where, ...{ winemaker: { id: winemaker.id } } },
     });
   }
 

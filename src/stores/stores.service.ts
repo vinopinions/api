@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
 import { Wine } from '../wines/entities/wine.entity';
@@ -26,20 +26,24 @@ export class StoresService extends CommonService<Store> {
   async findWinesPaginated(
     store: Store,
     paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<Wine>,
   ): Promise<PageDto<Wine>> {
     return await this.winesService.findManyByStorePaginated(
       store,
       paginationOptionsDto,
+      options,
     );
   }
 
   async findManyByWinePaginated(
     wine: Wine,
     paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<Store>,
   ): Promise<PageDto<Store>> {
     return await this.findManyPaginated(paginationOptionsDto, {
       relations: ['wines'],
-      where: { wines: { id: wine.id } },
+      ...options,
+      where: { ...options?.where, ...{ wines: { id: wine.id } } },
     });
   }
 

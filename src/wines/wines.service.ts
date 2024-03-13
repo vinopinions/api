@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
@@ -61,30 +61,36 @@ export class WinesService extends CommonService<Wine> {
   async findManyByStorePaginated(
     store: Store,
     paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<Wine>,
   ): Promise<PageDto<Wine>> {
     return await this.findManyPaginated(paginationOptionsDto, {
       relations: ['stores'],
-      where: { stores: { id: store.id } },
+      ...options,
+      where: { ...options?.where, ...{ stores: { id: store.id } } },
     });
   }
 
   async findManyByWinemakerPaginated(
     winemaker: Winemaker,
     paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<Wine>,
   ): Promise<PageDto<Wine>> {
     return await this.findManyPaginated(paginationOptionsDto, {
       relations: ['winemaker'],
-      where: { winemaker: { id: winemaker.id } },
+      ...options,
+      where: { ...options?.where, ...{ winemaker: { id: winemaker.id } } },
     });
   }
 
   async findStoresPaginated(
     wine: Wine,
     paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<Store>,
   ): Promise<PageDto<Store>> {
     return await this.storesService.findManyByWinePaginated(
       wine,
       paginationOptionsDto,
+      options,
     );
   }
 

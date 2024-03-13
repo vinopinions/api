@@ -26,7 +26,6 @@ import {
 } from '../constants/url-parameter';
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { FilterPaginationOptionsDto } from '../pagination/filter-pagination-options.dto';
-import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Wine } from '../wines/entities/wine.entity';
 import { PageDto } from './../pagination/page.dto';
 import { CreateStoreDto } from './dtos/create-store.dto';
@@ -91,7 +90,7 @@ export class StoresController {
   })
   async findAllWines(
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
-    @Query() paginationOptionsDto: PaginationOptionsDto,
+    @Query() filterPaginationOptionsDto: FilterPaginationOptionsDto,
   ): Promise<PageDto<Wine>> {
     const store: Store = await this.storesService.findOne({
       where: {
@@ -100,7 +99,12 @@ export class StoresController {
     });
     return await this.storesService.findWinesPaginated(
       store,
-      paginationOptionsDto,
+      filterPaginationOptionsDto,
+      {
+        where: {
+          name: ILike(`%${filterPaginationOptionsDto.filter}%`),
+        },
+      },
     );
   }
 

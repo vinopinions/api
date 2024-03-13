@@ -379,7 +379,7 @@ describe('UsersController (e2e)', () => {
       expect(response.body.data).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK} a valid user`, async () => {
+    it(`should return ${HttpStatus.OK}ppp a valid user`, async () => {
       const friend: User = await authService.signUp(
         generateRandomValidUsername(),
         faker.internet.password(),

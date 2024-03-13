@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
@@ -42,10 +42,12 @@ export class UsersService extends CommonService<User> {
   async findFriendsPaginated(
     user: User,
     paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<User>,
   ): Promise<PageDto<User>> {
     return await this.findManyPaginated(paginationOptionsDto, {
       relations: ['friends'],
-      where: { friends: { id: user.id } },
+      ...options,
+      where: { ...options?.where, ...{ friends: { id: user.id } } },
     });
   }
 

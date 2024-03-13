@@ -19,11 +19,13 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ILike } from 'typeorm';
 import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
+import { FilterPaginationOptionsDto } from '../pagination/filter-pagination-options.dto';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Wine } from '../wines/entities/wine.entity';
@@ -81,15 +83,15 @@ export class WinemakersController {
   @HttpCode(HttpStatus.OK)
   @Get(WINEMAKERS_ID_WINES_ENDPOINT_NAME)
   @ApiPaginationResponse(Wine, {
-    description: 'Friend of user have been found',
+    description: 'Wines of winemaker have been found',
     status: HttpStatus.OK,
   })
   @ApiNotFoundResponse({
-    description: 'User has not been found',
+    description: 'Winemaker has not been found',
   })
-  async findRatingsOfUser(
+  async findWines(
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
-    @Query() paginationOptionsDto: PaginationOptionsDto,
+    @Query() filterPaginationOptionsDto: FilterPaginationOptionsDto,
   ): Promise<PageDto<Wine>> {
     const winemaker: Winemaker = await this.winemakersService.findOne({
       where: {
@@ -98,7 +100,12 @@ export class WinemakersController {
     });
     return await this.winemakersService.findWinesPaginated(
       winemaker,
-      paginationOptionsDto,
+      filterPaginationOptionsDto,
+      {
+        where: {
+          name: ILike(`%${filterPaginationOptionsDto.filter}%`),
+        },
+      },
     );
   }
 

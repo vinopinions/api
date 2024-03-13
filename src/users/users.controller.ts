@@ -115,9 +115,9 @@ export class UsersController {
   @ApiNotFoundResponse({
     description: 'User has not been found',
   })
-  async findFriendOfUser(
+  async findFriends(
     @Param() { username }: GetUserDto,
-    @Query() paginationOptionsDto: PaginationOptionsDto,
+    @Query() filterPaginationOptionsDto: FilterPaginationOptionsDto,
   ): Promise<PageDto<User>> {
     const user: User = await this.usersService.findOne({
       where: {
@@ -126,7 +126,12 @@ export class UsersController {
     });
     return await this.usersService.findFriendsPaginated(
       user,
-      paginationOptionsDto,
+      filterPaginationOptionsDto,
+      {
+        where: {
+          username: ILike(`%${filterPaginationOptionsDto.filter}%`),
+        },
+      },
     );
   }
 

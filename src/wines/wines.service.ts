@@ -1,14 +1,9 @@
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  forwardRef,
-} from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
-import { buildPageDto } from '../pagination/pagination.utils';
 import { Rating } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
 import { Store } from '../stores/entities/store.entity';
@@ -19,7 +14,7 @@ import { WinemakersService } from './../winemakers/winemakers.service';
 import { Wine } from './entities/wine.entity';
 
 @Injectable()
-export class WinesService {
+export class WinesService extends CommonService<Wine> {
   constructor(
     @InjectRepository(Wine) private wineRepository: Repository<Wine>,
     @Inject(forwardRef(() => WinemakersService))
@@ -27,7 +22,9 @@ export class WinesService {
     @Inject(forwardRef(() => StoresService))
     private storesService: StoresService,
     private ratingsService: RatingsService,
-  ) {}
+  ) {
+    super(wineRepository, Wine);
+  }
 
   async create(
     name: string,
@@ -59,37 +56,6 @@ export class WinesService {
     wine.stores = stores;
     const dbWine: Wine = await this.wineRepository.save(wine);
     return await this.findOne({ where: { id: dbWine.id } });
-  }
-
-  findMany(options?: FindManyOptions<Wine>) {
-    return this.wineRepository.find(options);
-  }
-
-  async findOne(options: FindOneOptions<Wine>): Promise<Wine> {
-    const wine = await this.wineRepository.findOne(options);
-    if (!wine)
-      throw new NotFoundException(
-        `Wine with ${JSON.stringify(options.where)} not found`,
-      );
-    return wine;
-  }
-
-  async findManyPaginated(
-    paginationOptionsDto: PaginationOptionsDto,
-    options?: FindManyOptions<Wine>,
-  ): Promise<PageDto<Wine>> {
-    return await buildPageDto(
-      this.wineRepository,
-      paginationOptionsDto,
-      'createdAt',
-      options,
-    );
-  }
-
-  async findAllPaginated(
-    paginationOptionsDto: PaginationOptionsDto,
-  ): Promise<PageDto<Wine>> {
-    return await this.findManyPaginated(paginationOptionsDto);
   }
 
   async findManyByStorePaginated(

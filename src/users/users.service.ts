@@ -5,20 +5,22 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
-import { buildPageDto } from '../pagination/pagination.utils';
 import { Rating } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
 import { User } from './entities/user.entity';
 
 @Injectable()
-export class UsersService {
+export class UsersService extends CommonService<User> {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private ratingsService: RatingsService,
-  ) {}
+  ) {
+    super(userRepository, User);
+  }
 
   async create(username: string, passwordHash: string): Promise<User> {
     const existingUser: User | null = await this.userRepository.findOne({
@@ -35,37 +37,6 @@ export class UsersService {
         id: dbUser.id,
       },
     });
-  }
-
-  findMany(options?: FindManyOptions<User>) {
-    return this.userRepository.find(options);
-  }
-
-  async findOne(options: FindOneOptions<User>): Promise<User> {
-    const user = await this.userRepository.findOne(options);
-    if (!user)
-      throw new NotFoundException(
-        `User with ${JSON.stringify(options.where)} not found`,
-      );
-    return user;
-  }
-
-  async findManyPaginated(
-    paginationOptionsDto: PaginationOptionsDto,
-    options?: FindManyOptions<User>,
-  ): Promise<PageDto<User>> {
-    return await buildPageDto(
-      this.userRepository,
-      paginationOptionsDto,
-      'createdAt',
-      options,
-    );
-  }
-
-  async findAllPaginated(
-    paginationOptionsDto: PaginationOptionsDto,
-  ): Promise<PageDto<User>> {
-    return await this.findManyPaginated(paginationOptionsDto);
   }
 
   async findFriendsPaginated(

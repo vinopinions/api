@@ -2,56 +2,24 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CommonService } from '../common/common.service';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
-import { buildPageDto } from '../pagination/pagination.utils';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { PageDto } from './../pagination/page.dto';
 import { FriendRequest } from './entities/friend-request.entity';
 
 @Injectable()
-export class FriendRequestsService {
+export class FriendRequestsService extends CommonService<FriendRequest> {
   constructor(
     private usersService: UsersService,
     @InjectRepository(FriendRequest)
     private friendRequestRepository: Repository<FriendRequest>,
-  ) {}
-
-  async findOne(
-    options: FindOneOptions<FriendRequest>,
-  ): Promise<FriendRequest> {
-    const friendRequest = await this.friendRequestRepository.findOne(options);
-    if (!friendRequest)
-      throw new NotFoundException(
-        `FriendRequest with ${JSON.stringify(options.where)} not found`,
-      );
-    return friendRequest;
-  }
-
-  findMany(options?: FindManyOptions<FriendRequest>) {
-    return this.friendRequestRepository.find(options);
-  }
-
-  async findManyPaginated(
-    paginationOptionsDto: PaginationOptionsDto,
-    options?: FindManyOptions<FriendRequest>,
-  ): Promise<PageDto<FriendRequest>> {
-    return await buildPageDto(
-      this.friendRequestRepository,
-      paginationOptionsDto,
-      'createdAt',
-      options,
-    );
-  }
-
-  async findAllPaginated(
-    paginationOptionsDto: PaginationOptionsDto,
-  ): Promise<PageDto<FriendRequest>> {
-    return await this.findManyPaginated(paginationOptionsDto);
+  ) {
+    super(friendRequestRepository, FriendRequest);
   }
 
   /**

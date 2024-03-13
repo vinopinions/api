@@ -160,6 +160,29 @@ export class UsersController {
     );
   }
 
+  @ApiOperation({ summary: 'check friendship' })
+  @Get(USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME)
+  @ApiOkResponse({
+    description: 'Friendship has been found',
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found or is not a friend',
+  })
+  async isFriend(
+    @Param() { username }: GetUserDto,
+    @Param(FRIEND_USERNAME_URL_PARAMETER_NAME) friendUsername: string,
+  ): Promise<void> {
+    // this throws a NotFoundException if the friendship or user doesn't exist
+    await this.usersService.findOne({
+      where: {
+        username: username,
+        friends: {
+          username: friendUsername,
+        },
+      },
+    });
+  }
+
   @ApiOperation({ summary: 'remove a friend' })
   @HttpCode(HttpStatus.OK)
   @Delete(USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME)

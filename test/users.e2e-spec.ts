@@ -524,6 +524,99 @@ describe('UsersController (e2e)', () => {
     });
   });
 
+  describe(USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT + ' (GET)', () => {
+    const endpoint: string = USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT;
+    const method: HttpMethod = 'get';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint
+          .replace(USERNAME_URL_PARAMETER, generateRandomValidUsername())
+          .replace(
+            FRIEND_USERNAME_URL_PARAMETER,
+            generateRandomValidUsername(),
+          ),
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint: endpoint
+          .replace(USERNAME_URL_PARAMETER, generateRandomValidUsername())
+          .replace(
+            FRIEND_USERNAME_URL_PARAMETER,
+            generateRandomValidUsername(),
+          ),
+      }));
+
+    it(`should return ${HttpStatus.NOT_FOUND} when the getting a friendship with users that do not exist`, async () => {
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint
+          .replace(USERNAME_URL_PARAMETER, generateRandomValidUsername())
+          .replace(
+            FRIEND_USERNAME_URL_PARAMETER,
+            generateRandomValidUsername(),
+          ),
+        exception: new NotFoundException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when friend does not exist`, async () => {
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint
+          .replace(USERNAME_URL_PARAMETER, user.username)
+          .replace(
+            FRIEND_USERNAME_URL_PARAMETER,
+            generateRandomValidUsername(),
+          ),
+        exception: new NotFoundException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when users are not friends`, async () => {
+      const toBeDeletedUser: User = await authService.signUp(
+        generateRandomValidUsername(),
+        faker.internet.password(),
+      );
+
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint
+          .replace(USERNAME_URL_PARAMETER, user.username)
+          .replace(FRIEND_USERNAME_URL_PARAMETER, toBeDeletedUser.username),
+        exception: new NotFoundException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.OK} when getting a present friendship`, async () => {
+      const friend: User = await authService.signUp(
+        generateRandomValidUsername(),
+        faker.internet.password(),
+      );
+
+      usersService.addFriend(friend, user);
+
+      const response: Response = await request(app.getHttpServer())
+        [
+          method
+        ](USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT.replace(USERNAME_URL_PARAMETER, user.username).replace(FRIEND_USERNAME_URL_PARAMETER, friend.username))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+    });
+  });
+
   describe(USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT + ' (DELETE)', () => {
     const endpoint: string = USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT;
     const method: HttpMethod = 'delete';

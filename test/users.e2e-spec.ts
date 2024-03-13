@@ -386,11 +386,6 @@ describe('UsersController (e2e)', () => {
       );
       await usersService.addFriend(friend, user);
 
-      console.log({
-        user: user.username,
-        friend: friend.username,
-      });
-
       const response: Response = await request(app.getHttpServer())
         [method](endpoint.replace(USERNAME_URL_PARAMETER, user.username))
         .set(authHeader);

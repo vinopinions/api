@@ -99,7 +99,7 @@ export class WinesController {
   })
   async findAllStores(
     @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
-    @Query() paginationOptionsDto: PaginationOptionsDto,
+    @Query() filterPaginationOptionsDto: FilterPaginationOptionsDto,
   ): Promise<PageDto<Store>> {
     const wine: Wine = await this.winesService.findOne({
       where: {
@@ -108,7 +108,12 @@ export class WinesController {
     });
     return await this.winesService.findStoresPaginated(
       wine,
-      paginationOptionsDto,
+      filterPaginationOptionsDto,
+      {
+        where: {
+          name: ILike(`%${filterPaginationOptionsDto.filter}%`),
+        },
+      },
     );
   }
 

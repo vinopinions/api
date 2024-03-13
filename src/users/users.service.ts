@@ -46,7 +46,8 @@ export class UsersService extends CommonService<User> {
   ): Promise<PageDto<User>> {
     return await this.findManyPaginated(paginationOptionsDto, {
       relations: ['friends'],
-      where: { ...{ friends: { id: user.id } }, ...options },
+      where: { friends: { id: user.id } },
+      ...options,
     });
   }
 

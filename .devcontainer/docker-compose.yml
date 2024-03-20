@@ -13,6 +13,7 @@ services:
     volumes:
       - ..:/workspace
     user: dev
+
   db:
     container_name: vinopinionsapi-devcontainer-db
     image: postgres:16
@@ -26,5 +27,21 @@ services:
       - 5432:5432
     volumes:
       - vinopinionsapi-devcontainer-pgdata:/var/lib/postgresql/data
+
+  minio:
+    container_name: vinopinionsapi-devcontainer-minio
+    image: docker.io/bitnami/minio:latest
+    restart: unless-stopped
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - 'vinopinionsapi-minio-data:/data'
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_DEFAULT_BUCKETS=${MINIO_DEFAULT_BUCKETS}
+
 volumes:
   vinopinionsapi-devcontainer-pgdata:
+  vinopinionsapi-minio-data:

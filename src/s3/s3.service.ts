@@ -29,7 +29,7 @@ export class S3Service {
 
   private s3 = new S3Client({
     endpoint: this.config.endpoint,
-    forcePathStyle: this.config.endpoint?.includes('minio'), // required by minio for development
+    forcePathStyle: true, // required by minio for development
     credentials: {
       accessKeyId: this.config.accessKeyId,
       secretAccessKey: this.config.secretAccessKey,

@@ -41,7 +41,7 @@ export class DummyDataService {
     await s3Service.clearBucket();
 
     // create 100 users + 'oskar' and 'tschokri'
-    await this.generateAndInsertUsers(100, authService);
+    await this.generateAndInsertUsers(100, authService, usersService);
     let users: User[] = await usersService.findMany();
 
     // create 20 winemakers
@@ -68,11 +68,20 @@ export class DummyDataService {
   private generateAndInsertUsers = async (
     amount: number,
     authService: AuthService,
+    usersService: UsersService,
   ) => {
-    await authService.signUp('tschokri', 'test');
-    await authService.signUp('oskar', 'test');
+    const signupUser = async (username: string, password: string) => {
+      const user: User = await authService.signUp(username, password);
+      const buffer: Buffer = await getImageBufferFromUrl(
+        faker.image.avatarGitHub(),
+      );
+      await usersService.updateProfilePicture(user, buffer);
+    };
+
+    await signupUser('tschokri', 'test');
+    await signupUser('oskar', 'test');
     for (let i = 0; i < amount; i++) {
-      await authService.signUp(
+      await signupUser(
         generateRandomValidUsername(),
         faker.internet.password(),
       );

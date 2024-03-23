@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { IsDate, IsUUID, Matches } from 'class-validator';
+import { IsDate, IsOptional, IsUUID, IsUrl, Matches } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -61,6 +61,14 @@ export class User {
   @Exclude()
   @OneToMany(() => Rating, (rating: Rating) => rating.user)
   ratings: Rating[];
+
+  @ApiProperty({
+    description: 'Profile picture of the user',
+    type: String,
+  })
+  @IsOptional()
+  @IsUrl()
+  profilePicture?: string;
 
   @ApiProperty({
     description: 'createdAt',

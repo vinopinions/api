@@ -1,11 +1,13 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import sharp from 'sharp';
 import { FindManyOptions, Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
+import { S3Service } from '../s3/s3.service';
 import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
 import { User } from '../users/entities/user.entity';
@@ -22,8 +24,13 @@ export class WinesService extends CommonService<Wine> {
     @Inject(forwardRef(() => StoresService))
     private storesService: StoresService,
     private ratingsService: RatingsService,
+    private s3Service: S3Service,
   ) {
-    super(wineRepository, Wine);
+    super(wineRepository, Wine, async (wine: Wine) => {
+      if (await s3Service.existsImage(wine.id, 'wine'))
+        wine.image = await this.s3Service.getSignedImageUrl(wine.id, 'wine');
+      return wine;
+    });
   }
 
   async create(
@@ -136,5 +143,14 @@ export class WinesService extends CommonService<Wine> {
     wine: Wine,
   ): Promise<Rating> {
     return this.ratingsService.create(stars, text, user, wine);
+  }
+
+  async updateImage(wine: Wine, buffer: Buffer) {
+    const resizedBuffer: Buffer = await sharp(buffer)
+      .resize(200, 200)
+      .jpeg({ mozjpeg: true })
+      .toBuffer();
+
+    await this.s3Service.uploadImage(wine.id, 'wine', resizedBuffer);
   }
 }

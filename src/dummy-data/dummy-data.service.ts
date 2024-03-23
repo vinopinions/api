@@ -128,7 +128,7 @@ export class DummyDataService {
     const potentialStores: Store[] = randomizeArray(stores, amount);
 
     for (let i = 0; i < amount; i++) {
-      await winesService.create(
+      const wine: Wine = await winesService.create(
         `${faker.color.human()} ${faker.animal.cow()}`,
         faker.date.anytime().getFullYear(),
         potentialWinemakers.pop()!.id,
@@ -136,6 +136,15 @@ export class DummyDataService {
         faker.animal.cetacean(),
         faker.location.country(),
       );
+
+      const buffer: Buffer = await getImageBufferFromUrl(
+        faker.image.urlLoremFlickr({
+          width: 200,
+          height: 200,
+          category: 'wine',
+        }),
+      );
+      await winesService.updateImage(wine, buffer);
     }
   };
 

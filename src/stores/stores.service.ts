@@ -1,5 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import sharp from 'sharp';
 import { FindManyOptions, Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
@@ -64,6 +65,11 @@ export class StoresService extends CommonService<Store> {
   }
 
   async updateImage(store: Store, file: Express.Multer.File) {
-    await this.s3Service.uploadImage(store.id, 'store', file.buffer);
+    const buffer: Buffer = await sharp(file.buffer)
+      .resize(200, 200)
+      .jpeg({ mozjpeg: true })
+      .toBuffer();
+
+    await this.s3Service.uploadImage(store.id, 'store', buffer);
   }
 }

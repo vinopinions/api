@@ -112,7 +112,6 @@ export class S3Service {
           Key: `${directory}/${key}`,
         }),
       );
-      console.log(result);
       return true;
     } catch (error) {
       if (error.name === 'NotFound') {

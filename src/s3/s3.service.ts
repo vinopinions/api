@@ -1,7 +1,10 @@
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
+  DeleteObjectsCommandInput,
   GetObjectCommand,
   HeadObjectCommand,
+  ListObjectsCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -118,6 +121,24 @@ export class S3Service {
         return false;
       }
       throw error;
+    }
+  }
+
+  async clearBucket() {
+    const listObjectsParams = { Bucket: this.config.bucket };
+    const listObjectsCommand = new ListObjectsCommand(listObjectsParams);
+    const { Contents } = await this.s3.send(listObjectsCommand);
+
+    if (Contents) {
+      const objectsToDelete = Contents.map(({ Key }) => ({ Key }));
+      const deleteObjectsParams: DeleteObjectsCommandInput = {
+        Bucket: this.config.bucket,
+        Delete: { Objects: objectsToDelete },
+      };
+      const deleteObjectsCommand = new DeleteObjectsCommand(
+        deleteObjectsParams,
+      );
+      await this.s3.send(deleteObjectsCommand);
     }
   }
 }

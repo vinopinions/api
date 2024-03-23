@@ -64,12 +64,12 @@ export class StoresService extends CommonService<Store> {
     await this.s3Service.deleteImage(store.id, 'store');
   }
 
-  async updateImage(store: Store, file: Express.Multer.File) {
-    const buffer: Buffer = await sharp(file.buffer)
+  async updateImage(store: Store, buffer: Buffer) {
+    const resizedBuffer: Buffer = await sharp(buffer)
       .resize(200, 200)
       .jpeg({ mozjpeg: true })
       .toBuffer();
 
-    await this.s3Service.uploadImage(store.id, 'store', buffer);
+    await this.s3Service.uploadImage(store.id, 'store', resizedBuffer);
   }
 }

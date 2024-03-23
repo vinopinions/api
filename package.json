@@ -28,6 +28,7 @@
     "@nestjs/typeorm": "^10.0.2",
     "@semantic-release/git": "^10.0.1",
     "@types/mime-types": "^2.1.4",
+    "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

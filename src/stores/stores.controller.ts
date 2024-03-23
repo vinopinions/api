@@ -156,6 +156,6 @@ export class StoresController {
     file: Express.Multer.File,
   ) {
     const store: Store = await this.storesService.findOne({ where: { id } });
-    await this.storesService.updateImage(store, file);
+    await this.storesService.updateImage(store, file.buffer);
   }
 }

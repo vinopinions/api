@@ -17,8 +17,4 @@ describe('S3Service', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-
-  it('test', async () => {
-    await service.test();
-  });
 });

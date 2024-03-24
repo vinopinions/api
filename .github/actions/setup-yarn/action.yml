@@ -12,3 +12,4 @@ runs:
         node-version: ${{ inputs.node-version }}
 
     - run: corepack enable
+      shell: bash

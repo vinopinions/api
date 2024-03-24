@@ -41,10 +41,12 @@ jobs:
             --health-retries 5
       minio:
         image: bitnami/minio
+        ports:
+          - 9000:9000
         env:
           MINIO_ROOT_USER: ${{ env.S3_ACCESS_KEY }}
           MINIO_ROOT_PASSWORD: ${{ env.S3_SECRET_KEY }}
-          MINIO_DEFAULT_BUCKETS: ${{ env.S3_BUCKET }}
+          MINIO_DEFAULT_BUCKETS: ${{ env.S3_BUCKET }}
 
     steps:
       - name: Checkout code

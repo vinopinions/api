@@ -4,6 +4,9 @@ ARG NODE_VERSION=20.11.0
 
 FROM node:${NODE_VERSION}-alpine as base
 
+# Setup yarn modern
+RUN corepack enable
+
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
 
@@ -19,7 +22,7 @@ FROM base as deps
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=yarn.lock,target=yarn.lock \
     --mount=type=cache,target=/root/.yarn \
-    yarn install --production --ignore-scripts --non-interactive --frozen-lockfile
+    yarn install --production --ignore-scripts --non-interactive --immutable
 
 ################################################################################
 # Create a stage for building the application.
@@ -30,7 +33,7 @@ FROM deps as build
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=yarn.lock,target=yarn.lock \
     --mount=type=cache,target=/root/.yarn \
-    yarn install --ignore-scripts --non-interactive --frozen-lockfile
+    yarn install --ignore-scripts --non-interactive --immutable
 
 # Copy the rest of the source files into the image.
 COPY . .

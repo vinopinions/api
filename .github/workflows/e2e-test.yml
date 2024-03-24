@@ -38,8 +38,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup yarn
+        uses: ./.github/actions/setup-yarn
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
       - name: Install dependencies
-        run: yarn --ignore-scripts --non-interactive --frozen-lockfile
+        run: yarn --ignore-scripts --non-interactive --immutable
 
       - name: Run Tests
         run: yarn test:e2e --ci --runInBand

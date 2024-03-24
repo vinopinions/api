@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { S3Service } from '../s3/s3.service';
 import { User } from '../users/entities/user.entity';
 import { Wine } from '../wines/entities/wine.entity';
 import { Rating } from './entities/rating.entity';
@@ -12,8 +13,16 @@ import { Rating } from './entities/rating.entity';
 export class RatingsService extends CommonService<Rating> {
   constructor(
     @InjectRepository(Rating) private ratingRepository: Repository<Rating>,
+    private s3Service: S3Service,
   ) {
-    super(ratingRepository, Rating);
+    super(ratingRepository, Rating, async (rating: Rating) => {
+      if (await this.s3Service.existsImage(rating.wine.id, 'wine'))
+        rating.wine.image = await this.s3Service.getSignedImageUrl(
+          rating.wine.id,
+          'wine',
+        );
+      return rating;
+    });
   }
 
   async create(

@@ -18,7 +18,7 @@ export class StoresService extends CommonService<Store> {
     private s3Service: S3Service,
   ) {
     super(storeRepository, Store, async (store: Store) => {
-      if (await s3Service.existsImage(store.id, 'store'))
+      if (await this.s3Service.existsImage(store.id, 'store'))
         store.image = await this.s3Service.getSignedImageUrl(store.id, 'store');
       return store;
     });

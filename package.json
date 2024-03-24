@@ -14,7 +14,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "postinstall": "husky"
+    "husky": "husky"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.537.0",

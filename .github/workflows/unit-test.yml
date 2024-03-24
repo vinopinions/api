@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }}
 
       - name: Install dependencies
-        run: yarn --non-interactive --immutable
+        run: yarn --immutable
 
       - name: Run Tests
         run: yarn test --ci

@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
-      - run: yarn --non-interactive --immutable
+      - run: yarn --immutable
 
       - run: yarn build
 

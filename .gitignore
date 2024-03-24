@@ -35,5 +35,11 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-./.env
-script.sh
+# Yarn v3
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

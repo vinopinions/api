@@ -78,5 +78,6 @@
   "bugs": {
     "url": "https://github.com/layla-oskar-schule/vinopinions-api/issues"
   },
-  "homepage": "https://github.com/layla-oskar-schule/vinopinions-api#readme"
+  "homepage": "https://github.com/layla-oskar-schule/vinopinions-api#readme",
+  "packageManager": "yarn@4.1.1"
 }

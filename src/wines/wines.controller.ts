@@ -5,15 +5,21 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   ParseUUIDPipe,
   Post,
   Put,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -23,6 +29,7 @@ import {
 } from '@nestjs/swagger';
 import { ILike } from 'typeorm';
 import { AuthenticatedRequest } from '../auth/auth.guard';
+import { FileUploadDto } from '../common/dtos/FileUploadDto';
 import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
@@ -31,6 +38,7 @@ import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { FilterPaginationOptionsDto } from '../pagination/filter-pagination-options.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { CreateRatingDto } from '../ratings/dtos/create-rating.dto';
+import { FILE_MAX_SIZE } from '../s3/constants';
 import { Store } from '../stores/entities/store.entity';
 import { PageDto } from './../pagination/page.dto';
 import { Rating } from './../ratings/entities/rating.entity';
@@ -47,6 +55,8 @@ const WINES_ID_RATINGS_ENDPOINT_NAME = `${WINES_ID_URL_PARAMETER}/ratings`;
 export const WINES_ID_RATINGS_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_RATINGS_ENDPOINT_NAME}`;
 const WINES_ID_STORES_ENDPOINT_NAME = `${WINES_ID_URL_PARAMETER}/stores`;
 export const WINES_ID_STORES_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_STORES_ENDPOINT_NAME}`;
+const WINES_ID_IMAGE_ENDPOINT_NAME = `${WINES_ID_URL_PARAMETER}/image`;
+export const WINES_ID_IMAGE_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_IMAGE_ENDPOINT_NAME}`;
 
 @Controller(WINES_ENDPOINT_NAME)
 @ApiTags(WINES_ENDPOINT_NAME)
@@ -55,6 +65,7 @@ export const WINES_ID_STORES_ENDPOINT = `${WINES_ENDPOINT}/${WINES_ID_STORES_END
 })
 @ApiBearerAuth()
 export class WinesController {
+  storesService: any;
   constructor(private winesService: WinesService) {}
 
   @ApiOperation({ summary: 'get wine by id' })
@@ -205,5 +216,31 @@ export class WinesController {
       where: { id: wineId },
     });
     return this.winesService.createRating(stars, text, request.user, wine);
+  }
+
+  @ApiOperation({ summary: 'update image' })
+  @Put(WINES_ID_IMAGE_ENDPOINT_NAME)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Image of the store',
+    type: FileUploadDto,
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async updateImage(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'jpeg',
+        })
+        .addMaxSizeValidator({
+          maxSize: FILE_MAX_SIZE,
+        })
+        .build(),
+    )
+    file: Express.Multer.File,
+  ) {
+    const store: Store = await this.storesService.findOne({ where: { id } });
+    await this.storesService.updateImage(store, file.buffer);
   }
 }

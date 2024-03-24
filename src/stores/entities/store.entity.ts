@@ -53,6 +53,14 @@ export class Store {
   @Column({ nullable: true })
   url?: string;
 
+  @ApiProperty({
+    description: 'Image of the store',
+    type: String,
+  })
+  @IsOptional()
+  @IsUrl()
+  image?: string;
+
   @Exclude()
   @ManyToMany(() => Wine, (wine) => wine.stores)
   wines: Wine[];

@@ -30,8 +30,8 @@ RUN apt-get -y update --no-install-recommends \
   && apt-get autoremove -y \
   && apt-get clean -y
 
-# Install yarn
-RUN npm install --global yarn
+# Setup yarn modern
+RUN corepack enable
 
 # Create the user.
 RUN groupadd --gid $USER_GID $USERNAME \

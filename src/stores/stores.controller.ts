@@ -5,13 +5,20 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   ParseUUIDPipe,
   Post,
+  Put,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -20,12 +27,14 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ILike } from 'typeorm';
+import { FileUploadDto } from '../common/dtos/FileUploadDto';
 import {
   ID_URL_PARAMETER,
   ID_URL_PARAMETER_NAME,
 } from '../constants/url-parameter';
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { FilterPaginationOptionsDto } from '../pagination/filter-pagination-options.dto';
+import { FILE_MAX_SIZE } from '../s3/constants';
 import { Wine } from '../wines/entities/wine.entity';
 import { PageDto } from './../pagination/page.dto';
 import { CreateStoreDto } from './dtos/create-store.dto';
@@ -38,6 +47,8 @@ const STORES_ID_URL_PARAMETER = ID_URL_PARAMETER;
 export const STORES_ID_ENDPOINT = `${STORES_ENDPOINT}/${STORES_ID_URL_PARAMETER}`;
 const STORES_ID_WINES_ENDPOINT_NAME = `${STORES_ID_URL_PARAMETER}/wines`;
 export const STORES_ID_WINES_ENDPOINT = `${STORES_ENDPOINT}/${STORES_ID_WINES_ENDPOINT_NAME}`;
+const STORES_ID_IMAGE_ENDPOINT_NAME = `${STORES_ID_URL_PARAMETER}/image`;
+export const STORES_ID_IMAGE_ENDPOINT = `${STORES_ENDPOINT}/${STORES_ID_IMAGE_ENDPOINT_NAME}`;
 
 @Controller(STORES_ENDPOINT_NAME)
 @ApiTags(STORES_ENDPOINT_NAME)
@@ -79,6 +90,7 @@ export class StoresController {
       },
     });
   }
+
   @ApiOperation({ summary: 'get wines of store' })
   @Get(STORES_ID_WINES_ENDPOINT_NAME)
   @ApiPaginationResponse(Wine, {
@@ -119,5 +131,31 @@ export class StoresController {
   })
   create(@Body() { name, address, url }: CreateStoreDto): Promise<Store> {
     return this.storesService.create(name, address, url);
+  }
+
+  @ApiOperation({ summary: 'update image' })
+  @Put(STORES_ID_IMAGE_ENDPOINT_NAME)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Image of the store',
+    type: FileUploadDto,
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async updateImage(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'jpeg',
+        })
+        .addMaxSizeValidator({
+          maxSize: FILE_MAX_SIZE,
+        })
+        .build(),
+    )
+    file: Express.Multer.File,
+  ) {
+    const store: Store = await this.storesService.findOne({ where: { id } });
+    await this.storesService.updateImage(store, file.buffer);
   }
 }

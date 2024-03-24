@@ -7,6 +7,7 @@ import {
 import { AuthService } from '../auth/auth.service';
 import { STARS_MAX, STARS_MIN } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
+import { S3Service } from '../s3/s3.service';
 import { Store } from '../stores/entities/store.entity';
 import { StoresService } from '../stores/stores.service';
 import { User } from '../users/entities/user.entity';
@@ -17,6 +18,7 @@ import { Wine } from '../wines/entities/wine.entity';
 import { WinesService } from '../wines/wines.service';
 import {
   generateRandomUniqueNumbers,
+  getImageBufferFromUrl,
   groupArray,
   randomizeArray,
 } from './utils';
@@ -30,12 +32,16 @@ export class DummyDataService {
     const storesService: StoresService = app.get(StoresService);
     const winesService: WinesService = app.get(WinesService);
     const ratingsService: RatingsService = app.get(RatingsService);
+    const s3Service: S3Service = app.get(S3Service);
 
     // clear database
     await clearDatabase(app);
 
+    // clear s3
+    await s3Service.clearBucket();
+
     // create 100 users + 'oskar' and 'tschokri'
-    await this.generateAndInsertUsers(100, authService);
+    await this.generateAndInsertUsers(100, authService, usersService);
     let users: User[] = await usersService.findMany();
 
     // create 20 winemakers
@@ -62,11 +68,20 @@ export class DummyDataService {
   private generateAndInsertUsers = async (
     amount: number,
     authService: AuthService,
+    usersService: UsersService,
   ) => {
-    await authService.signUp('tschokri', 'test');
-    await authService.signUp('oskar', 'test');
+    const signupUser = async (username: string, password: string) => {
+      const user: User = await authService.signUp(username, password);
+      const buffer: Buffer = await getImageBufferFromUrl(
+        faker.image.avatarGitHub(),
+      );
+      await usersService.updateProfilePicture(user, buffer);
+    };
+
+    await signupUser('tschokri', 'test');
+    await signupUser('oskar', 'test');
     for (let i = 0; i < amount; i++) {
-      await authService.signUp(
+      await signupUser(
         generateRandomValidUsername(),
         faker.internet.password(),
       );
@@ -87,11 +102,19 @@ export class DummyDataService {
     storesService: StoresService,
   ) => {
     for (let i = 0; i < amount; i++) {
-      await storesService.create(
+      const store = await storesService.create(
         faker.company.name(),
         faker.location.streetAddress(),
         faker.internet.url(),
       );
+      const buffer: Buffer = await getImageBufferFromUrl(
+        faker.image.urlLoremFlickr({
+          width: 200,
+          height: 200,
+          category: 'storefront',
+        }),
+      );
+      await storesService.updateImage(store, buffer);
     }
   };
 
@@ -105,7 +128,7 @@ export class DummyDataService {
     const potentialStores: Store[] = randomizeArray(stores, amount);
 
     for (let i = 0; i < amount; i++) {
-      await winesService.create(
+      const wine: Wine = await winesService.create(
         `${faker.color.human()} ${faker.animal.cow()}`,
         faker.date.anytime().getFullYear(),
         potentialWinemakers.pop()!.id,
@@ -113,6 +136,15 @@ export class DummyDataService {
         faker.animal.cetacean(),
         faker.location.country(),
       );
+
+      const buffer: Buffer = await getImageBufferFromUrl(
+        faker.image.urlLoremFlickr({
+          width: 200,
+          height: 200,
+          category: 'wine',
+        }),
+      );
+      await winesService.updateImage(wine, buffer);
     }
   };
 

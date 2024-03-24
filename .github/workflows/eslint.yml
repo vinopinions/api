@@ -18,15 +18,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup yarn
+        uses: ./.github/actions/setup-yarn
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
       - name: Install ESLint and Sarif Formatter
         run: |
-          yarn add eslint@8.56.0 --ignore-scripts
-          yarn add @microsoft/eslint-formatter-sarif@2.1.7 --ignore-scripts
+          yarn add eslint@8.56.0
+          yarn add @microsoft/eslint-formatter-sarif@2.1.7
 
       - name: Run ESLint
         run: npx eslint .

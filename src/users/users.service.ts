@@ -5,12 +5,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import sharp from 'sharp';
 import { FindManyOptions, Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
+import { S3Service } from '../s3/s3.service';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -18,8 +20,16 @@ export class UsersService extends CommonService<User> {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private ratingsService: RatingsService,
+    private s3Service: S3Service,
   ) {
-    super(userRepository, User);
+    super(userRepository, User, async (user: User) => {
+      if (await s3Service.existsImage(user.id, 'user'))
+        user.profilePicture = await this.s3Service.getSignedImageUrl(
+          user.id,
+          'user',
+        );
+      return user;
+    });
   }
 
   async create(username: string, passwordHash: string): Promise<User> {
@@ -140,5 +150,14 @@ export class UsersService extends CommonService<User> {
     );
     // Save changes to the database
     await this.userRepository.save([removingUser, toBeRemovedUser]);
+  }
+
+  async updateProfilePicture(user: User, buffer: Buffer) {
+    const resizedBuffer: Buffer = await sharp(buffer)
+      .resize(200, 200)
+      .jpeg({ mozjpeg: true })
+      .toBuffer();
+
+    await this.s3Service.uploadImage(user.id, 'user', resizedBuffer);
   }
 }

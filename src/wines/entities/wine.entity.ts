@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { IsDate, IsNumber, IsString, IsUUID } from 'class-validator';
+import {
+  IsDate,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsUrl,
+} from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -62,6 +69,14 @@ export class Wine {
   @IsString()
   @Column()
   heritage: string;
+
+  @ApiProperty({
+    description: 'Image of the store',
+    type: String,
+  })
+  @IsOptional()
+  @IsUrl()
+  image?: string;
 
   @ApiProperty({
     description: 'The winemaker of the wine',

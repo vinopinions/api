@@ -2,7 +2,6 @@ version: '3.7'
 
 services:
   app:
-    container_name: vinopinionsapi-devcontainer
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -13,8 +12,8 @@ services:
     volumes:
       - ..:/workspace
     user: dev
+
   db:
-    container_name: vinopinionsapi-devcontainer-db
     image: postgres:16
     restart: unless-stopped
     environment:
@@ -25,6 +24,21 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - vinopinionsapi-devcontainer-pgdata:/var/lib/postgresql/data
+      - pg-data:/var/lib/postgresql/data
+
+  minio:
+    image: docker.io/bitnami/minio:latest
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - 'minio-data:/data'
+    environment:
+      - MINIO_ROOT_USER=${S3_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${S3_SECRET_KEY}
+      - MINIO_DEFAULT_BUCKETS=${S3_BUCKET}
+
 volumes:
-  vinopinionsapi-devcontainer-pgdata:
+  pg-data:
+  minio-data:

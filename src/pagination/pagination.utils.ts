@@ -5,6 +5,7 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
+import { CommonService } from '../common/common.service';
 import { PageMetaDto } from './page-meta.dto';
 import { PageDto } from './page.dto';
 import { PaginationOptionsDto } from './pagination-options.dto';
@@ -12,13 +13,13 @@ import { PaginationOptionsDto } from './pagination-options.dto';
 const QUERY_BUILDER_ALIAS = 'entity';
 
 export const buildPageDto = async <Entity extends ObjectLiteral>(
-  repository: Repository<Entity>,
+  service: CommonService<Entity>,
   paginationOptionsDto: PaginationOptionsDto,
   orderKey: keyof Entity,
   options?: FindManyOptions<Entity>,
 ): Promise<PageDto<Entity>> => {
-  const itemCount: number = await repository.count(options);
-  const entities: Entity[] = await repository.find({
+  const itemCount: number = await service.count(options);
+  const entities: Entity[] = await service.findMany({
     order: {
       [orderKey]: paginationOptionsDto.order,
     } as FindOptionsOrder<Entity>, // have to use a type assertion here, because typescript does not recognize that orderKey is keyof Entity

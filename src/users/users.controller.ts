@@ -6,11 +6,19 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseFilePipeBuilder,
+  ParseUUIDPipe,
+  Put,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -19,15 +27,18 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ILike } from 'typeorm';
+import { FileUploadDto } from '../common/dtos/FileUploadDto';
 import {
   FRIEND_USERNAME_URL_PARAMETER,
   FRIEND_USERNAME_URL_PARAMETER_NAME,
+  ID_URL_PARAMETER_NAME,
   USERNAME_URL_PARAMETER,
 } from '../constants/url-parameter';
 import { ApiPaginationResponse } from '../pagination/ApiPaginationResponse';
 import { FilterPaginationOptionsDto } from '../pagination/filter-pagination-options.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
+import { FILE_MAX_SIZE } from '../s3/constants';
 import { AuthenticatedRequest } from './../auth/auth.guard';
 import { PageDto } from './../pagination/page.dto';
 import { GetUserDto } from './dtos/get-user.dto';
@@ -46,6 +57,8 @@ const USERS_USERNAME_RATINGS_ENDPOINT_NAME = `${USERS_USERNAME_ENDPOINT_NAME}/ra
 export const USERS_USERNAME_RATINGS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_RATINGS_ENDPOINT_NAME}`;
 const USERS_ME_ENDPOINT_NAME = 'me';
 export const USERS_ME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_ENDPOINT_NAME}`;
+const USERS_ME_ENDPOINT_PROFILE_PICTURE_ENDPOINT_NAME = `${USERS_ME_ENDPOINT_NAME}/profilePicture`;
+export const USERS_ME_ENDPOINT_PROFILE_PICTURE_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_ENDPOINT_PROFILE_PICTURE_ENDPOINT_NAME}`;
 
 @Controller(USERS_ENDPOINT_NAME)
 @ApiTags(USERS_ENDPOINT_NAME)
@@ -87,6 +100,7 @@ export class UsersController {
       },
     });
   }
+
   @ApiOperation({ summary: 'get information about a user' })
   @HttpCode(HttpStatus.OK)
   @Get(USERS_USERNAME_ENDPOINT_NAME)
@@ -216,5 +230,34 @@ export class UsersController {
     });
 
     await this.usersService.removeFriend(removingUser, toBeRemovedUser);
+  }
+
+  @ApiOperation({ summary: 'update profile picture' })
+  @Put(USERS_ME_ENDPOINT_PROFILE_PICTURE_ENDPOINT_NAME)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Image of the store',
+    type: FileUploadDto,
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async updateProfilePicture(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+    @Req() request: AuthenticatedRequest,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'jpeg',
+        })
+        .addMaxSizeValidator({
+          maxSize: FILE_MAX_SIZE,
+        })
+        .build(),
+    )
+    file: Express.Multer.File,
+  ) {
+    const user: User = await this.usersService.findOne({
+      where: { username: request.user.username },
+    });
+    this.usersService.updateProfilePicture(user, file.buffer);
   }
 }

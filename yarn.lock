@@ -2167,19 +2167,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/platform-express@npm:^10.3.5":
-  version: 10.3.5
-  resolution: "@nestjs/platform-express@npm:10.3.5"
+"@nestjs/platform-express@npm:^10.3.6":
+  version: 10.3.6
+  resolution: "@nestjs/platform-express@npm:10.3.6"
   dependencies:
     body-parser: "npm:1.20.2"
     cors: "npm:2.8.5"
-    express: "npm:4.18.3"
+    express: "npm:4.19.2"
     multer: "npm:1.4.4-lts.1"
     tslib: "npm:2.6.2"
   peerDependencies:
     "@nestjs/common": ^10.0.0
     "@nestjs/core": ^10.0.0
-  checksum: 10c0/6456630f9b9490b94353a8caada61ec755b5d44f7642860d4f1e1f55a14dbeeee7bd07fb4a53be8ef9a6b6b06f0c3df9b5341a851a75c64932fe278fe7d00a2b
+  checksum: 10c0/8d26b3c8474f95d230bf5e38271a9ca362068202b6a6447900cab9128a315030d0f4368f4ca2564807aa107ba420c44655d4b3eb85f82a2b16104048d997d621
   languageName: node
   linkType: hard
 
@@ -5449,10 +5449,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie@npm:0.5.0":
-  version: 0.5.0
-  resolution: "cookie@npm:0.5.0"
-  checksum: 10c0/c01ca3ef8d7b8187bae434434582288681273b5a9ed27521d4d7f9f7928fe0c920df0decd9f9d3bbd2d14ac432b8c8cf42b98b3bdd5bfe0e6edddeebebe8b61d
+"cookie@npm:0.6.0":
+  version: 0.6.0
+  resolution: "cookie@npm:0.6.0"
+  checksum: 10c0/f2318b31af7a31b4ddb4a678d024514df5e705f9be5909a192d7f116cfb6d45cbacf96a473fa733faa95050e7cff26e7832bb3ef94751592f1387b71c8956686
   languageName: node
   linkType: hard
 
@@ -6219,16 +6219,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:4.18.3":
-  version: 4.18.3
-  resolution: "express@npm:4.18.3"
+"express@npm:4.19.2":
+  version: 4.19.2
+  resolution: "express@npm:4.19.2"
   dependencies:
     accepts: "npm:~1.3.8"
     array-flatten: "npm:1.1.1"
     body-parser: "npm:1.20.2"
     content-disposition: "npm:0.5.4"
     content-type: "npm:~1.0.4"
-    cookie: "npm:0.5.0"
+    cookie: "npm:0.6.0"
     cookie-signature: "npm:1.0.6"
     debug: "npm:2.6.9"
     depd: "npm:2.0.0"
@@ -6254,7 +6254,7 @@ __metadata:
     type-is: "npm:~1.6.18"
     utils-merge: "npm:1.0.1"
     vary: "npm:~1.1.2"
-  checksum: 10c0/0b9eeafbac549e3c67d92d083bf1773e358359f41ad142b92121935c6348d29079b75054555b3f62de39263fffc8ba06898b09fdd3e213e28e714c03c5d9f44c
+  checksum: 10c0/e82e2662ea9971c1407aea9fc3c16d6b963e55e3830cd0ef5e00b533feda8b770af4e3be630488ef8a752d7c75c4fcefb15892868eeaafe7353cb9e3e269fdcb
   languageName: node
   linkType: hard
 
@@ -12264,7 +12264,7 @@ __metadata:
     "@nestjs/config": "npm:^3.2.1"
     "@nestjs/core": "npm:^10.3.6"
     "@nestjs/jwt": "npm:^10.2.0"
-    "@nestjs/platform-express": "npm:^10.3.5"
+    "@nestjs/platform-express": "npm:^10.3.6"
     "@nestjs/schematics": "npm:^10.1.1"
     "@nestjs/swagger": "npm:^7.3.0"
     "@nestjs/testing": "npm:^10.3.6"

@@ -2167,9 +2167,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/platform-express@npm:^10.3.6":
-  version: 10.3.6
-  resolution: "@nestjs/platform-express@npm:10.3.6"
+"@nestjs/platform-express@npm:^10.3.7":
+  version: 10.3.7
+  resolution: "@nestjs/platform-express@npm:10.3.7"
   dependencies:
     body-parser: "npm:1.20.2"
     cors: "npm:2.8.5"
@@ -2179,7 +2179,7 @@ __metadata:
   peerDependencies:
     "@nestjs/common": ^10.0.0
     "@nestjs/core": ^10.0.0
-  checksum: 10c0/8d26b3c8474f95d230bf5e38271a9ca362068202b6a6447900cab9128a315030d0f4368f4ca2564807aa107ba420c44655d4b3eb85f82a2b16104048d997d621
+  checksum: 10c0/281ce6149bb9c7288dda3eabe6d3732d6874c9c47ad923a74022659ec765c1c76d1c05323d6f570faf6f976014b7bc8dabd328e4e86e0db9e4f0f1752c6df7d1
   languageName: node
   linkType: hard
 
@@ -12264,7 +12264,7 @@ __metadata:
     "@nestjs/config": "npm:^3.2.1"
     "@nestjs/core": "npm:^10.3.6"
     "@nestjs/jwt": "npm:^10.2.0"
-    "@nestjs/platform-express": "npm:^10.3.6"
+    "@nestjs/platform-express": "npm:^10.3.7"
     "@nestjs/schematics": "npm:^10.1.1"
     "@nestjs/swagger": "npm:^7.3.0"
     "@nestjs/testing": "npm:^10.3.6"

@@ -2074,9 +2074,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:^10.3.6":
-  version: 10.3.6
-  resolution: "@nestjs/common@npm:10.3.6"
+"@nestjs/common@npm:^10.3.7":
+  version: 10.3.7
+  resolution: "@nestjs/common@npm:10.3.7"
   dependencies:
     iterare: "npm:1.2.1"
     tslib: "npm:2.6.2"
@@ -2091,7 +2091,7 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: 10c0/17c2932bc7cc9e04e1df6b69672f5757b5c7f7f29748fce231e46b16e72175d5d45757cea0eae43c6e1d60d1c741e7e33db3b6ceac933427f717e004a1c9e30c
+  checksum: 10c0/d25fba11d553f32a1c80e16da85ff05739eba5678d752feac159ba4ff6c4129d254bd289c95d64106e5c13d78e716a1f3673e6db7897bbcd569fbef49d4f9ec0
   languageName: node
   linkType: hard
 
@@ -12260,7 +12260,7 @@ __metadata:
     "@commitlint/config-conventional": "npm:^19.1.0"
     "@faker-js/faker": "npm:^8.4.1"
     "@nestjs/cli": "npm:^10.3.2"
-    "@nestjs/common": "npm:^10.3.6"
+    "@nestjs/common": "npm:^10.3.7"
     "@nestjs/config": "npm:^3.2.1"
     "@nestjs/core": "npm:^10.3.7"
     "@nestjs/jwt": "npm:^10.2.0"

@@ -2226,9 +2226,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/testing@npm:^10.3.6":
-  version: 10.3.6
-  resolution: "@nestjs/testing@npm:10.3.6"
+"@nestjs/testing@npm:^10.3.7":
+  version: 10.3.7
+  resolution: "@nestjs/testing@npm:10.3.7"
   dependencies:
     tslib: "npm:2.6.2"
   peerDependencies:
@@ -2241,7 +2241,7 @@ __metadata:
       optional: true
     "@nestjs/platform-express":
       optional: true
-  checksum: 10c0/27cb655372b21b2e6d480c68f3774cc6adaca1983e769a68543df69684093cff8c83af134b9c28579ac08f1249076cf52f9f8662e6fa829e6aa3ec7f090fddb6
+  checksum: 10c0/1599e457dd43666903ae367c7941e3b6821006f895dca422ccf9411a9e8bf6280fcd99fbd7bdd887efbb616d85bf49b8baf84a1ef35d761ce6f16cbf31fd607b
   languageName: node
   linkType: hard
 
@@ -12267,7 +12267,7 @@ __metadata:
     "@nestjs/platform-express": "npm:^10.3.7"
     "@nestjs/schematics": "npm:^10.1.1"
     "@nestjs/swagger": "npm:^7.3.0"
-    "@nestjs/testing": "npm:^10.3.6"
+    "@nestjs/testing": "npm:^10.3.7"
     "@nestjs/typeorm": "npm:^10.0.2"
     "@semantic-release/git": "npm:^10.0.1"
     "@types/bcryptjs": "npm:^2.4.6"

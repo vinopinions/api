@@ -39,6 +39,14 @@ services:
       - MINIO_ROOT_PASSWORD=${S3_SECRET_KEY}
       - MINIO_DEFAULT_BUCKETS=${S3_BUCKET}
 
+  firebase-emulator:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Firebase.Dockerfile
+    ports:
+      - 4000:4000
+      - 9099:9099
+
 volumes:
   pg-data:
   minio-data:

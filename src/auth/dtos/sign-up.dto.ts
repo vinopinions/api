@@ -1,13 +1,18 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
-import { User } from '../../users/entities/user.entity';
 
-export class SignUpDto extends PickType(User, ['username'] as const) {
+export class SignUpDto {
   @ApiProperty({
-    example: 'JfK9pC^2Uq4&sn',
-    description: 'password of the user',
+    description: 'Firebase ID Token of the user',
     type: String,
   })
   @IsString()
-  password: string;
+  firebaseToken: string;
+
+  @ApiProperty({
+    description: 'username the user wants to use',
+    type: String,
+  })
+  @IsString()
+  username: string;
 }

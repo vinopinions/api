@@ -32,7 +32,7 @@ export class UsersService extends CommonService<User> {
     });
   }
 
-  async create(username: string, passwordHash: string): Promise<User> {
+  async create(username: string, firebaseId: string): Promise<User> {
     const existingUser: User | null = await this.userRepository.findOne({
       where: { username },
     });
@@ -40,7 +40,7 @@ export class UsersService extends CommonService<User> {
     if (existingUser !== null)
       throw new ConflictException('This username is already taken');
 
-    const user: User = this.userRepository.create({ username, passwordHash });
+    const user: User = this.userRepository.create({ username, firebaseId });
     const dbUser: User = await this.userRepository.save(user);
     return await this.findOne({
       where: {

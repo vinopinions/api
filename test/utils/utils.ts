@@ -33,13 +33,9 @@ export const login = async (
     userData.password,
   );
 
-  const { access_token } = await authService.signIn(
-    userData.username,
-    userData.password,
-  );
   return {
     authHeader: {
-      Authorization: `Bearer ${access_token}`,
+      Authorization: `Bearer test`,
     },
     user,
   };

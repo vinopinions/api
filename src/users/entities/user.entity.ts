@@ -30,6 +30,10 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Exclude()
+  @Column({ unique: true })
+  firebaseId: string;
+
   @ApiProperty({
     example: 'hans',
     description: 'name of the user',
@@ -44,10 +48,6 @@ export class User {
   })
   @Column({ unique: true })
   username: string;
-
-  @Exclude()
-  @Column()
-  passwordHash: string;
 
   @Exclude()
   @ManyToMany(() => User)

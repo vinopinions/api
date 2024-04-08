@@ -44,3 +44,5 @@ lerna-debug.log*
 !.yarn/sdks
 !.yarn/versions
 !.yarn/placeholder
+
+firebase-service-account.json

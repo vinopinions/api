@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   app:
+    container_name: vinopinions-api_devcontainer-app
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -14,6 +15,7 @@ services:
     user: dev
 
   db:
+    container_name: vinopinions-api_devcontainer-db
     image: postgres:16
     restart: unless-stopped
     environment:
@@ -27,6 +29,7 @@ services:
       - pg-data:/var/lib/postgresql/data
 
   minio:
+    container_name: vinopinions-api_devcontainer-minio
     image: docker.io/bitnami/minio:latest
     restart: unless-stopped
     ports:
@@ -40,6 +43,7 @@ services:
       - MINIO_DEFAULT_BUCKETS=${S3_BUCKET}
 
   firebase-emulator:
+    container_name: vinopinions-api_devcontainer-firebase-emulator
     build:
       context: ..
       dockerfile: .devcontainer/Firebase.Dockerfile

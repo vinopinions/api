@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
-export class SignInResponseDto {
+export class CheckDto {
   @ApiProperty({
-    example: 'jwt',
+    description: 'Firebase ID Token of the user',
+    type: String,
   })
   @IsString()
-  access_token: string;
+  firebaseToken: string;
 }

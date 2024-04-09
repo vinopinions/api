@@ -58,9 +58,6 @@ jobs:
           --health-retries 3
       firebase-emulator:
         image: ghcr.io/layla-oskar-schule/vinopinions-api-firebase-emulator:latest
-        credentials:
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout code

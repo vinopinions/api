@@ -43,14 +43,13 @@ export class AuthGuard implements CanActivate {
       const decodedToken = await this.authService.verifyIdToken(token);
 
       firebaseId = decodedToken.uid;
-      console.log({ step: 2, firebaseId });
     } catch (e) {
       throw new UnauthorizedException();
     }
     let user: User;
     try {
       user = await this.usersService.findOne({
-        where: { firebaseId },
+        where: { firebaseToken: firebaseId },
       });
     } catch (NotFoundException) {
       throw new UnauthorizedException();

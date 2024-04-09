@@ -30,9 +30,12 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({
+    description: 'The firebaseToken of the user',
+  })
   @Exclude()
   @Column({ unique: true })
-  firebaseId: string;
+  firebaseToken: string;
 
   @ApiProperty({
     example: 'hans',

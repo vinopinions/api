@@ -7,7 +7,11 @@ import {
   INestApplication,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import admin from 'firebase-admin';
+import { initializeApp as initializeFirebaseClient } from 'firebase/app';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import request, { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/auth/auth.service';
@@ -43,33 +47,63 @@ import {
 } from './utils/expect-builder';
 import {
   clearDatabase,
+  createUser,
+  deleteFirebaseUsers,
   generateRandomValidUsername,
-  login,
 } from './utils/utils';
 
 describe('FriendRequestsController (e2e)', () => {
   let app: INestApplication;
+  let firebaseApp: admin.app.App;
   let authHeader: Record<string, string>;
   let user: User;
   let friendRequestsService: FriendRequestsService;
   let authService: AuthService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     await app.init();
-    const loginData = await login(app);
+
     friendRequestsService = app.get(FriendRequestsService);
     authService = app.get(AuthService);
+
+    const configService: ConfigService = app.get(ConfigService);
+    const firebaseServiceAccountFilePath: string = configService.getOrThrow(
+      'FIREBASE_SERVICE_ACCOUNT_FILE',
+    );
+
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(firebaseServiceAccountFilePath),
+    });
+
+    initializeFirebaseClient({
+      apiKey: 'key',
+    });
+
+    const auth = getAuth();
+    connectAuthEmulator(
+      auth,
+      'http://' + configService.getOrThrow('FIREBASE_AUTH_EMULATOR_HOST'),
+      { disableWarnings: true },
+    );
+  });
+
+  beforeEach(async () => {
+    const loginData = await createUser(app);
     authHeader = loginData.authHeader;
     user = loginData.user;
   });
 
   afterEach(async () => {
     await clearDatabase(app);
+    await deleteFirebaseUsers(firebaseApp);
+  });
+
+  afterAll(async () => {
+    await firebaseApp.delete();
     await app.close();
   });
 
@@ -124,10 +158,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
-        const sender: User = await authService.signUp(
-          faker.internet.userName(),
-          faker.internet.password(),
-        );
+        const sender: User = (await createUser(app)).user;
         await friendRequestsService.send(sender, user);
       }
 
@@ -153,10 +184,7 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} a valid friend request`, async () => {
-      const sender: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const sender: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         sender,
         user,
@@ -234,10 +262,7 @@ describe('FriendRequestsController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} and array with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
-        const receiver: User = await authService.signUp(
-          faker.internet.userName(),
-          faker.internet.password(),
-        );
+        const receiver: User = (await createUser(app)).user;
         await friendRequestsService.send(user, receiver);
       }
 
@@ -263,10 +288,7 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} a valid friend requests`, async () => {
-      const receiver: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const receiver: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         user,
         receiver,
@@ -348,10 +370,7 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.CREATED} when sending friend request`, async () => {
-      const receiver: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const receiver: User = (await createUser(app)).user;
       const data: SendFriendRequestDto = {
         username: receiver.username,
       };
@@ -364,10 +383,7 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.CONFLICT} when already sent a friend request`, async () => {
-      const receiver: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const receiver: User = (await createUser(app)).user;
       const data: SendFriendRequestDto = {
         username: receiver.username,
       };
@@ -385,10 +401,7 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.CONFLICT} when already received a friend request from sender and try to send one to him`, async () => {
-      const sender: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const sender: User = (await createUser(app)).user;
       await friendRequestsService.send(sender, user);
 
       const data: SendFriendRequestDto = {
@@ -454,10 +467,7 @@ describe('FriendRequestsController (e2e)', () => {
       }));
 
     it(`should return ${HttpStatus.OK} when accepting a received friend request`, async () => {
-      const sender: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const sender: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         sender,
         user,
@@ -470,10 +480,7 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.FORBIDDEN} when accepting a friend request that you have sent to another user`, async () => {
-      const receiver: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const receiver: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         user,
         receiver,
@@ -489,14 +496,8 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.FORBIDDEN} when trying to accept another users friend request`, async () => {
-      const sender: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
-      const receiver: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const sender: User = (await createUser(app)).user;
+      const receiver: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         sender,
         receiver,
@@ -552,10 +553,7 @@ describe('FriendRequestsController (e2e)', () => {
       }));
 
     it(`should return ${HttpStatus.OK} when declining a received friend request`, async () => {
-      const sender: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const sender: User = (await createUser(app)).user;
       const friendRequest = await friendRequestsService.send(sender, user);
       const response: Response = await request(app.getHttpServer())
         [method](endpoint.replace(ID_URL_PARAMETER, friendRequest.id))
@@ -565,10 +563,7 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.FORBIDDEN} when declining a friend request that you sent yourself`, async () => {
-      const receiver: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const receiver: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         user,
         receiver,
@@ -584,14 +579,8 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.FORBIDDEN} when trying to decline another users friend request`, async () => {
-      const sender: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
-      const receiver: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const sender: User = (await createUser(app)).user;
+      const receiver: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         sender,
         receiver,
@@ -656,10 +645,7 @@ describe('FriendRequestsController (e2e)', () => {
       }));
 
     it(`should return ${HttpStatus.OK} when revoking a friend request that you sent yourself`, async () => {
-      const receiver: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const receiver: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         user,
         receiver,
@@ -673,10 +659,7 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.FORBIDDEN} when revoking a received friend request that wasn't sent by the user`, async () => {
-      const sender: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const sender: User = (await createUser(app)).user;
       const friendRequest = await friendRequestsService.send(sender, user);
 
       await complexExceptionThrownMessageStringTest({
@@ -689,14 +672,8 @@ describe('FriendRequestsController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.FORBIDDEN} when trying to revoking another users friend request`, async () => {
-      const sender: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
-      const receiver: User = await authService.signUp(
-        faker.internet.userName(),
-        faker.internet.password(),
-      );
+      const sender: User = (await createUser(app)).user;
+      const receiver: User = (await createUser(app)).user;
       const friendRequest: FriendRequest = await friendRequestsService.send(
         sender,
         receiver,

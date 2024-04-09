@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import admin from 'firebase-admin';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
@@ -18,7 +22,12 @@ export class AuthService {
         throw new ConflictException('This username is already taken');
     } catch (NotFoundException) {
       // username is not taken yet
-      const decodedToken = await this.verifyIdToken(firebaseToken);
+      let decodedToken;
+      try {
+        decodedToken = await this.verifyIdToken(firebaseToken);
+      } catch (error) {
+        throw new BadRequestException('Bad firebaseToken.');
+      }
 
       return await this.usersService.create(username, decodedToken.uid);
     }
@@ -35,7 +44,7 @@ export class AuthService {
       // Check if the user exists in your backend system
       const user = await this.usersService.findOne({
         where: {
-          firebaseId: decodedToken.uid,
+          firebaseToken: decodedToken.uid,
         },
       });
 

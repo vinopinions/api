@@ -8,6 +8,12 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
+
+import admin from 'firebase-admin';
+import { initializeApp as initializeFirebaseClient } from 'firebase/app';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
+
+import { ConfigService } from '@nestjs/config';
 import {
   PAGE_DEFAULT_VALUE,
   TAKE_DEFAULT_VALUE,
@@ -45,31 +51,60 @@ import {
   buildExpectedWineResponse,
   buildExpectedWinemakerResponse,
 } from './utils/expect-builder';
-import { clearDatabase, login } from './utils/utils';
+import { clearDatabase, createUser, deleteFirebaseUsers } from './utils/utils';
 
 describe('WinemakersController (e2e)', () => {
   let app: INestApplication;
+  let firebaseApp: admin.app.App;
   let authHeader: Record<string, string>;
   let winemakersService: WinemakersService;
   let storesService: StoresService;
   let winesService: WinesService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     await app.init();
-    winemakersService = app.get(WinemakersService);
-    storesService = app.get(StoresService);
+
     winesService = app.get(WinesService);
-    const loginData = await login(app);
+    storesService = app.get(StoresService);
+    winemakersService = app.get(WinemakersService);
+
+    const configService: ConfigService = app.get(ConfigService);
+    const firebaseServiceAccountFilePath: string = configService.getOrThrow(
+      'FIREBASE_SERVICE_ACCOUNT_FILE',
+    );
+
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(firebaseServiceAccountFilePath),
+    });
+
+    initializeFirebaseClient({
+      apiKey: 'key',
+    });
+
+    const auth = getAuth();
+    connectAuthEmulator(
+      auth,
+      'http://' + configService.getOrThrow('FIREBASE_AUTH_EMULATOR_HOST'),
+      { disableWarnings: true },
+    );
+  });
+
+  beforeEach(async () => {
+    const loginData = await createUser(app);
     authHeader = loginData.authHeader;
   });
 
   afterEach(async () => {
     await clearDatabase(app);
+    await deleteFirebaseUsers(firebaseApp);
+  });
+
+  afterAll(async () => {
+    await firebaseApp.delete();
     await app.close();
   });
 

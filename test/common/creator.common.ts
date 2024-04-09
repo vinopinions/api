@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import { AuthService } from '../../src/auth/auth.service';
 import { STARS_MAX, STARS_MIN } from '../../src/ratings/entities/rating.entity';
 import { RatingsService } from '../../src/ratings/ratings.service';
 import { Store } from '../../src/stores/entities/store.entity';
@@ -9,7 +8,6 @@ import { Winemaker } from '../../src/winemakers/entities/winemaker.entity';
 import { WinemakersService } from '../../src/winemakers/winemakers.service';
 import { Wine } from '../../src/wines/entities/wine.entity';
 import { WinesService } from '../../src/wines/wines.service';
-import { generateRandomValidUsername } from '../utils/utils';
 
 export const createTestWinemaker = async (
   winemakersService: WinemakersService,
@@ -50,12 +48,5 @@ export const createTestRating = async (
     faker.lorem.lines(),
     user,
     wine,
-  );
-};
-
-export const createTestUser = async (authService: AuthService) => {
-  return await authService.signUp(
-    generateRandomValidUsername(),
-    faker.internet.password(),
   );
 };

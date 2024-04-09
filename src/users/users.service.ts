@@ -40,7 +40,10 @@ export class UsersService extends CommonService<User> {
     if (existingUser !== null)
       throw new ConflictException('This username is already taken');
 
-    const user: User = this.userRepository.create({ username, firebaseId });
+    const user: User = this.userRepository.create({
+      username,
+      firebaseToken: firebaseId,
+    });
     const dbUser: User = await this.userRepository.save(user);
     return await this.findOne({
       where: {

@@ -5,6 +5,7 @@ import admin from 'firebase-admin';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import {
   clearDatabase,
+  deleteFirebaseUsers,
   generateRandomValidUsername,
 } from '../../test/utils/utils';
 import { STARS_MAX, STARS_MIN } from '../ratings/entities/rating.entity';
@@ -27,7 +28,10 @@ import {
 
 @Injectable()
 export class DummyDataService {
-  async generateAndInsertDummyData(app: INestApplication) {
+  async generateAndInsertDummyData(
+    app: INestApplication,
+    firebaseApp: admin.app.App,
+  ) {
     const usersService: UsersService = app.get(UsersService);
     const winemakersService: WinemakersService = app.get(WinemakersService);
     const storesService: StoresService = app.get(StoresService);
@@ -41,6 +45,9 @@ export class DummyDataService {
 
     // clear s3
     await s3Service.clearBucket();
+
+    // delete firebase users
+    await deleteFirebaseUsers(firebaseApp);
 
     // create 100 users + 'oskar' and 'tschokri'
     await this.generateAndInsertUsers(100, configService, usersService);

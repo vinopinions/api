@@ -44,7 +44,7 @@ async function bootstrap() {
   if (generateDummyData) {
     const dummyDataService = app.get(DummyDataService);
     console.log('Starting dummy data generation');
-    await dummyDataService.generateAndInsertDummyData(app);
+    await dummyDataService.generateAndInsertDummyData(app, admin.app());
     console.log('Dummy data generation complete.');
   }
 

@@ -8,6 +8,10 @@ on:
   schedule:
     - cron: '0 8 * * *'
 
+permissions:
+  contents: read # for checkout
+  packages: read # for pulling private docker image
+
 env:
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres

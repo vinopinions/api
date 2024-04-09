@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: ['developer', 'master']
   workflow_call:
+    secrets:
+      FIREBASE_SERVICE_ACCOUNT_FILE_CONTENT:
+        required: true
 
   schedule:
     - cron: '0 8 * * *'

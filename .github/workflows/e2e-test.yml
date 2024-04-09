@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: read # for checkout
-  packages: read # for pulling private docker image
 
 env:
   POSTGRES_USER: postgres

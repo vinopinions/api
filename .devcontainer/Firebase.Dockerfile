@@ -7,6 +7,6 @@ RUN npm i -g firebase-tools@$FIREBASE_VERSION
 
 RUN firebase setup:emulators:ui
 
-COPY ../.firebaserc ../firebase.json ./
+COPY ../firebase.json ../.firebaserc ./
 
 ENTRYPOINT ["firebase", "emulators:start"]

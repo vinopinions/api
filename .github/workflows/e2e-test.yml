@@ -19,6 +19,8 @@ env:
   S3_BUCKET: test
   S3_ENDPOINT: http://minio:9000
   S3_REGION: eu-north-1
+  FIREBASE_SERVICE_ACCOUNT_FILE: firebase-service-account.json
+  FIREBASE_AUTH_EMULATOR_HOST: firebase-emulator:9099
 
 jobs:
   test:
@@ -50,6 +52,8 @@ jobs:
           --health-interval 30s
           --health-timeout 10s
           --health-retries 3
+      firebase-emulator:
+        image: ghcr.io/layla-oskar-schule/vinopinions-api-firebase-emulator:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,6 +65,8 @@ jobs:
 
       - name: Install dependencies
         run: yarn --immutable
+
+      - run: echo ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FILE_CONTENT }} > ${{ env.FIREBASE_SERVICE_ACCOUNT_FILE }}
 
       - name: Run Tests
         run: yarn test:e2e --ci --runInBand
@@ -79,3 +85,5 @@ jobs:
           S3_SECRET_KEY: ${{ env.S3_SECRET_KEY }}
           S3_BUCKET: ${{ env.S3_BUCKET }}
           S3_REGION: ${{ env.S3_REGION }}
+          FIREBASE_SERVICE_ACCOUNT_FILE: ${{ env.FIREBASE_SERVICE_ACCOUNT_FILE}}
+          FIREBASE_AUTH_EMULATOR_HOST:

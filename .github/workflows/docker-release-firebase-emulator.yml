@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: developer
 
       - name: Docker meta
         id: meta
@@ -28,7 +26,7 @@ jobs:
         with:
           images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}-firebase-emulator
           tags: |
-            ${{ github.head_ref }}.${{ github.sha }}
+            ${{ github.sha }}
             latest
 
       - name: Set up Docker Buildx
@@ -44,6 +42,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          file: .devcontainer/Firebase.Dockerfile
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}

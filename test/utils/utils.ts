@@ -18,10 +18,13 @@ export const deleteFirebaseUsers = async (
   app: admin.app.App,
 ): Promise<void> => {
   const listUsersResult = await app.auth().listUsers();
-
-  listUsersResult.users.forEach(async (userRecord) => {
-    await app.auth().deleteUser(userRecord.uid);
-  });
+  try {
+    listUsersResult.users.forEach(async (userRecord) => {
+      await app.auth().deleteUser(userRecord.uid);
+    });
+  } catch (error) {
+    console.error('Failed deleting firebase users. Error: ' + error);
+  }
 };
 
 export const createUser = async (

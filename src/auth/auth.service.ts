@@ -38,8 +38,12 @@ export class AuthService {
    * Check if a firebase user is already registered on the backend
    */
   async check(firebaseToken: string): Promise<boolean> {
-    const decodedToken = await this.verifyIdToken(firebaseToken);
-
+    let decodedToken;
+    try {
+      decodedToken = await this.verifyIdToken(firebaseToken);
+    } catch (error) {
+      throw new BadRequestException('Bad firebaseToken.');
+    }
     try {
       // Check if the user exists in your backend system
       const user = await this.usersService.findOne({

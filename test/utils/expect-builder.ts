@@ -275,3 +275,15 @@ export const buildExpectedWinemakerResponse = ({
     updatedAt: updatedAt ?? expect.any(String),
   };
 };
+
+export type ExpectedCheckResponse = {
+  exists: boolean;
+};
+
+export const buildExpectedCheckResponse = ({
+  exists,
+}: DeepPartial<ExpectedCheckResponse> = {}): ExpectedCheckResponse => {
+  return {
+    exists: exists ?? expect.any(Boolean),
+  };
+};

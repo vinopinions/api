@@ -11,8 +11,12 @@ import admin from 'firebase-admin';
 import { initializeApp as initializeFirebaseClient } from 'firebase/app';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import request, { Response } from 'supertest';
-import { AUTH_SIGNUP_ENDPOINT } from '../src/auth/auth.controller';
+import {
+  AUTH_CHECK_ENDPOINT,
+  AUTH_SIGNUP_ENDPOINT,
+} from '../src/auth/auth.controller';
 import { AuthService } from '../src/auth/auth.service';
+import { CheckDto } from '../src/auth/dtos/check-dto';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
 import {
@@ -21,7 +25,10 @@ import {
   complexExceptionThrownMessageStringTest,
   endpointExistTest,
 } from './common/tests.common';
-import { buildExpectedUserResponse } from './utils/expect-builder';
+import {
+  buildExpectedCheckResponse,
+  buildExpectedUserResponse,
+} from './utils/expect-builder';
 import {
   clearDatabase,
   createFirebaseUser,
@@ -271,6 +278,91 @@ describe('AuthController (e2e)', () => {
         exception: new ConflictException(),
         message: 'This username is already taken',
       });
+    });
+  });
+
+  describe(AUTH_CHECK_ENDPOINT + ' (POST)', () => {
+    const endpoint: string = AUTH_CHECK_ENDPOINT;
+    const method: HttpMethod = 'post';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when no data was sent`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        exception: new BadRequestException(),
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when invalid data was sent`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          firebaseToken: false,
+        },
+        exception: new BadRequestException(),
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when invalid firebaseToken was sent`, async () => {
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          firebaseToken: faker.internet.password(),
+        },
+        exception: new BadRequestException(),
+      });
+    });
+
+    it(`should return ${HttpStatus.CREATED} and "exists = false" when valid data was sent`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
+      const validData: CheckDto = {
+        firebaseToken,
+      };
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send(validData);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toEqual(
+        buildExpectedCheckResponse({
+          exists: false,
+        }),
+      );
+    });
+
+    it(`should return ${HttpStatus.CREATED} and "exists = true" when valid data and already created user was sent`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
+      await authService.signUp(generateRandomValidUsername(), firebaseToken);
+
+      const validData: CheckDto = {
+        firebaseToken,
+      };
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send(validData);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toEqual(
+        buildExpectedCheckResponse({
+          exists: true,
+        }),
+      );
     });
   });
 });

@@ -4,16 +4,19 @@ import {
   ConflictException,
   HttpStatus,
   INestApplication,
-  UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import admin from 'firebase-admin';
+import { initializeApp as initializeFirebaseClient } from 'firebase/app';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import request, { Response } from 'supertest';
 import {
-  AUTH_LOGIN_ENDPOINT,
+  AUTH_CHECK_ENDPOINT,
   AUTH_SIGNUP_ENDPOINT,
 } from '../src/auth/auth.controller';
 import { AuthService } from '../src/auth/auth.service';
-import { SignInDto } from '../src/auth/dtos/sign-in.dto';
+import { CheckDto } from '../src/auth/dtos/check-dto';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { AppModule } from './../src/app.module';
 import {
@@ -22,25 +25,59 @@ import {
   complexExceptionThrownMessageStringTest,
   endpointExistTest,
 } from './common/tests.common';
-import { buildExpectedUserResponse } from './utils/expect-builder';
-import { clearDatabase, generateRandomValidUsername } from './utils/utils';
+import {
+  buildExpectedCheckResponse,
+  buildExpectedUserResponse,
+} from './utils/expect-builder';
+import {
+  clearDatabase,
+  createFirebaseUser,
+  deleteFirebaseUsers,
+  generateRandomValidUsername,
+} from './utils/utils';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
+  let firebaseApp: admin.app.App;
   let authService: AuthService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     await app.init();
+
     authService = app.get(AuthService);
+
+    const configService: ConfigService = app.get(ConfigService);
+    const firebaseServiceAccountFilePath: string = configService.getOrThrow(
+      'FIREBASE_SERVICE_ACCOUNT_FILE',
+    );
+
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(firebaseServiceAccountFilePath),
+    });
+
+    initializeFirebaseClient({
+      apiKey: 'key',
+    });
+
+    const auth = getAuth();
+    connectAuthEmulator(
+      auth,
+      'http://' + configService.getOrThrow('FIREBASE_AUTH_EMULATOR_HOST'),
+      { disableWarnings: true },
+    );
   });
 
   afterEach(async () => {
     await clearDatabase(app);
+    await deleteFirebaseUsers(firebaseApp);
+  });
+
+  afterAll(async () => {
+    await firebaseApp.delete();
     await app.close();
   });
 
@@ -71,17 +108,33 @@ describe('AuthController (e2e)', () => {
         endpoint,
         body: {
           username: 123,
-          password: false,
+          firebaseToken: false,
+        },
+        exception: new BadRequestException(),
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when invalid firebaseToken was sent`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          username: 123,
+          firebaseToken: faker.internet.password(),
         },
         exception: new BadRequestException(),
       });
     });
 
     it(`should return ${HttpStatus.CREATED} and user when valid data was sent`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
       const validData: SignUpDto = {
         username: generateRandomValidUsername(),
-        password: faker.internet.password(),
+        firebaseToken,
       };
+
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .send(validData);
@@ -97,9 +150,11 @@ describe('AuthController (e2e)', () => {
     it.each(['us_er', 'u1s2.3e4r', 'username', 'user35'])(
       `should return ${HttpStatus.CREATED} with valid usernames`,
       async (username: string) => {
+        const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
         const validData: SignUpDto = {
           username,
-          password: faker.internet.password(),
+          firebaseToken,
         };
         const response: Response = await request(app.getHttpServer())
           [method](endpoint)
@@ -128,13 +183,15 @@ describe('AuthController (e2e)', () => {
       `should return ${HttpStatus.BAD_REQUEST} with invalid usernames`,
 
       async (username: string) => {
+        const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
         await complexExceptionThrownMessageArrayTest({
           app,
           method,
           endpoint,
           body: {
             username,
-            password: faker.internet.password(),
+            firebaseToken,
           },
           exception: new BadRequestException(),
         });
@@ -142,63 +199,73 @@ describe('AuthController (e2e)', () => {
     );
 
     it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
       await complexExceptionThrownMessageArrayTest({
         app,
         method,
         endpoint,
         body: {
           username: faker.string.alphanumeric(2),
-          password: faker.internet.password(),
+          firebaseToken,
         },
         exception: new BadRequestException(),
       });
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
       await complexExceptionThrownMessageArrayTest({
         app,
         method,
         endpoint,
         body: {
           username: faker.string.alphanumeric(21),
-          password: faker.internet.password(),
+          firebaseToken,
         },
         exception: new BadRequestException(),
       });
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
       await complexExceptionThrownMessageArrayTest({
         app,
         method,
         endpoint,
         body: {
           username: '$$$$$$',
-          password: faker.internet.password(),
+          firebaseToken,
         },
         exception: new BadRequestException(),
       });
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
       await complexExceptionThrownMessageArrayTest({
         app,
         method,
         endpoint,
         body: {
           username: generateRandomValidUsername().toUpperCase(),
-          password: faker.internet.password(),
+          firebaseToken,
         },
         exception: new BadRequestException(),
       });
     });
 
     it(`should return ${HttpStatus.CONFLICT} when using the same username twice`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
       const validData: SignUpDto = {
         username: generateRandomValidUsername(),
-        password: faker.internet.password(),
+        firebaseToken,
       };
-      await authService.signUp(validData.username, validData.password);
+      await authService.signUp(validData.username, validData.firebaseToken);
 
       await complexExceptionThrownMessageStringTest({
         app,
@@ -206,7 +273,7 @@ describe('AuthController (e2e)', () => {
         endpoint,
         body: {
           username: validData.username,
-          password: faker.internet.password(),
+          firebaseToken,
         },
         exception: new ConflictException(),
         message: 'This username is already taken',
@@ -214,8 +281,8 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe(AUTH_LOGIN_ENDPOINT + ' (POST)', () => {
-    const endpoint: string = AUTH_LOGIN_ENDPOINT;
+  describe(AUTH_CHECK_ENDPOINT + ' (POST)', () => {
+    const endpoint: string = AUTH_CHECK_ENDPOINT;
     const method: HttpMethod = 'post';
 
     it('should exist', async () =>
@@ -225,7 +292,7 @@ describe('AuthController (e2e)', () => {
         endpoint,
       }));
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with no data`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when no data was sent`, async () => {
       await complexExceptionThrownMessageArrayTest({
         app,
         method,
@@ -234,99 +301,68 @@ describe('AuthController (e2e)', () => {
       });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when invalid data was sent`, async () => {
       await complexExceptionThrownMessageArrayTest({
         app,
         method,
         endpoint,
         body: {
-          username: 123,
-          password: false,
+          firebaseToken: false,
         },
         exception: new BadRequestException(),
       });
     });
 
-    it(`should return ${HttpStatus.UNAUTHORIZED} with valid data but no signup before`, async () => {
+    it(`should return ${HttpStatus.BAD_REQUEST} and error response when invalid firebaseToken was sent`, async () => {
       await complexExceptionThrownMessageStringTest({
         app,
         method,
         endpoint,
         body: {
-          username: generateRandomValidUsername(),
-          password: faker.internet.password(),
-        },
-        exception: new UnauthorizedException(),
-        message: 'Invalid credentials',
-      });
-    });
-
-    it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, async () => {
-      await complexExceptionThrownMessageArrayTest({
-        app,
-        method,
-        endpoint,
-        body: {
-          username: faker.string.alphanumeric(2),
-          password: faker.internet.password(),
+          firebaseToken: faker.internet.password(),
         },
         exception: new BadRequestException(),
       });
     });
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, async () => {
-      await complexExceptionThrownMessageArrayTest({
-        app,
-        method,
-        endpoint,
-        body: {
-          username: faker.string.alphanumeric(21),
-          password: faker.internet.password(),
-        },
-        exception: new BadRequestException(),
-      });
-    });
+    it(`should return ${HttpStatus.CREATED} and "exists = false" when valid data was sent`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
 
-    it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, async () => {
-      await complexExceptionThrownMessageArrayTest({
-        app,
-        method,
-        endpoint,
-        body: {
-          username: '$$$$$$',
-          password: faker.internet.password(),
-        },
-        exception: new BadRequestException(),
-      });
-    });
-
-    it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, async () => {
-      await complexExceptionThrownMessageArrayTest({
-        app,
-        method,
-        endpoint,
-        body: {
-          username: generateRandomValidUsername().toUpperCase(),
-          password: faker.internet.password(),
-        },
-        exception: new BadRequestException(),
-      });
-    });
-
-    it(`should return ${HttpStatus.CREATED} and access_token with valid data and signup before`, async () => {
-      const validData: SignInDto = {
-        username: generateRandomValidUsername(),
-        password: faker.internet.password(),
+      const validData: CheckDto = {
+        firebaseToken,
       };
-
-      await authService.signUp(validData.username, validData.password);
 
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
         .send(validData);
 
       expect(response.status).toBe(HttpStatus.CREATED);
-      expect(response.body).toHaveProperty('access_token');
+      expect(response.body).toEqual(
+        buildExpectedCheckResponse({
+          exists: false,
+        }),
+      );
+    });
+
+    it(`should return ${HttpStatus.CREATED} and "exists = true" when valid data and already created user was sent`, async () => {
+      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+
+      await authService.signUp(generateRandomValidUsername(), firebaseToken);
+
+      const validData: CheckDto = {
+        firebaseToken,
+      };
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send(validData);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toEqual(
+        buildExpectedCheckResponse({
+          exists: true,
+        }),
+      );
     });
   });
 });

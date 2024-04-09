@@ -31,6 +31,13 @@ export class User {
   id: string;
 
   @ApiProperty({
+    description: 'The firebaseToken of the user',
+  })
+  @Exclude()
+  @Column({ unique: true })
+  firebaseToken: string;
+
+  @ApiProperty({
     example: 'hans',
     description: 'name of the user',
     type: String,
@@ -44,10 +51,6 @@ export class User {
   })
   @Column({ unique: true })
   username: string;
-
-  @Exclude()
-  @Column()
-  passwordHash: string;
 
   @Exclude()
   @ManyToMany(() => User)

@@ -1,10 +1,12 @@
 import { faker } from '@faker-js/faker';
 import { INestApplication, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import admin from 'firebase-admin';
+import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import {
   clearDatabase,
   generateRandomValidUsername,
 } from '../../test/utils/utils';
-import { AuthService } from '../auth/auth.service';
 import { STARS_MAX, STARS_MIN } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
 import { S3Service } from '../s3/s3.service';
@@ -26,13 +28,13 @@ import {
 @Injectable()
 export class DummyDataService {
   async generateAndInsertDummyData(app: INestApplication) {
-    const authService: AuthService = app.get(AuthService);
     const usersService: UsersService = app.get(UsersService);
     const winemakersService: WinemakersService = app.get(WinemakersService);
     const storesService: StoresService = app.get(StoresService);
     const winesService: WinesService = app.get(WinesService);
     const ratingsService: RatingsService = app.get(RatingsService);
     const s3Service: S3Service = app.get(S3Service);
+    const configService: ConfigService = app.get(ConfigService);
 
     // clear database
     await clearDatabase(app);
@@ -41,7 +43,7 @@ export class DummyDataService {
     await s3Service.clearBucket();
 
     // create 100 users + 'oskar' and 'tschokri'
-    await this.generateAndInsertUsers(100, authService, usersService);
+    await this.generateAndInsertUsers(100, configService, usersService);
     let users: User[] = await usersService.findMany();
 
     // create 20 winemakers
@@ -67,22 +69,39 @@ export class DummyDataService {
 
   private generateAndInsertUsers = async (
     amount: number,
-    authService: AuthService,
+    configService: ConfigService,
     usersService: UsersService,
   ) => {
-    const signupUser = async (username: string, password: string) => {
-      const user: User = await authService.signUp(username, password);
+    const signupUser = async (
+      username: string,
+      email: string,
+      password: string,
+    ) => {
+      const userRecord: UserRecord = await admin.auth().createUser({
+        email: email,
+        password: password,
+      });
+
+      const user: User = await usersService.create(username, userRecord.uid);
       const buffer: Buffer = await getImageBufferFromUrl(
         faker.image.avatarGitHub(),
       );
       await usersService.updateProfilePicture(user, buffer);
     };
 
-    await signupUser('tschokri', 'test');
-    await signupUser('oskar', 'test');
+    const fixUsers = configService.get<string>('DUMMY_DATA_GENERATION_USERS');
+
+    if (fixUsers) {
+      for (var user of fixUsers.split('|')) {
+        const [username, email] = user.split(':');
+        await signupUser(username, email, faker.internet.password());
+      }
+    }
+
     for (let i = 0; i < amount; i++) {
       await signupUser(
         generateRandomValidUsername(),
+        faker.internet.email(),
         faker.internet.password(),
       );
     }

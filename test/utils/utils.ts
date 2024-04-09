@@ -1,5 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
+import admin from 'firebase-admin';
+import * as firebaseAuth from 'firebase/auth';
 import { EntityManager } from 'typeorm';
 import { AuthService } from '../../src/auth/auth.service';
 import { User } from '../../src/users/entities/user.entity';
@@ -12,7 +14,17 @@ export const clearDatabase = async (app: INestApplication): Promise<void> => {
   await entityManager.query(`truncate ${tableNames} restart identity cascade;`);
 };
 
-export const login = async (
+export const deleteFirebaseUsers = async (
+  app: admin.app.App,
+): Promise<void> => {
+  const listUsersResult = await app.auth().listUsers();
+
+  listUsersResult.users.forEach(async (userRecord) => {
+    await app.auth().deleteUser(userRecord.uid);
+  });
+};
+
+export const createUser = async (
   app: INestApplication,
 ): Promise<{
   authHeader: {
@@ -23,26 +35,41 @@ export const login = async (
   const authService = app.get(AuthService);
 
   const userData = {
-    //username: generateRandomValidUsername(),
     username: generateRandomValidUsername(),
-    password: faker.internet.password(),
   };
 
-  const user: User = await authService.signUp(
-    userData.username,
-    userData.password,
-  );
+  const token = await (await createFirebaseUser()).getIdToken();
 
-  const { access_token } = await authService.signIn(
-    userData.username,
-    userData.password,
-  );
+  const user: User = await authService.signUp(userData.username, token);
+
   return {
     authHeader: {
-      Authorization: `Bearer ${access_token}`,
+      Authorization: `Bearer ${token}`,
     },
     user,
   };
+};
+
+export const createFirebaseUser = async (): Promise<firebaseAuth.User> => {
+  const userData = {
+    username: generateRandomValidUsername(),
+    email: faker.internet.email(),
+    password: faker.internet.password(),
+  };
+
+  await admin.auth().createUser({
+    email: userData.email,
+    password: userData.password,
+  });
+
+  const credential: firebaseAuth.UserCredential =
+    await firebaseAuth.signInWithEmailAndPassword(
+      firebaseAuth.getAuth(),
+      userData.email,
+      userData.password,
+    );
+
+  return credential.user;
 };
 
 export const generateRandomValidUsername = (): string => {

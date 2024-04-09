@@ -2,15 +2,14 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  InternalServerErrorException,
   SetMetadata,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { AuthService } from './auth.service';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -20,7 +19,7 @@ export type AuthenticatedRequest = Request & { user: User };
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private jwtService: JwtService,
+    private authService: AuthService,
     private usersService: UsersService,
     private reflector: Reflector,
   ) {}
@@ -35,27 +34,26 @@ export class AuthGuard implements CanActivate {
     }
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+
     if (!token) {
       throw new UnauthorizedException();
     }
-    let id: string;
+    let firebaseId: string;
     try {
-      const payload = await this.jwtService.verifyAsync(token);
+      const decodedToken = await this.authService.verifyIdToken(token);
 
-      // this only happens when the token is valid but no sub is present
-      if (!payload.sub) {
-        throw new InternalServerErrorException();
-      }
-
-      id = payload.sub;
+      firebaseId = decodedToken.uid;
     } catch (e) {
       throw new UnauthorizedException();
     }
-    const user: User | null = await this.usersService.findOne({
-      where: { id },
-    });
-
-    if (!user) throw new UnauthorizedException();
+    let user: User;
+    try {
+      user = await this.usersService.findOne({
+        where: { firebaseToken: firebaseId },
+      });
+    } catch (NotFoundException) {
+      throw new UnauthorizedException();
+    }
 
     request['user'] = user;
     return true;

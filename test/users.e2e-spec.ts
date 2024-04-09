@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker';
 import {
   ForbiddenException,
   HttpStatus,
@@ -6,8 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import admin from 'firebase-admin';
+import { initializeApp as initializeFirebaseClient } from 'firebase/app';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import request, { Response } from 'supertest';
 import { AuthService } from '../src/auth/auth.service';
+
+import { ConfigService } from '@nestjs/config';
 import {
   FRIEND_USERNAME_URL_PARAMETER,
   USERNAME_URL_PARAMETER,
@@ -34,7 +38,6 @@ import { AppModule } from './../src/app.module';
 import {
   createTestRating,
   createTestStore,
-  createTestUser,
   createTestWine,
   createTestWinemaker,
 } from './common/creator.common';
@@ -53,12 +56,14 @@ import {
 } from './utils/expect-builder';
 import {
   clearDatabase,
+  createUser,
+  deleteFirebaseUsers,
   generateRandomValidUsername,
-  login,
 } from './utils/utils';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
+  let firebaseApp: admin.app.App;
   let authHeader: Record<string, string>;
   let authService: AuthService;
   let usersService: UsersService;
@@ -68,26 +73,54 @@ describe('UsersController (e2e)', () => {
   let winemakersService: WinemakersService;
   let user: User;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     await app.init();
+
     authService = app.get(AuthService);
     ratingsService = app.get(RatingsService);
     winesService = app.get(WinesService);
     storesService = app.get(StoresService);
     winemakersService = app.get(WinemakersService);
     usersService = app.get(UsersService);
-    const loginData = await login(app);
+
+    const configService: ConfigService = app.get(ConfigService);
+    const firebaseServiceAccountFilePath: string = configService.getOrThrow(
+      'FIREBASE_SERVICE_ACCOUNT_FILE',
+    );
+
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(firebaseServiceAccountFilePath),
+    });
+
+    initializeFirebaseClient({
+      apiKey: 'key',
+    });
+
+    const auth = getAuth();
+    connectAuthEmulator(
+      auth,
+      'http://' + configService.getOrThrow('FIREBASE_AUTH_EMULATOR_HOST'),
+      { disableWarnings: true },
+    );
+  });
+
+  beforeEach(async () => {
+    const loginData = await createUser(app);
     authHeader = loginData.authHeader;
     user = loginData.user;
   });
 
   afterEach(async () => {
     await clearDatabase(app);
+    await deleteFirebaseUsers(firebaseApp);
+  });
+
+  afterAll(async () => {
+    await firebaseApp.delete();
     await app.close();
   });
 
@@ -143,7 +176,7 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
       // only create 9 because one user already exists
       for (let i = 0; i < 9; i++) {
-        await createTestUser(authService);
+        await createUser(app);
       }
 
       const response: Response = await request(app.getHttpServer())
@@ -351,10 +384,7 @@ describe('UsersController (e2e)', () => {
 
     it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
       for (let i = 0; i < 10; i++) {
-        const friend: User = await authService.signUp(
-          generateRandomValidUsername(),
-          faker.internet.password(),
-        );
+        const friend: User = (await createUser(app)).user;
         await usersService.addFriend(friend, user);
       }
 
@@ -380,10 +410,7 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK}ppp a valid user`, async () => {
-      const friend: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const friend: User = (await createUser(app)).user;
       await usersService.addFriend(friend, user);
 
       const response: Response = await request(app.getHttpServer())
@@ -583,10 +610,7 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} when users are not friends`, async () => {
-      const toBeDeletedUser: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const toBeDeletedUser: User = (await createUser(app)).user;
 
       await complexExceptionThrownMessageStringTest({
         app,
@@ -600,12 +624,9 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} when getting a present friendship`, async () => {
-      const friend: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const friend: User = (await createUser(app)).user;
 
-      usersService.addFriend(friend, user);
+      await usersService.addFriend(friend, user);
 
       const response: Response = await request(app.getHttpServer())
         [
@@ -676,10 +697,7 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.NOT_FOUND} when to be deleted user exists but is not friends with user`, async () => {
-      const toBeDeletedUser: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const toBeDeletedUser: User = (await createUser(app)).user;
 
       await complexExceptionThrownMessageStringTest({
         app,
@@ -693,16 +711,10 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.FORBIDDEN} when trying to delete another users friends`, async () => {
-      const addingUser: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
-      const toBeAddedUser: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const addingUser: User = (await createUser(app)).user;
+      const toBeAddedUser: User = (await createUser(app)).user;
 
-      usersService.addFriend(addingUser, toBeAddedUser);
+      await usersService.addFriend(addingUser, toBeAddedUser);
 
       await complexExceptionThrownMessageStringTest({
         app,
@@ -717,12 +729,9 @@ describe('UsersController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.OK} when deleting a present friendship`, async () => {
-      const friend: User = await authService.signUp(
-        generateRandomValidUsername(),
-        faker.internet.password(),
-      );
+      const friend: User = (await createUser(app)).user;
 
-      usersService.addFriend(friend, user);
+      await usersService.addFriend(friend, user);
 
       const response: Response = await request(app.getHttpServer())
         [

@@ -3,21 +3,21 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { User } from '../users/entities/user.entity';
 import { Public } from './auth.guard';
 import { AuthService } from './auth.service';
-import { SignInResponseDto } from './dtos/sign-in-response.dto';
-import { SignInDto } from './dtos/sign-in.dto';
+import { CheckDto } from './dtos/check-dto';
+import { CheckResponseDto } from './dtos/check-response-dto';
 import { SignUpDto } from './dtos/sign-up.dto';
 
 const AUTH_ENDPOINT_NAME = 'auth';
 export const AUTH_ENDPOINT = `/${AUTH_ENDPOINT_NAME}`;
-const AUTH_LOGIN_ENDPOINT_NAME = 'login';
-export const AUTH_LOGIN_ENDPOINT = `${AUTH_ENDPOINT}/${AUTH_LOGIN_ENDPOINT_NAME}`;
+const AUTH_CHECK_ENDPOINT_NAME = 'check';
+export const AUTH_CHECK_ENDPOINT = `${AUTH_ENDPOINT}/${AUTH_CHECK_ENDPOINT_NAME}`;
 const AUTH_SIGNUP_ENDPOINT_NAME = 'signup';
 export const AUTH_SIGNUP_ENDPOINT = `${AUTH_ENDPOINT}/${AUTH_SIGNUP_ENDPOINT_NAME}`;
 
@@ -25,29 +25,6 @@ export const AUTH_SIGNUP_ENDPOINT = `${AUTH_ENDPOINT}/${AUTH_SIGNUP_ENDPOINT_NAM
 @ApiTags(AUTH_ENDPOINT_NAME)
 export class AuthController {
   constructor(private authService: AuthService) {}
-
-  @Public()
-  @Post(AUTH_LOGIN_ENDPOINT_NAME)
-  @ApiOperation({ summary: 'log in' })
-  @ApiUnauthorizedResponse({
-    description: 'Invalid credentials',
-  })
-  @ApiCreatedResponse({
-    description: 'Login successful',
-    type: SignInResponseDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid data',
-  })
-  async signIn(
-    @Body()
-    signInDto: SignInDto,
-  ): Promise<SignInResponseDto> {
-    return await this.authService.signIn(
-      signInDto.username,
-      signInDto.password,
-    );
-  }
 
   @Public()
   @Post(AUTH_SIGNUP_ENDPOINT_NAME)
@@ -68,7 +45,20 @@ export class AuthController {
   async signUp(@Body() signUpDto: SignUpDto): Promise<User> {
     return await this.authService.signUp(
       signUpDto.username,
-      signUpDto.password,
+      signUpDto.firebaseToken,
     );
+  }
+
+  @Public()
+  @Post(AUTH_CHECK_ENDPOINT_NAME)
+  @ApiOperation({ summary: 'check if the user is already registered' })
+  @ApiBadRequestResponse({
+    description: 'Invalid data',
+  })
+  @ApiOkResponse({
+    description: 'Determined if the user exists on the backend system',
+  })
+  async check(@Body() checkDto: CheckDto): Promise<CheckResponseDto> {
+    return { exists: await this.authService.check(checkDto.firebaseToken) };
   }
 }

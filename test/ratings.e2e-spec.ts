@@ -5,7 +5,11 @@ import {
   INestApplication,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import admin from 'firebase-admin';
+import { initializeApp as initializeFirebaseClient } from 'firebase/app';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import request, { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { ID_URL_PARAMETER } from '../src/constants/url-parameter';
@@ -41,10 +45,11 @@ import {
   buildExpectedPageResponse,
   buildExpectedRatingResponse,
 } from './utils/expect-builder';
-import { clearDatabase, login } from './utils/utils';
+import { clearDatabase, createUser, deleteFirebaseUsers } from './utils/utils';
 
 describe('RatingsController (e2e)', () => {
   let app: INestApplication;
+  let firebaseApp: admin.app.App;
   let authHeader: Record<string, string>;
   let user: User;
   let ratingsService: RatingsService;
@@ -52,26 +57,52 @@ describe('RatingsController (e2e)', () => {
   let winemakersService: WinemakersService;
   let storesService: StoresService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    ratingsService = app.get(RatingsService);
     winesService = app.get(WinesService);
-    winemakersService = app.get(WinemakersService);
     storesService = app.get(StoresService);
+    winemakersService = app.get(WinemakersService);
+    ratingsService = app.get(RatingsService);
 
-    const loginData = await login(app);
+    const configService: ConfigService = app.get(ConfigService);
+    const firebaseServiceAccountFilePath: string = configService.getOrThrow(
+      'FIREBASE_SERVICE_ACCOUNT_FILE',
+    );
+
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(firebaseServiceAccountFilePath),
+    });
+
+    initializeFirebaseClient({
+      apiKey: 'key',
+    });
+
+    const auth = getAuth();
+    connectAuthEmulator(
+      auth,
+      'http://' + configService.getOrThrow('FIREBASE_AUTH_EMULATOR_HOST'),
+      { disableWarnings: true },
+    );
+  });
+
+  beforeEach(async () => {
+    const loginData = await createUser(app);
     authHeader = loginData.authHeader;
     user = loginData.user;
   });
 
   afterEach(async () => {
     await clearDatabase(app);
+    await deleteFirebaseUsers(firebaseApp);
+  });
+
+  afterAll(async () => {
+    await firebaseApp.delete();
     await app.close();
   });
 

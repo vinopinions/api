@@ -32,6 +32,13 @@ async function bootstrap() {
 
   const configService: ConfigService = app.get(ConfigService);
 
+  const firebaseServiceAccountFilePath: string = configService.getOrThrow(
+    'FIREBASE_SERVICE_ACCOUNT_FILE',
+  );
+  admin.initializeApp({
+    credential: admin.credential.cert(firebaseServiceAccountFilePath),
+  });
+
   const generateDummyData = configService.get<boolean>('DUMMY_DATA_GENERATION');
 
   if (generateDummyData) {
@@ -40,13 +47,6 @@ async function bootstrap() {
     await dummyDataService.generateAndInsertDummyData(app);
     console.log('Dummy data generation complete.');
   }
-
-  const firebaseServiceAccountFilePath: string = configService.getOrThrow(
-    'FIREBASE_SERVICE_ACCOUNT_FILE',
-  );
-  admin.initializeApp({
-    credential: admin.credential.cert(firebaseServiceAccountFilePath),
-  });
 
   await app.listen(3000);
 }

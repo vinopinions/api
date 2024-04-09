@@ -1,6 +1,6 @@
 {
   "name": "vinopinions-api",
-  "version": "1.0.0-dev.37",
+  "version": "1.0.0-dev.38",
   "description": "Rest API for the vinopinions app",
   "license": "UNLICENSED",
   "main": "./src/main.ts",

@@ -71,7 +71,7 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
 
-      - run: echo ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FILE_CONTENT }} > ${{ env.FIREBASE_SERVICE_ACCOUNT_FILE }}
+      - run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_FILE_CONTENT }}' > ${{ env.FIREBASE_SERVICE_ACCOUNT_FILE }}
 
       - name: Run Tests
         run: yarn test:e2e --ci --runInBand

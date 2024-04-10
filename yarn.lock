@@ -601,6 +601,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@aws-sdk/middleware-sdk-s3@npm:3.552.0":
+  version: 3.552.0
+  resolution: "@aws-sdk/middleware-sdk-s3@npm:3.552.0"
+  dependencies:
+    "@aws-sdk/types": "npm:3.535.0"
+    "@aws-sdk/util-arn-parser": "npm:3.535.0"
+    "@smithy/node-config-provider": "npm:^2.3.0"
+    "@smithy/protocol-http": "npm:^3.3.0"
+    "@smithy/signature-v4": "npm:^2.2.1"
+    "@smithy/smithy-client": "npm:^2.5.1"
+    "@smithy/types": "npm:^2.12.0"
+    "@smithy/util-config-provider": "npm:^2.3.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/025c4b78f85d3288652428fae4b891d81733a35ca7b2621f565a0095e086a7bed93332018c04ed9f4501fca21b555952eec85be35a4f058e1650a11c5cdcc616
+  languageName: node
+  linkType: hard
+
 "@aws-sdk/middleware-signing@npm:3.535.0":
   version: 3.535.0
   resolution: "@aws-sdk/middleware-signing@npm:3.535.0"
@@ -654,19 +671,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/s3-request-presigner@npm:^3.550.0":
-  version: 3.550.0
-  resolution: "@aws-sdk/s3-request-presigner@npm:3.550.0"
+"@aws-sdk/s3-request-presigner@npm:^3.552.0":
+  version: 3.552.0
+  resolution: "@aws-sdk/s3-request-presigner@npm:3.552.0"
   dependencies:
-    "@aws-sdk/signature-v4-multi-region": "npm:3.535.0"
+    "@aws-sdk/signature-v4-multi-region": "npm:3.552.0"
     "@aws-sdk/types": "npm:3.535.0"
     "@aws-sdk/util-format-url": "npm:3.535.0"
-    "@smithy/middleware-endpoint": "npm:^2.5.0"
+    "@smithy/middleware-endpoint": "npm:^2.5.1"
     "@smithy/protocol-http": "npm:^3.3.0"
-    "@smithy/smithy-client": "npm:^2.5.0"
+    "@smithy/smithy-client": "npm:^2.5.1"
     "@smithy/types": "npm:^2.12.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/9993313048a16d497047fcd914df6a3ebe930ec65250cdcbe2aeb985cb60f4a8fed34ef346318f5762216dab6f7eac2492cfb5f28d0cee91ba872e940bbda23d
+  checksum: 10c0/8565acc88c6bdcf5b85884a01ba86fb42aa5bc592e734c2f2bf710d1a7548f5122053b029cd45382e9687234d923f8ef0f744506ea695bae2a3b132271832707
   languageName: node
   linkType: hard
 
@@ -681,6 +698,20 @@ __metadata:
     "@smithy/types": "npm:^2.12.0"
     tslib: "npm:^2.6.2"
   checksum: 10c0/4d7095e5adb118eeb7ad95c1cd9d62db5c3ef41e5d5d46d5775f94591333fb8982430a61ec92c1242b59cdaa422a66f111dab01e7309b049b97cf173ad4cd7e3
+  languageName: node
+  linkType: hard
+
+"@aws-sdk/signature-v4-multi-region@npm:3.552.0":
+  version: 3.552.0
+  resolution: "@aws-sdk/signature-v4-multi-region@npm:3.552.0"
+  dependencies:
+    "@aws-sdk/middleware-sdk-s3": "npm:3.552.0"
+    "@aws-sdk/types": "npm:3.535.0"
+    "@smithy/protocol-http": "npm:^3.3.0"
+    "@smithy/signature-v4": "npm:^2.2.1"
+    "@smithy/types": "npm:^2.12.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/5c7fb819993b226aeace9852408fa468f7e78481074c04d47aa07b18be66d6bf52df80f22249b7c30e28330dcbbfda15d8051fb945e60da93df4588bde0c2b00
   languageName: node
   linkType: hard
 
@@ -3976,6 +4007,21 @@ __metadata:
     "@smithy/util-utf8": "npm:^2.3.0"
     tslib: "npm:^2.6.2"
   checksum: 10c0/2b8588498b0710839f59d5c7cb200bc846a5ee030def49d27aab6b3a87bea806bdc12cefb2605822c9435da399ca86cdbb68583b5ade84966d167bf1cde2886f
+  languageName: node
+  linkType: hard
+
+"@smithy/signature-v4@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "@smithy/signature-v4@npm:2.2.1"
+  dependencies:
+    "@smithy/is-array-buffer": "npm:^2.2.0"
+    "@smithy/types": "npm:^2.12.0"
+    "@smithy/util-hex-encoding": "npm:^2.2.0"
+    "@smithy/util-middleware": "npm:^2.2.0"
+    "@smithy/util-uri-escape": "npm:^2.2.0"
+    "@smithy/util-utf8": "npm:^2.3.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/8bb50e95cf5b74226e6baceedf09cee73742f98706f6e5f50ef6be29b2a9b7b01dab49d25be26cb581cdea195661962af85ce4d0abcdce4359bbc0b311eae842
   languageName: node
   linkType: hard
 
@@ -13640,7 +13686,7 @@ __metadata:
   resolution: "vinopinions-api@workspace:."
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.550.0"
-    "@aws-sdk/s3-request-presigner": "npm:^3.550.0"
+    "@aws-sdk/s3-request-presigner": "npm:^3.552.0"
     "@commitlint/cli": "npm:^19.2.1"
     "@commitlint/config-conventional": "npm:^19.1.0"
     "@faker-js/faker": "npm:^8.4.1"

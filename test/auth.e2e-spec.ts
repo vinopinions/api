@@ -51,21 +51,14 @@ describe('AuthController (e2e)', () => {
     authService = app.get(AuthService);
 
     const configService: ConfigService = app.get(ConfigService);
-    const firebaseServiceAccountFilePath: string = configService.getOrThrow(
-      'FIREBASE_SERVICE_ACCOUNT_FILE',
-    );
-
-    firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert(firebaseServiceAccountFilePath),
-    });
+    firebaseApp = admin.initializeApp();
 
     initializeFirebaseClient({
       apiKey: 'key',
     });
 
-    const auth = getAuth();
     connectAuthEmulator(
-      auth,
+      getAuth(),
       'http://' + configService.getOrThrow('FIREBASE_AUTH_EMULATOR_HOST'),
       { disableWarnings: true },
     );
@@ -128,7 +121,9 @@ describe('AuthController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.CREATED} and user when valid data was sent`, async () => {
-      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+      const firebaseToken = await (
+        await createFirebaseUser()
+      ).firebaseUser.getIdToken();
 
       const validData: SignUpDto = {
         username: generateRandomValidUsername(),
@@ -150,7 +145,9 @@ describe('AuthController (e2e)', () => {
     it.each(['us_er', 'u1s2.3e4r', 'username', 'user35'])(
       `should return ${HttpStatus.CREATED} with valid usernames`,
       async (username: string) => {
-        const firebaseToken = await (await createFirebaseUser()).getIdToken();
+        const firebaseToken = await (
+          await createFirebaseUser()
+        ).firebaseUser.getIdToken();
 
         const validData: SignUpDto = {
           username,
@@ -183,7 +180,9 @@ describe('AuthController (e2e)', () => {
       `should return ${HttpStatus.BAD_REQUEST} with invalid usernames`,
 
       async (username: string) => {
-        const firebaseToken = await (await createFirebaseUser()).getIdToken();
+        const firebaseToken = await (
+          await createFirebaseUser()
+        ).firebaseUser.getIdToken();
 
         await complexExceptionThrownMessageArrayTest({
           app,
@@ -199,7 +198,9 @@ describe('AuthController (e2e)', () => {
     );
 
     it(`should return ${HttpStatus.BAD_REQUEST} with too short username`, async () => {
-      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+      const firebaseToken = await (
+        await createFirebaseUser()
+      ).firebaseUser.getIdToken();
 
       await complexExceptionThrownMessageArrayTest({
         app,
@@ -214,7 +215,9 @@ describe('AuthController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with too long username`, async () => {
-      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+      const firebaseToken = await (
+        await createFirebaseUser()
+      ).firebaseUser.getIdToken();
 
       await complexExceptionThrownMessageArrayTest({
         app,
@@ -229,7 +232,9 @@ describe('AuthController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with forbidden characters`, async () => {
-      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+      const firebaseToken = await (
+        await createFirebaseUser()
+      ).firebaseUser.getIdToken();
 
       await complexExceptionThrownMessageArrayTest({
         app,
@@ -244,7 +249,9 @@ describe('AuthController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.BAD_REQUEST} with uppercase characters`, async () => {
-      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+      const firebaseToken = await (
+        await createFirebaseUser()
+      ).firebaseUser.getIdToken();
 
       await complexExceptionThrownMessageArrayTest({
         app,
@@ -259,7 +266,9 @@ describe('AuthController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.CONFLICT} when using the same username twice`, async () => {
-      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+      const firebaseToken = await (
+        await createFirebaseUser()
+      ).firebaseUser.getIdToken();
 
       const validData: SignUpDto = {
         username: generateRandomValidUsername(),
@@ -326,7 +335,9 @@ describe('AuthController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.CREATED} and "exists = false" when valid data was sent`, async () => {
-      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+      const firebaseToken = await (
+        await createFirebaseUser()
+      ).firebaseUser.getIdToken();
 
       const validData: CheckDto = {
         firebaseToken,
@@ -345,7 +356,9 @@ describe('AuthController (e2e)', () => {
     });
 
     it(`should return ${HttpStatus.CREATED} and "exists = true" when valid data and already created user was sent`, async () => {
-      const firebaseToken = await (await createFirebaseUser()).getIdToken();
+      const firebaseToken = await (
+        await createFirebaseUser()
+      ).firebaseUser.getIdToken();
 
       await authService.signUp(generateRandomValidUsername(), firebaseToken);
 

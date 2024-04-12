@@ -37,12 +37,8 @@ export const createUser = async (
 }> => {
   const authService = app.get(AuthService);
 
-  const userData = {
-    username: generateRandomValidUsername(),
-  };
-
-  const token = await (await createFirebaseUser()).getIdToken();
-
+  const { firebaseUser, userData } = await createFirebaseUser();
+  const token = await firebaseUser.getIdToken();
   const user: User = await authService.signUp(userData.username, token);
 
   return {
@@ -53,7 +49,10 @@ export const createUser = async (
   };
 };
 
-export const createFirebaseUser = async (): Promise<firebaseAuth.User> => {
+export const createFirebaseUser = async (): Promise<{
+  firebaseUser: firebaseAuth.User;
+  userData: { username: string; email: string; password: string };
+}> => {
   const userData = {
     username: generateRandomValidUsername(),
     email: faker.internet.email(),
@@ -72,7 +71,7 @@ export const createFirebaseUser = async (): Promise<firebaseAuth.User> => {
       userData.password,
     );
 
-  return credential.user;
+  return { firebaseUser: credential.user, userData };
 };
 
 export const generateRandomValidUsername = (): string => {

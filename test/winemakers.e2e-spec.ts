@@ -73,21 +73,14 @@ describe('WinemakersController (e2e)', () => {
     winemakersService = app.get(WinemakersService);
 
     const configService: ConfigService = app.get(ConfigService);
-    const firebaseServiceAccountFilePath: string = configService.getOrThrow(
-      'FIREBASE_SERVICE_ACCOUNT_FILE',
-    );
-
-    firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert(firebaseServiceAccountFilePath),
-    });
+    firebaseApp = admin.initializeApp();
 
     initializeFirebaseClient({
       apiKey: 'key',
     });
 
-    const auth = getAuth();
     connectAuthEmulator(
-      auth,
+      getAuth(),
       'http://' + configService.getOrThrow('FIREBASE_AUTH_EMULATOR_HOST'),
       { disableWarnings: true },
     );

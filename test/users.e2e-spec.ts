@@ -9,7 +9,6 @@ import admin from 'firebase-admin';
 import { initializeApp as initializeFirebaseClient } from 'firebase/app';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import request, { Response } from 'supertest';
-import { AuthService } from '../src/auth/auth.service';
 
 import { ConfigService } from '@nestjs/config';
 import {
@@ -65,7 +64,6 @@ describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let firebaseApp: admin.app.App;
   let authHeader: Record<string, string>;
-  let authService: AuthService;
   let usersService: UsersService;
   let ratingsService: RatingsService;
   let winesService: WinesService;
@@ -80,7 +78,6 @@ describe('UsersController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    authService = app.get(AuthService);
     ratingsService = app.get(RatingsService);
     winesService = app.get(WinesService);
     storesService = app.get(StoresService);
@@ -88,21 +85,14 @@ describe('UsersController (e2e)', () => {
     usersService = app.get(UsersService);
 
     const configService: ConfigService = app.get(ConfigService);
-    const firebaseServiceAccountFilePath: string = configService.getOrThrow(
-      'FIREBASE_SERVICE_ACCOUNT_FILE',
-    );
-
-    firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert(firebaseServiceAccountFilePath),
-    });
+    firebaseApp = admin.initializeApp();
 
     initializeFirebaseClient({
       apiKey: 'key',
     });
 
-    const auth = getAuth();
     connectAuthEmulator(
-      auth,
+      getAuth(),
       'http://' + configService.getOrThrow('FIREBASE_AUTH_EMULATOR_HOST'),
       { disableWarnings: true },
     );
@@ -409,7 +399,7 @@ describe('UsersController (e2e)', () => {
       expect(response.body.data).toHaveLength(10);
     });
 
-    it(`should return ${HttpStatus.OK}ppp a valid user`, async () => {
+    it(`should return ${HttpStatus.OK} and a valid user`, async () => {
       const friend: User = (await createUser(app)).user;
       await usersService.addFriend(friend, user);
 

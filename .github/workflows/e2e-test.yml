@@ -86,3 +86,4 @@ jobs:
           S3_BUCKET: ${{ env.S3_BUCKET }}
           S3_REGION: ${{ env.S3_REGION }}
           FIREBASE_AUTH_EMULATOR_HOST: ${{ env.FIREBASE_AUTH_EMULATOR_HOST }}
+          GCLOUD_PROJECT: vinopinions-test # has to be the same as in .firebaserc

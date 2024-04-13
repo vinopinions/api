@@ -70,6 +70,17 @@ export class DummyDataService {
     // refresh users because if you modify another relation the previous one seems to be overriden
     users = await usersService.findMany();
 
+    // add 10 wines to shelf per user
+    for (const user of users) {
+      for (let i = 0; i < 10; i++) {
+        const index = Math.floor(Math.random() * (wines.length / 10));
+
+        await usersService.addWineToShelf(user, wines[index + i * 10]);
+      }
+    }
+    // refresh users because if you modify another relation the previous one seems to be overriden
+    users = await usersService.findMany();
+
     // assign 10 friends to each user
     await this.generateAndInsertFriendships(10, users, usersService);
   }

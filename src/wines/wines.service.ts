@@ -77,6 +77,18 @@ export class WinesService extends CommonService<Wine> {
     });
   }
 
+  async findManyByShelfUserPaginated(
+    user: User,
+    paginationOptionsDto: PaginationOptionsDto,
+    options?: FindManyOptions<Wine>,
+  ): Promise<PageDto<Wine>> {
+    return await this.findManyPaginated(paginationOptionsDto, {
+      relations: ['shelfUser'],
+      ...options,
+      where: { ...options?.where, ...{ shelfUser: { id: user.id } } },
+    });
+  }
+
   async findManyByWinemakerPaginated(
     winemaker: Winemaker,
     paginationOptionsDto: PaginationOptionsDto,

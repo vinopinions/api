@@ -48,7 +48,7 @@ export class AuthService {
       // Check if the user exists in your backend system
       const user = await this.usersService.findOne({
         where: {
-          firebaseToken: decodedToken.uid,
+          firebaseId: decodedToken.uid,
         },
       });
 

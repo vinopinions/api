@@ -32,12 +32,15 @@ async function bootstrap() {
 
   const configService: ConfigService = app.get(ConfigService);
 
-  const firebaseServiceAccountFilePath: string = configService.getOrThrow(
-    'FIREBASE_SERVICE_ACCOUNT_FILE',
-  );
-  admin.initializeApp({
-    credential: admin.credential.cert(firebaseServiceAccountFilePath),
-  });
+  const firebaseServiceAccountFilePath: string | null | undefined =
+    configService.get('FIREBASE_SERVICE_ACCOUNT_FILE');
+  if (firebaseServiceAccountFilePath) {
+    admin.initializeApp({
+      credential: admin.credential.cert(firebaseServiceAccountFilePath),
+    });
+  } else {
+    admin.initializeApp();
+  }
 
   const generateDummyData = configService.get<boolean>('DUMMY_DATA_GENERATION');
 

@@ -28,8 +28,6 @@ jobs:
 
   test-e2e:
     uses: ./.github/workflows/e2e-test.yml
-    secrets:
-      FIREBASE_SERVICE_ACCOUNT_FILE_CONTENT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FILE_CONTENT }}
 
   release:
     name: Release Github

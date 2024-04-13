@@ -1,9 +1,13 @@
+import { faker } from '@faker-js/faker';
 import {
+  BadRequestException,
+  ConflictException,
   ForbiddenException,
   HttpStatus,
   INestApplication,
   NotFoundException,
 } from '@nestjs/common';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import admin from 'firebase-admin';
 import { initializeApp as initializeFirebaseClient } from 'firebase/app';
@@ -25,13 +29,16 @@ import { User } from '../src/users/entities/user.entity';
 import {
   USERS_ENDPOINT,
   USERS_ME_ENDPOINT,
+  USERS_ME_SHELF_ENDPOINT,
   USERS_USERNAME_ENDPOINT,
   USERS_USERNAME_FRIENDS_ENDPOINT,
   USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT,
   USERS_USERNAME_RATINGS_ENDPOINT,
+  USERS_USERNAME_SHELF_ENDPOINT,
 } from '../src/users/users.controller';
 import { UsersService } from '../src/users/users.service';
 import { WinemakersService } from '../src/winemakers/winemakers.service';
+import { Wine } from '../src/wines/entities/wine.entity';
 import { WinesService } from '../src/wines/wines.service';
 import { AppModule } from './../src/app.module';
 import {
@@ -42,6 +49,7 @@ import {
 } from './common/creator.common';
 import {
   HttpMethod,
+  complexExceptionThrownMessageArrayTest,
   complexExceptionThrownMessageStringTest,
   endpointExistTest,
   endpointProtectedTest,
@@ -49,9 +57,11 @@ import {
 import {
   ExpectedRatingResponse,
   ExpectedUserResponse,
+  ExpectedWineResponse,
   buildExpectedPageResponse,
   buildExpectedRatingResponse,
   buildExpectedUserResponse,
+  buildExpectedWineResponse,
 } from './utils/expect-builder';
 import {
   clearDatabase,
@@ -248,6 +258,324 @@ describe('UsersController (e2e)', () => {
           updatedAt: user.updatedAt.toISOString(),
         }),
       );
+    });
+  });
+
+  describe(USERS_ME_SHELF_ENDPOINT + ' (GET)', () => {
+    const endpoint: string = USERS_ME_SHELF_ENDPOINT;
+    const method: HttpMethod = 'get';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.OK} with authorization`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+    });
+
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWineResponse>({
+          data: [],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 0,
+            pageCount: 0,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWineResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
+      for (let i = 0; i < 10; i++) {
+        const wine: Wine = await createTestWine(
+          winesService,
+          await createTestWinemaker(winemakersService),
+          await createTestStore(storesService),
+        );
+        await usersService.addWineToShelf(user, wine);
+      }
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWineResponse>({
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 10,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWineResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(10);
+    });
+
+    it(`should return ${HttpStatus.OK} a valid wine`, async () => {
+      const wine: Wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      await usersService.addWineToShelf(user, wine);
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toEqual(
+        buildExpectedWineResponse({
+          id: wine.id,
+          grapeVariety: wine.grapeVariety,
+          heritage: wine.heritage,
+          name: wine.name,
+          winemaker: {
+            id: wine.winemaker.id,
+            name: wine.winemaker.name,
+            createdAt: wine.winemaker.createdAt.toISOString(),
+            updatedAt: wine.winemaker.updatedAt.toISOString(),
+          },
+          year: wine.year,
+          createdAt: wine.createdAt.toISOString(),
+          updatedAt: wine.updatedAt.toISOString(),
+        }),
+      );
+    });
+  });
+
+  describe(USERS_ME_SHELF_ENDPOINT + ' (POST)', () => {
+    const endpoint: string = USERS_ME_SHELF_ENDPOINT;
+    const method: HttpMethod = 'post';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with authorization and no data`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data (incorrect fields)`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          name: 123,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data (incorrect datatype)`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          id: false,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when wine id is random`, async () => {
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          id: faker.string.uuid(),
+        },
+        exception: new NotFoundException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.CONFLICT} when wine was already added to shelf`, async () => {
+      const wine: Wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+
+      await usersService.addWineToShelf(user, wine);
+
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          id: wine.id,
+        },
+        exception: new ConflictException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.CREATED} when wine was added to shelf`, async () => {
+      const wine: Wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send({ id: wine.id })
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+    });
+  });
+
+  describe(USERS_ME_SHELF_ENDPOINT + ' (DELETE)', () => {
+    const endpoint: string = USERS_ME_SHELF_ENDPOINT;
+    const method: HttpMethod = 'delete';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with authorization and no data`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data (incorrect fields)`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          name: 123,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data (incorrect datatype)`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          id: false,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.NOT_FOUND} when wine id is random`, async () => {
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          id: faker.string.uuid(),
+        },
+        exception: new NotFoundException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.CONFLICT} when wine was not added to shelf`, async () => {
+      const wine: Wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          id: wine.id,
+        },
+        exception: new ConflictException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.OK} when wine was already added to shelf`, async () => {
+      const wine: Wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+
+      await usersService.addWineToShelf(user, wine);
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send({ id: wine.id })
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
     });
   });
 
@@ -536,6 +864,130 @@ describe('UsersController (e2e)', () => {
           text: rating.text,
           createdAt: rating.createdAt.toISOString(),
           updatedAt: rating.updatedAt.toISOString(),
+        }),
+      );
+    });
+  });
+
+  describe(USERS_USERNAME_SHELF_ENDPOINT + ' (GET)', () => {
+    const endpoint: string = USERS_USERNAME_SHELF_ENDPOINT;
+    const method: HttpMethod = 'get';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint: endpoint.replace(
+          USERNAME_URL_PARAMETER,
+          generateRandomValidUsername(),
+        ),
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint: endpoint.replace(
+          USERNAME_URL_PARAMETER,
+          generateRandomValidUsername(),
+        ),
+      }));
+
+    it(`should return ${HttpStatus.NOT_FOUND} with authorization`, async () =>
+      await complexExceptionThrownMessageStringTest({
+        app,
+        method,
+        endpoint: endpoint.replace(
+          USERNAME_URL_PARAMETER,
+          generateRandomValidUsername(),
+        ),
+        header: authHeader,
+        exception: new NotFoundException(),
+      }));
+
+    it(`should return ${HttpStatus.OK} and empty page response`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(USERNAME_URL_PARAMETER, user.username))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWineResponse>({
+          data: [],
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 0,
+            pageCount: 0,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWineResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it(`should return ${HttpStatus.OK} and page response with length of 10`, async () => {
+      for (let i = 0; i < 10; i++) {
+        const wine: Wine = await createTestWine(
+          winesService,
+          await createTestWinemaker(winemakersService),
+          await createTestStore(storesService),
+        );
+        await usersService.addWineToShelf(user, wine);
+      }
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(USERNAME_URL_PARAMETER, user.username))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toEqual(
+        buildExpectedPageResponse<ExpectedWineResponse>({
+          meta: {
+            page: PAGE_DEFAULT_VALUE,
+            take: TAKE_DEFAULT_VALUE,
+            itemCount: 10,
+            pageCount: 1,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          },
+          buildExpectedResponse: buildExpectedWineResponse,
+        }),
+      );
+      expect(response.body.data).toHaveLength(10);
+    });
+
+    it(`should return ${HttpStatus.OK} a valid wine`, async () => {
+      const wine: Wine = await createTestWine(
+        winesService,
+        await createTestWinemaker(winemakersService),
+        await createTestStore(storesService),
+      );
+      await usersService.addWineToShelf(user, wine);
+
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint.replace(USERNAME_URL_PARAMETER, user.username))
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0]).toEqual(
+        buildExpectedWineResponse({
+          id: wine.id,
+          grapeVariety: wine.grapeVariety,
+          heritage: wine.heritage,
+          name: wine.name,
+          winemaker: {
+            id: wine.winemaker.id,
+            name: wine.winemaker.name,
+            createdAt: wine.winemaker.createdAt.toISOString(),
+            updatedAt: wine.winemaker.updatedAt.toISOString(),
+          },
+          year: wine.year,
+          createdAt: wine.createdAt.toISOString(),
+          updatedAt: wine.updatedAt.toISOString(),
         }),
       );
     });

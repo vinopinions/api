@@ -49,7 +49,7 @@ export class AuthGuard implements CanActivate {
     let user: User;
     try {
       user = await this.usersService.findOne({
-        where: { firebaseToken: firebaseId },
+        where: { firebaseId: firebaseId },
       });
     } catch (NotFoundException) {
       throw new UnauthorizedException();

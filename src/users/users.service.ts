@@ -13,6 +13,8 @@ import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
 import { S3Service } from '../s3/s3.service';
+import { Wine } from '../wines/entities/wine.entity';
+import { WinesService } from '../wines/wines.service';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -20,6 +22,7 @@ export class UsersService extends CommonService<User> {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private ratingsService: RatingsService,
+    private winesService: WinesService,
     private s3Service: S3Service,
   ) {
     super(userRepository, User, async (user: User) => {
@@ -42,7 +45,7 @@ export class UsersService extends CommonService<User> {
 
     const user: User = this.userRepository.create({
       username,
-      firebaseToken: firebaseId,
+      firebaseId: firebaseId,
     });
     const dbUser: User = await this.userRepository.save(user);
     return await this.findOne({
@@ -72,6 +75,52 @@ export class UsersService extends CommonService<User> {
       user,
       paginationOptionsDto,
     );
+  }
+
+  async findShelfPaginated(
+    user: User,
+    paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Wine>> {
+    return await this.winesService.findManyByShelfUserPaginated(
+      user,
+      paginationOptionsDto,
+    );
+  }
+
+  async addWineToShelf(user: User, wine: Wine | string): Promise<void> {
+    if (typeof wine === 'string') {
+      wine = await this.winesService.findOne({ where: { id: wine } });
+    }
+
+    user = await this.findOne({
+      where: { id: user.id },
+      relations: { shelf: true },
+    });
+
+    if (user.shelf.some((shelfWine) => shelfWine.id === wine.id))
+      throw new ConflictException('Wine is already present in the shelf!');
+
+    user.shelf.push(wine);
+    await this.userRepository.save(user);
+  }
+
+  async removeWineFromShelf(user: User, wine: Wine | string): Promise<void> {
+    if (typeof wine === 'string') {
+      wine = await this.winesService.findOne({ where: { id: wine } });
+    }
+
+    user = await this.findOne({
+      where: { id: user.id },
+      relations: { shelf: true },
+    });
+
+    const index = user.shelf.findIndex((shelfWine) => shelfWine.id === wine.id);
+
+    if (index === -1)
+      throw new ConflictException('Wine is not present in the shelf!');
+
+    user.shelf.splice(index, 1);
+    await this.userRepository.save(user);
   }
 
   async remove(id: string): Promise<User> {

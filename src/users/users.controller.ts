@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   ForbiddenException,
@@ -8,6 +9,7 @@ import {
   Param,
   ParseFilePipeBuilder,
   ParseUUIDPipe,
+  Post,
   Put,
   Query,
   Req,
@@ -16,9 +18,12 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiConflictResponse,
   ApiConsumes,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -39,8 +44,10 @@ import { FilterPaginationOptionsDto } from '../pagination/filter-pagination-opti
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
 import { FILE_MAX_SIZE } from '../s3/constants';
+import { Wine } from '../wines/entities/wine.entity';
 import { AuthenticatedRequest } from './../auth/auth.guard';
 import { PageDto } from './../pagination/page.dto';
+import { AddWineToShelfDto } from './dtos/add-wine-to-shelf.dto';
 import { GetUserDto } from './dtos/get-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -55,10 +62,14 @@ const USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME = `${USERS_USERNAME_FRIEND
 export const USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME}`;
 const USERS_USERNAME_RATINGS_ENDPOINT_NAME = `${USERS_USERNAME_ENDPOINT_NAME}/ratings`;
 export const USERS_USERNAME_RATINGS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_RATINGS_ENDPOINT_NAME}`;
+const USERS_USERNAME_SHELF_ENDPOINT_NAME = `${USERS_USERNAME_ENDPOINT_NAME}/shelf`;
+export const USERS_USERNAME_SHELF_ENDPOINT = `${USERS_ENDPOINT}/${USERS_USERNAME_SHELF_ENDPOINT_NAME}`;
 const USERS_ME_ENDPOINT_NAME = 'me';
 export const USERS_ME_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_ENDPOINT_NAME}`;
-const USERS_ME_ENDPOINT_PROFILE_PICTURE_ENDPOINT_NAME = `${USERS_ME_ENDPOINT_NAME}/profilePicture`;
-export const USERS_ME_ENDPOINT_PROFILE_PICTURE_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_ENDPOINT_PROFILE_PICTURE_ENDPOINT_NAME}`;
+const USERS_ME_PROFILE_PICTURE_ENDPOINT_NAME = `${USERS_ME_ENDPOINT_NAME}/profilePicture`;
+export const USERS_ME_PROFILE_PICTURE_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_PROFILE_PICTURE_ENDPOINT_NAME}`;
+const USERS_ME_SHELF_ENDPOINT_NAME = `${USERS_ME_ENDPOINT_NAME}/shelf`;
+export const USERS_ME_SHELF_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_SHELF_ENDPOINT_NAME}`;
 
 @Controller(USERS_ENDPOINT_NAME)
 @ApiTags(USERS_ENDPOINT_NAME)
@@ -83,6 +94,93 @@ export class UsersController {
     return this.usersService.findOne({
       where: { username: request.user.username },
     });
+  }
+
+  @ApiOperation({ summary: 'update profile picture' })
+  @Put(USERS_ME_PROFILE_PICTURE_ENDPOINT_NAME)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Image of the store',
+    type: FileUploadDto,
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async updateProfilePicture(
+    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
+    @Req() request: AuthenticatedRequest,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'jpeg',
+        })
+        .addMaxSizeValidator({
+          maxSize: FILE_MAX_SIZE,
+        })
+        .build(),
+    )
+    file: Express.Multer.File,
+  ) {
+    const user: User = await this.usersService.findOne({
+      where: { username: request.user.username },
+    });
+    this.usersService.updateProfilePicture(user, file.buffer);
+  }
+
+  @ApiOperation({ summary: 'get shelf of user' })
+  @Get(USERS_ME_SHELF_ENDPOINT_NAME)
+  @ApiPaginationResponse(Wine, {
+    description: 'Shelf of user have been found',
+    status: HttpStatus.OK,
+  })
+  async findShelfOfUser(
+    @Req() request: AuthenticatedRequest,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Wine>> {
+    return await this.usersService.findShelfPaginated(
+      request.user,
+      paginationOptionsDto,
+    );
+  }
+
+  @ApiOperation({ summary: 'add wine to shelf of user' })
+  @Post(USERS_ME_SHELF_ENDPOINT_NAME)
+  @ApiBadRequestResponse({
+    description: 'Request body was in invalid format',
+  })
+  @ApiNotFoundResponse({
+    description: 'Wine could not be found',
+  })
+  @ApiConflictResponse({
+    description: 'Wine was already added to the shelf',
+  })
+  @ApiCreatedResponse({
+    description: 'Wine has been added to the shelf',
+  })
+  async addWineToShelfOfUser(
+    @Req() request: AuthenticatedRequest,
+    @Body() { id }: AddWineToShelfDto,
+  ): Promise<void> {
+    return await this.usersService.addWineToShelf(request.user, id);
+  }
+
+  @ApiOperation({ summary: 'remove wine from shelf of user' })
+  @Delete(USERS_ME_SHELF_ENDPOINT_NAME)
+  @ApiBadRequestResponse({
+    description: 'Request body was in invalid format',
+  })
+  @ApiNotFoundResponse({
+    description: 'Wine could not be found',
+  })
+  @ApiConflictResponse({
+    description: 'Wine was not present in the shelf',
+  })
+  @ApiOkResponse({
+    description: 'Wine has been removed from the shelf',
+  })
+  async removeWineFromShelfOfUser(
+    @Req() request: AuthenticatedRequest,
+    @Body() { id }: AddWineToShelfDto,
+  ): Promise<void> {
+    return await this.usersService.removeWineFromShelf(request.user, id);
   }
 
   @ApiOperation({ summary: 'get all users' })
@@ -174,6 +272,30 @@ export class UsersController {
     );
   }
 
+  @ApiOperation({ summary: 'get shelf of a user' })
+  @Get(USERS_USERNAME_SHELF_ENDPOINT_NAME)
+  @ApiPaginationResponse(Wine, {
+    description: 'Shelf of user have been found',
+    status: HttpStatus.OK,
+  })
+  @ApiNotFoundResponse({
+    description: 'User could not be found',
+  })
+  async findShelfOfAnotherUser(
+    @Param() { username }: GetUserDto,
+    @Query() paginationOptionsDto: PaginationOptionsDto,
+  ): Promise<PageDto<Wine>> {
+    const user: User = await this.usersService.findOne({
+      where: {
+        username,
+      },
+    });
+    return await this.usersService.findShelfPaginated(
+      user,
+      paginationOptionsDto,
+    );
+  }
+
   @ApiOperation({ summary: 'check friendship' })
   @Get(USERS_USERNAME_FRIENDS_FRIENDNAME_ENDPOINT_NAME)
   @ApiOkResponse({
@@ -230,34 +352,5 @@ export class UsersController {
     });
 
     await this.usersService.removeFriend(removingUser, toBeRemovedUser);
-  }
-
-  @ApiOperation({ summary: 'update profile picture' })
-  @Put(USERS_ME_ENDPOINT_PROFILE_PICTURE_ENDPOINT_NAME)
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'Image of the store',
-    type: FileUploadDto,
-  })
-  @UseInterceptors(FileInterceptor('file'))
-  async updateProfilePicture(
-    @Param(ID_URL_PARAMETER_NAME, new ParseUUIDPipe()) id: string,
-    @Req() request: AuthenticatedRequest,
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: 'jpeg',
-        })
-        .addMaxSizeValidator({
-          maxSize: FILE_MAX_SIZE,
-        })
-        .build(),
-    )
-    file: Express.Multer.File,
-  ) {
-    const user: User = await this.usersService.findOne({
-      where: { username: request.user.username },
-    });
-    this.usersService.updateProfilePicture(user, file.buffer);
   }
 }

@@ -12,6 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Rating } from '../../ratings/entities/rating.entity';
+import { Wine } from '../../wines/entities/wine.entity';
 
 export const USERNAME_REGEX = /^([a-z]+[a-z0-9]*([\._][a-z0-9]+)?){3,20}$/;
 const USERNAME_REGEX_PATTERN = USERNAME_REGEX.toString().substring(
@@ -31,11 +32,11 @@ export class User {
   id: string;
 
   @ApiProperty({
-    description: 'The firebaseToken of the user',
+    description: 'The firebase id of the user',
   })
   @Exclude()
   @Column({ unique: true })
-  firebaseToken: string;
+  firebaseId: string;
 
   @ApiProperty({
     example: 'hans',
@@ -54,11 +55,7 @@ export class User {
 
   @Exclude()
   @ManyToMany(() => User)
-  @JoinTable({
-    name: 'friends',
-    joinColumn: { name: 'userId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'friendId', referencedColumnName: 'id' },
-  })
+  @JoinTable()
   friends: User[];
 
   @Exclude()
@@ -72,6 +69,11 @@ export class User {
   @IsOptional()
   @IsUrl()
   profilePicture?: string;
+
+  @Exclude()
+  @ManyToMany(() => Wine, (wine) => wine.shelfUser)
+  @JoinTable()
+  shelf: Wine[];
 
   @ApiProperty({
     description: 'createdAt',

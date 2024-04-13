@@ -4,10 +4,6 @@ on:
   pull_request:
     branches: ['developer', 'master']
   workflow_call:
-    secrets:
-      FIREBASE_SERVICE_ACCOUNT_FILE_CONTENT:
-        required: true
-
   schedule:
     - cron: '0 8 * * *'
 
@@ -25,7 +21,6 @@ env:
   S3_BUCKET: test
   S3_ENDPOINT: http://minio:9000
   S3_REGION: eu-north-1
-  FIREBASE_SERVICE_ACCOUNT_FILE: firebase-service-account.json
   FIREBASE_AUTH_EMULATOR_HOST: firebase-emulator:9099
 
 jobs:
@@ -73,8 +68,6 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
 
-      - run: printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_FILE_CONTENT }}' > ${{ env.FIREBASE_SERVICE_ACCOUNT_FILE }}
-
       - name: Run Tests
         run: yarn test:e2e --ci --runInBand
         env:
@@ -92,5 +85,5 @@ jobs:
           S3_SECRET_KEY: ${{ env.S3_SECRET_KEY }}
           S3_BUCKET: ${{ env.S3_BUCKET }}
           S3_REGION: ${{ env.S3_REGION }}
-          FIREBASE_SERVICE_ACCOUNT_FILE: ${{ env.FIREBASE_SERVICE_ACCOUNT_FILE}}
           FIREBASE_AUTH_EMULATOR_HOST: ${{ env.FIREBASE_AUTH_EMULATOR_HOST }}
+          GCLOUD_PROJECT: vinopinions-test # has to be the same as in .firebaserc

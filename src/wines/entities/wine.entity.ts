@@ -21,6 +21,7 @@ import {
 } from 'typeorm';
 import { Rating } from '../../ratings/entities/rating.entity';
 import { Store } from '../../stores/entities/store.entity';
+import { User } from '../../users/entities/user.entity';
 import { Winemaker } from '../../winemakers/entities/winemaker.entity';
 
 @Entity()
@@ -105,6 +106,12 @@ export class Wine {
   @Exclude()
   @OneToMany(() => Rating, (rating) => rating.wine)
   ratings: Rating[];
+
+  @Exclude()
+  @ManyToMany(() => User, (user) => user.shelf, {
+    nullable: false,
+  })
+  shelfUser: User[];
 
   @ApiProperty({
     description: 'createdAt',

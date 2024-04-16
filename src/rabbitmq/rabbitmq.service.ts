@@ -21,15 +21,10 @@ export class RabbitMQService
   constructor(private configService: ConfigService) {}
 
   private async connect() {
-    try {
-      this.connection = await connect(
-        this.configService.getOrThrow('RABBITMQ_URL'),
-      );
-      this.channel = await this.connection.createChannel();
-      console.log('Connected to RabbitMQ');
-    } catch (error) {
-      console.error('Error connecting to RabbitMQ:', error);
-    }
+    this.connection = await connect(
+      this.configService.getOrThrow('RABBITMQ_URL'),
+    );
+    this.channel = await this.connection.createChannel();
   }
 
   async onApplicationBootstrap() {

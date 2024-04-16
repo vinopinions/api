@@ -32,6 +32,7 @@ export class RabbitMQService
   }
 
   async onApplicationShutdown() {
+    await this.channel.close();
     await this.connection.close();
   }
 

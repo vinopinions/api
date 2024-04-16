@@ -1,5 +1,6 @@
 import {
   ClassSerializerInterceptor,
+  MiddlewareConsumer,
   Module,
   ValidationPipe,
 } from '@nestjs/common';
@@ -10,7 +11,9 @@ import { DatabaseModule } from './database/database.module';
 import { DummyDataModule } from './dummy-data/dummy-data.module';
 import { FeedModule } from './feed/feed.module';
 import { FriendRequestsModule } from './friend-requests/friend-requests.module';
+import { RabbitMQService } from './rabbitmq/rabbitmq.service';
 import { RatingsModule } from './ratings/ratings.module';
+import { RequestLoggerMiddleware } from './request-logger/request-logger.middleware';
 import { S3Module } from './s3/s3.module';
 import { StoresModule } from './stores/stores.module';
 import { UsersModule } from './users/users.module';
@@ -46,6 +49,11 @@ import { WinesModule } from './wines/wines.module';
         validationError: { target: false },
       }),
     },
+    RabbitMQService,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestLoggerMiddleware).forRoutes('*');
+  }
+}

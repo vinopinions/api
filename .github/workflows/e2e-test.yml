@@ -22,6 +22,8 @@ env:
   S3_ENDPOINT: http://minio:9000
   S3_REGION: eu-north-1
   FIREBASE_AUTH_EMULATOR_HOST: firebase-emulator:9099
+  RABBITMQ_USER: admin
+  RABBITMQ_PASSWORD: krLD8^*U3uu!J5
 
 jobs:
   test:
@@ -55,6 +57,11 @@ jobs:
           --health-retries 3
       firebase-emulator:
         image: ghcr.io/layla-oskar-schule/vinopinions-api-firebase-emulator:latest
+      rabbitmq:
+        image: rabbitmq:3.13.1
+        env:
+          RABBITMQ_DEFAULT_USER: ${{ env.RABBITMQ_USER }}
+          RABBITMQ_DEFAULT_PASS: ${{ env.RABBITMQ_PASSWORD }}
 
     steps:
       - name: Checkout code
@@ -87,3 +94,4 @@ jobs:
           S3_REGION: ${{ env.S3_REGION }}
           FIREBASE_AUTH_EMULATOR_HOST: ${{ env.FIREBASE_AUTH_EMULATOR_HOST }}
           GCLOUD_PROJECT: vinopinions-test # has to be the same as in .firebaserc
+          RABBITMQ_URL: amqp://${{ env.RABBITMQ_USER }}:${{ env.RABBITMQ_PASSWORD }}@rabbitmq

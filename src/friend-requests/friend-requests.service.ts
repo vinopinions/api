@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
+import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { PageDto } from './../pagination/page.dto';
@@ -16,6 +17,7 @@ import { FriendRequest } from './entities/friend-request.entity';
 export class FriendRequestsService extends CommonService<FriendRequest> {
   constructor(
     private usersService: UsersService,
+    private rabbitMQService: RabbitMQService,
     @InjectRepository(FriendRequest)
     private friendRequestRepository: Repository<FriendRequest>,
   ) {
@@ -99,11 +101,14 @@ export class FriendRequestsService extends CommonService<FriendRequest> {
 
     const dbFriendRequest =
       await this.friendRequestRepository.save(friendRequest);
-    return await this.findOne({
+
+    const fr = await this.findOne({
       where: {
         id: dbFriendRequest.id,
       },
     });
+    await this.rabbitMQService.sendFriendRequestNotificationMessage(fr);
+    return fr;
   }
 
   async accept(id: string, acceptingUser: User) {

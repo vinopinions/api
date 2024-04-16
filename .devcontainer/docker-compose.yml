@@ -51,6 +51,19 @@ services:
       - 4000:4000
       - 9099:9099
 
+  rabbitmq:
+    container_name: vinopinions-api_devcontainer-rabbitmq
+    hostname: ${RABBITMQ_HOSTNAME}
+    image: rabbitmq:3.13.1-management
+    ports:
+      - ${RABBITMQ_UI_PORT}:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq/
+
 volumes:
   pg-data:
   minio-data:
+  rabbitmq-data:

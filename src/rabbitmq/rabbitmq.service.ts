@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { Channel, Connection, connect } from 'amqplib';
 import { FriendRequest } from '../friend-requests/entities/friend-request.entity';
 
-const SERVICE_NAME = 'vp_api';
+const SERVICE_NAME = `vp_api.${process.env.NODE_ENV}`;
 const LOG_QUEUE = `${SERVICE_NAME}.logs`;
 const SEND_FRIEND_REQUEST_QUEUE = `${SERVICE_NAME}.sent_friend_requests`;
 

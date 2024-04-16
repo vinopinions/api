@@ -28,7 +28,6 @@ export class RequestLoggerMiddleware implements NestMiddleware {
       userAgent: req.headers['user-agent'],
       clientIP: req.ip,
     };
-
     const response = {
       statusCode: res.statusCode,
       headers: res.getHeaders(),

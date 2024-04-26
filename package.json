@@ -30,7 +30,7 @@
     "axios": "^1.6.8",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
-    "firebase": "^10.10.0",
+    "firebase": "^10.11.1",
     "firebase-admin": "^12.1.0",
     "mime-types": "^2.1.35",
     "pg": "^8.11.5",

@@ -56,7 +56,7 @@ jobs:
           --health-timeout 10s
           --health-retries 3
       firebase-emulator:
-        image: ghcr.io/layla-oskar-schule/vinopinions-api-firebase-emulator:latest
+        image: ghcr.io/vinopinions/api-firebase-emulator:latest
       rabbitmq:
         image: rabbitmq:3.13.1
         env:

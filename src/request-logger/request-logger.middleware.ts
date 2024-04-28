@@ -1,16 +1,16 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { Request, Response } from 'express';
-import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
+import { REDIS_CLIENT_TOKEN } from '../redis/redis.module';
 
 @Injectable()
 export class RequestLoggerMiddleware implements NestMiddleware {
-  constructor(private readonly rabbitMQService: RabbitMQService) {}
+  constructor(@Inject(REDIS_CLIENT_TOKEN) private redisClient: ClientProxy) {}
 
   use(req: Request, res: Response, next: () => void) {
     const startTime = new Date().getTime();
     res.on('finish', () => {
-      const logObject = this.createRequestLog(req, res, startTime);
-      this.rabbitMQService.sendLogMessage(JSON.stringify(logObject));
+      this.redisClient.emit('log', this.createRequestLog(req, res, startTime));
     });
     next();
   }

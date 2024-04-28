@@ -63,7 +63,17 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq/
 
+  redis:
+    container_name: vinopinions-api_devcontainer-redis
+    hostname: ${REDIS_HOSTNAME}
+    image: redis/redis-stack:7.2.0-v10
+    ports:
+      - ${REDIS_UI_PORT}:8001
+    volumes:
+      - redis-data:/data
+
 volumes:
   pg-data:
   minio-data:
   rabbitmq-data:
+  redis-data:

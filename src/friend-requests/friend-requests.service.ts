@@ -1,13 +1,15 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
-import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
+import { REDIS_CLIENT_TOKEN } from '../redis/redis.module';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { PageDto } from './../pagination/page.dto';
@@ -17,7 +19,7 @@ import { FriendRequest } from './entities/friend-request.entity';
 export class FriendRequestsService extends CommonService<FriendRequest> {
   constructor(
     private usersService: UsersService,
-    private rabbitMQService: RabbitMQService,
+    @Inject(REDIS_CLIENT_TOKEN) private redisClient: ClientProxy,
     @InjectRepository(FriendRequest)
     private friendRequestRepository: Repository<FriendRequest>,
   ) {
@@ -107,7 +109,7 @@ export class FriendRequestsService extends CommonService<FriendRequest> {
         id: dbFriendRequest.id,
       },
     });
-    await this.rabbitMQService.sendFriendRequestNotificationMessage(fr);
+    this.redisClient.emit('friend-request-sent', fr);
     return fr;
   }
 

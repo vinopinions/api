@@ -1,7 +1,7 @@
 {
-  "name": "vinopinions-api",
+  "name": "api",
   "version": "1.0.0-dev.42",
-  "description": "Rest API for the vinopinions app",
+  "description": "Rest API for vinopinions",
   "license": "UNLICENSED",
   "main": "./src/main.ts",
   "scripts": {
@@ -75,11 +75,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/layla-oskar-schule/vinopinions-api.git"
+    "url": "git+https://github.com/vinopinions/api.git"
   },
   "bugs": {
-    "url": "https://github.com/layla-oskar-schule/vinopinions-api/issues"
+    "url": "https://github.com/vinopinions/api/issues"
   },
-  "homepage": "https://github.com/layla-oskar-schule/vinopinions-api#readme",
+  "homepage": "https://github.com/vinopinions/api#readme",
   "packageManager": "yarn@4.1.1"
 }

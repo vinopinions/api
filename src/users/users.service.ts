@@ -1,9 +1,11 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import sharp from 'sharp';
 import { FindManyOptions, Repository } from 'typeorm';
@@ -12,6 +14,7 @@ import { PageDto } from '../pagination/page.dto';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
 import { Rating } from '../ratings/entities/rating.entity';
 import { RatingsService } from '../ratings/ratings.service';
+import { REDIS_CLIENT_TOKEN } from '../redis/redis.module';
 import { S3Service } from '../s3/s3.service';
 import { Wine } from '../wines/entities/wine.entity';
 import { WinesService } from '../wines/wines.service';
@@ -24,6 +27,7 @@ export class UsersService extends CommonService<User> {
     private ratingsService: RatingsService,
     private winesService: WinesService,
     private s3Service: S3Service,
+    @Inject(REDIS_CLIENT_TOKEN) private redisClient: ClientProxy,
   ) {
     super(userRepository, User, async (user: User) => {
       if (await s3Service.existsImage(user.id, 'user'))
@@ -211,5 +215,13 @@ export class UsersService extends CommonService<User> {
       .toBuffer();
 
     await this.s3Service.uploadImage(user.id, 'user', resizedBuffer);
+  }
+
+  async registerPushToken(user: User, pushToken: string) {
+    this.redisClient.emit('push-token-registered', { user, pushToken });
+  }
+
+  revokePushToken(user: User, pushToken: string) {
+    this.redisClient.emit('push-token-revoked', { user, pushToken });
   }
 }

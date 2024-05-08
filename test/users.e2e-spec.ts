@@ -29,6 +29,7 @@ import { User } from '../src/users/entities/user.entity';
 import {
   USERS_ENDPOINT,
   USERS_ME_ENDPOINT,
+  USERS_ME_NOTIFICATIONS_ENDPOINT,
   USERS_ME_SHELF_ENDPOINT,
   USERS_USERNAME_ENDPOINT,
   USERS_USERNAME_FRIENDS_ENDPOINT,
@@ -1182,6 +1183,156 @@ describe('UsersController (e2e)', () => {
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.OK);
+    });
+  });
+
+  describe(USERS_ME_NOTIFICATIONS_ENDPOINT + ' (POST)', () => {
+    const endpoint: string = USERS_ME_NOTIFICATIONS_ENDPOINT;
+    const method: HttpMethod = 'post';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with authorization and no data`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data (incorrect fields)`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          name: 123,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data (incorrect datatype)`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          token: false,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} when push token does not match regex`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          token: 'token',
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.CREATED}`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send({ token: 'ExponentPushToken[abc]' })
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+    });
+  });
+
+  describe(USERS_ME_NOTIFICATIONS_ENDPOINT + ' (DELETE)', () => {
+    const endpoint: string = USERS_ME_NOTIFICATIONS_ENDPOINT;
+    const method: HttpMethod = 'delete';
+
+    it('should exist', async () =>
+      await endpointExistTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.UNAUTHORIZED} without authorization`, async () =>
+      await endpointProtectedTest({
+        app,
+        method,
+        endpoint,
+      }));
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with authorization and no data`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data (incorrect fields)`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          name: 123,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} with invalid data (incorrect datatype)`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          token: false,
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.BAD_REQUEST} when push token does not match regex`, async () => {
+      await complexExceptionThrownMessageArrayTest({
+        app,
+        method,
+        endpoint,
+        body: {
+          token: 'token',
+        },
+        exception: new BadRequestException(),
+        header: authHeader,
+      });
+    });
+
+    it(`should return ${HttpStatus.NO_CONTENT}`, async () => {
+      const response: Response = await request(app.getHttpServer())
+        [method](endpoint)
+        .send({ token: 'ExponentPushToken[abc]' })
+        .set(authHeader);
+
+      expect(response.status).toBe(HttpStatus.NO_CONTENT);
     });
   });
 });

@@ -1,23 +1,27 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
 import { PaginationOptionsDto } from '../pagination/pagination-options.dto';
-import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
+import { REDIS_CLIENT_TOKEN } from '../redis/redis.module';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { PageDto } from './../pagination/page.dto';
+import FriendRequestAcceptedDto from './dtos/friend-request-accepted.dto';
+import FriendRequestSentDto from './dtos/friend-request-sent.dto';
 import { FriendRequest } from './entities/friend-request.entity';
 
 @Injectable()
 export class FriendRequestsService extends CommonService<FriendRequest> {
   constructor(
     private usersService: UsersService,
-    private rabbitMQService: RabbitMQService,
+    @Inject(REDIS_CLIENT_TOKEN) private redisClient: ClientProxy,
     @InjectRepository(FriendRequest)
     private friendRequestRepository: Repository<FriendRequest>,
   ) {
@@ -107,36 +111,49 @@ export class FriendRequestsService extends CommonService<FriendRequest> {
         id: dbFriendRequest.id,
       },
     });
-    await this.rabbitMQService.sendFriendRequestNotificationMessage(fr);
+
+    const payload: FriendRequestSentDto = {
+      receiverId: fr.receiver.id,
+      senderName: fr.sender.username,
+    };
+
+    this.redisClient.emit('friend_request_sent', payload);
     return fr;
   }
 
   async accept(id: string, acceptingUser: User) {
-    const friendRequest: FriendRequest = await this.findOne({
+    const fr: FriendRequest = await this.findOne({
       where: {
         id,
       },
     });
 
-    if (friendRequest.receiver.id !== acceptingUser.id)
+    if (fr.receiver.id !== acceptingUser.id)
       throw new ForbiddenException(
         'You can not accept another users friend request',
       );
 
     // remove friend request
-    await this.friendRequestRepository.remove(friendRequest);
+    await this.friendRequestRepository.remove(fr);
 
     // add as friends
     await this.usersService.addFriend(
       await this.usersService.findOne({
-        where: { id: friendRequest.receiver.id },
+        where: { id: fr.receiver.id },
       }),
       await this.usersService.findOne({
-        where: { id: friendRequest.sender.id },
+        where: { id: fr.sender.id },
       }),
     );
 
-    return friendRequest;
+    const payload: FriendRequestAcceptedDto = {
+      accepteeId: fr.receiver.id,
+      accepterName: fr.sender.username,
+    };
+
+    this.redisClient.emit('friend_request_accepted', payload);
+
+    return fr;
   }
 
   async decline(id: string, decliningUser: User) {

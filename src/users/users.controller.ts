@@ -50,6 +50,7 @@ import { PageDto } from './../pagination/page.dto';
 import { AddWineToShelfDto } from './dtos/add-wine-to-shelf.dto';
 import { GetUserDto } from './dtos/get-user.dto';
 import { User } from './entities/user.entity';
+import Token from './models/token';
 import { UsersService } from './users.service';
 
 const USERS_ENDPOINT_NAME = 'users';
@@ -70,6 +71,8 @@ const USERS_ME_PROFILE_PICTURE_ENDPOINT_NAME = `${USERS_ME_ENDPOINT_NAME}/profil
 export const USERS_ME_PROFILE_PICTURE_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_PROFILE_PICTURE_ENDPOINT_NAME}`;
 const USERS_ME_SHELF_ENDPOINT_NAME = `${USERS_ME_ENDPOINT_NAME}/shelf`;
 export const USERS_ME_SHELF_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_SHELF_ENDPOINT_NAME}`;
+const USERS_ME_NOTIFICATIONS_ENDPOINT_NAME = `${USERS_ME_ENDPOINT_NAME}/notifications`;
+export const USERS_ME_NOTIFICATIONS_ENDPOINT = `${USERS_ENDPOINT}/${USERS_ME_NOTIFICATIONS_ENDPOINT_NAME}`;
 
 @Controller(USERS_ENDPOINT_NAME)
 @ApiTags(USERS_ENDPOINT_NAME)
@@ -352,5 +355,21 @@ export class UsersController {
     });
 
     await this.usersService.removeFriend(removingUser, toBeRemovedUser);
+  }
+
+  @ApiOperation({ summary: 'add a notification push token' })
+  @Post(USERS_ME_NOTIFICATIONS_ENDPOINT_NAME)
+  async registerPushToken(
+    @Req() { user }: AuthenticatedRequest,
+    @Body() { token }: Token,
+  ) {
+    this.usersService.registerPushToken(user, token);
+  }
+
+  @ApiOperation({ summary: 'revoke a notification push token' })
+  @Delete(USERS_ME_NOTIFICATIONS_ENDPOINT_NAME)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async revokePushToken(@Body() { token }: Token) {
+    this.usersService.revokePushToken(token);
   }
 }

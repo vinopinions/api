@@ -7,7 +7,7 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
     ports:
-      - 3000:3000
+      - ${APP_PORT}:3000
     env_file:
       - .env
     volumes:
@@ -17,6 +17,7 @@ services:
   db:
     container_name: vinopinions-api_devcontainer-db
     image: postgres:16
+    hostname: ${POSTGRES_HOSTNAME}
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -24,17 +25,18 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_PORT=${POSTGRES_PORT}
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
     volumes:
       - pg-data:/var/lib/postgresql/data
 
   minio:
     container_name: vinopinions-api_devcontainer-minio
     image: docker.io/bitnami/minio:latest
+    hostname: ${S3_HOSTNAME}
     restart: unless-stopped
     ports:
-      - 9000:9000
-      - 9001:9001
+      - ${S3_PORT}:9000
+      - ${S3_UI_PORT}:9001
     volumes:
       - 'minio-data:/data'
     environment:
@@ -44,12 +46,13 @@ services:
 
   firebase-emulator:
     container_name: vinopinions-api_devcontainer-firebase-emulator
+    hostname: ${FIREBASE_EMULATOR_HOSTNAME}
     build:
       context: ..
       dockerfile: .devcontainer/Firebase.Dockerfile
     ports:
-      - 4000:4000
-      - 9099:9099
+      - ${FIREBASE_EMULATOR_UI_PORT}:4000
+      - ${FIREBASE_EMULATOR_AUTH_PORT}:9099
 
   rabbitmq:
     container_name: vinopinions-api_devcontainer-rabbitmq
@@ -63,7 +66,18 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq/
 
+  redis:
+    container_name: vinopinions-api_devcontainer-redis
+    hostname: ${REDIS_HOSTNAME}
+    image: redis/redis-stack:7.2.0-v10
+    ports:
+      - ${REDIS_UI_PORT}:8001
+      - ${REDIS_PORT}:6379
+    volumes:
+      - redis-data:/data
+
 volumes:
   pg-data:
   minio-data:
   rabbitmq-data:
+  redis-data:

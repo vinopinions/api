@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RatingsModule } from '../ratings/ratings.module';
+import { RedisModule } from '../redis/redis.module';
 import { S3Module } from '../s3/s3.module';
 import { WinesModule } from '../wines/wines.module';
 import { User } from './entities/user.entity';
@@ -13,6 +14,7 @@ import { UsersService } from './users.service';
     RatingsModule,
     S3Module,
     WinesModule,
+    RedisModule,
   ],
   providers: [UsersService],
   exports: [UsersService],

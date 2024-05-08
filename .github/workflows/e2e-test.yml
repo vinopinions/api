@@ -13,7 +13,7 @@ permissions:
 env:
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
-  POSTGRES_HOST: postgres
+  POSTGRES_HOSTNAME: postgres
   POSTGRES_PORT: 5432
   POSTGRES_DB: test
   S3_ACCESS_KEY: minio
@@ -22,8 +22,8 @@ env:
   S3_ENDPOINT: http://minio:9000
   S3_REGION: eu-north-1
   FIREBASE_AUTH_EMULATOR_HOST: firebase-emulator:9099
-  RABBITMQ_USER: admin
-  RABBITMQ_PASSWORD: krLD8^*U3uu!J5
+  REDIS_HOSTNAME: redis
+  REDIS_PORT: 6379
 
 jobs:
   test:
@@ -56,12 +56,9 @@ jobs:
           --health-timeout 10s
           --health-retries 3
       firebase-emulator:
-        image: ghcr.io/layla-oskar-schule/vinopinions-api-firebase-emulator:latest
-      rabbitmq:
-        image: rabbitmq:3.13.1
-        env:
-          RABBITMQ_DEFAULT_USER: ${{ env.RABBITMQ_USER }}
-          RABBITMQ_DEFAULT_PASS: ${{ env.RABBITMQ_PASSWORD }}
+        image: ghcr.io/vinopinions/api-firebase-emulator:latest
+      redis:
+        image: redis:7.2
 
     steps:
       - name: Checkout code
@@ -81,7 +78,7 @@ jobs:
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
-          POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
+          POSTGRES_HOSTNAME: ${{ env.POSTGRES_HOSTNAME }}
           POSTGRES_PORT: ${{ env.POSTGRES_PORT }}
           NODE_ENV: ${{ vars.NODE_ENV }}
           AUTH_SERVICE_DOMAIN: ${{ vars.AUTH_SERVICE_DOMAIN }}
@@ -94,4 +91,5 @@ jobs:
           S3_REGION: ${{ env.S3_REGION }}
           FIREBASE_AUTH_EMULATOR_HOST: ${{ env.FIREBASE_AUTH_EMULATOR_HOST }}
           GCLOUD_PROJECT: vinopinions-test # has to be the same as in .firebaserc
-          RABBITMQ_URL: amqp://${{ env.RABBITMQ_USER }}:${{ env.RABBITMQ_PASSWORD }}@rabbitmq
+          REDIS_HOSTNAME: ${{ env.REDIS_HOSTNAME }}
+          REDIS_PORT: ${{ env.REDIS_PORT }}

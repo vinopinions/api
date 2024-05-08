@@ -1,4 +1,4 @@
-# Contributing to vinopinions-api
+# Contributing to the vinopinions api
 
 ## Commit messages
 

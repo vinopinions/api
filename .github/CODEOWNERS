@@ -1,5 +1,5 @@
 # Define code owners for the "developer" branch
-/developer/*      @layla-oskar-schule/api-codeowner
+/developer/*      @vinopinions/api-codeowner
 
 # Define code owners for the "master" branch
-/master/*          @layla-oskar-schule/api-codeowner
+/master/*          @vinopinions/api-codeowner

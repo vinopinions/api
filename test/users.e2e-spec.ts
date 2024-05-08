@@ -1231,7 +1231,7 @@ describe('UsersController (e2e)', () => {
         method,
         endpoint,
         body: {
-          pushToken: false,
+          token: false,
         },
         exception: new BadRequestException(),
         header: authHeader,
@@ -1244,7 +1244,7 @@ describe('UsersController (e2e)', () => {
         method,
         endpoint,
         body: {
-          pushToken: 'token',
+          token: 'token',
         },
         exception: new BadRequestException(),
         header: authHeader,
@@ -1254,7 +1254,7 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.CREATED}`, async () => {
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
-        .send({ pushToken: 'ExponentPushToken[abc]' })
+        .send({ token: 'ExponentPushToken[abc]' })
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.CREATED);
@@ -1306,7 +1306,7 @@ describe('UsersController (e2e)', () => {
         method,
         endpoint,
         body: {
-          pushToken: false,
+          token: false,
         },
         exception: new BadRequestException(),
         header: authHeader,
@@ -1319,7 +1319,7 @@ describe('UsersController (e2e)', () => {
         method,
         endpoint,
         body: {
-          pushToken: 'token',
+          token: 'token',
         },
         exception: new BadRequestException(),
         header: authHeader,
@@ -1329,7 +1329,7 @@ describe('UsersController (e2e)', () => {
     it(`should return ${HttpStatus.NO_CONTENT}`, async () => {
       const response: Response = await request(app.getHttpServer())
         [method](endpoint)
-        .send({ pushToken: 'ExponentPushToken[abc]' })
+        .send({ token: 'ExponentPushToken[abc]' })
         .set(authHeader);
 
       expect(response.status).toBe(HttpStatus.NO_CONTENT);

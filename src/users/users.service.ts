@@ -18,6 +18,8 @@ import { REDIS_CLIENT_TOKEN } from '../redis/redis.module';
 import { S3Service } from '../s3/s3.service';
 import { Wine } from '../wines/entities/wine.entity';
 import { WinesService } from '../wines/wines.service';
+import { RegisterTokenDto } from './dtos/register-token.dto';
+import { RevokeTokenDto } from './dtos/revoke-token.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -217,11 +219,18 @@ export class UsersService extends CommonService<User> {
     await this.s3Service.uploadImage(user.id, 'user', resizedBuffer);
   }
 
-  async registerPushToken(user: User, pushToken: string) {
-    this.redisClient.emit('push-token-registered', { user, pushToken });
+  registerPushToken(user: User, pushToken: string) {
+    const payload: RegisterTokenDto = {
+      userId: user.id,
+      token: pushToken,
+    };
+    this.redisClient.emit('push_token_registered', payload);
   }
 
-  revokePushToken(user: User, pushToken: string) {
-    this.redisClient.emit('push-token-revoked', { user, pushToken });
+  revokePushToken(pushToken: string) {
+    const payload: RevokeTokenDto = {
+      token: pushToken,
+    };
+    this.redisClient.emit('push_token_revoked', payload);
   }
 }

@@ -8,7 +8,7 @@ const EXPONENT_PUSH_TOKEN_PATTERN =
     EXPONENT_PUSH_TOKEN_REGEX.toString().length - 1,
   );
 
-export class RegisterPushTokenDto {
+class Token {
   @ApiProperty({
     example: 'ExponentPushToken[abc]',
     description: 'push token to register',
@@ -16,5 +16,7 @@ export class RegisterPushTokenDto {
     pattern: EXPONENT_PUSH_TOKEN_PATTERN,
   })
   @Matches(EXPONENT_PUSH_TOKEN_REGEX)
-  pushToken: string;
+  token: string;
 }
+
+export default Token;

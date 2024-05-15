@@ -671,9 +671,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/s3-request-presigner@npm:^3.575.0":
-  version: 3.575.0
-  resolution: "@aws-sdk/s3-request-presigner@npm:3.575.0"
+"@aws-sdk/s3-request-presigner@npm:^3.576.0":
+  version: 3.576.0
+  resolution: "@aws-sdk/s3-request-presigner@npm:3.576.0"
   dependencies:
     "@aws-sdk/signature-v4-multi-region": "npm:3.575.0"
     "@aws-sdk/types": "npm:3.575.0"
@@ -683,7 +683,7 @@ __metadata:
     "@smithy/smithy-client": "npm:^3.0.0"
     "@smithy/types": "npm:^3.0.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/c0a7cf7a50712d9b8a223c96d075d306aaa5e1077410192f2c5274d802a126e378022f654e28919dd09ce21028fa240a5fcb1b383da4e4f1b0a8781e052478f7
+  checksum: 10c0/43cf2b2bdd493ca587e7d5be651969e134f5b10708168df0aa49fa64e3db75f38dd97972c77fdaaf49f24997b7c86355252fae7ba297e50b276a77e53698771a
   languageName: node
   linkType: hard
 
@@ -5796,7 +5796,7 @@ __metadata:
   resolution: "api@workspace:."
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.563.0"
-    "@aws-sdk/s3-request-presigner": "npm:^3.575.0"
+    "@aws-sdk/s3-request-presigner": "npm:^3.576.0"
     "@commitlint/cli": "npm:^19.2.2"
     "@commitlint/config-conventional": "npm:^19.1.0"
     "@faker-js/faker": "npm:^8.4.1"

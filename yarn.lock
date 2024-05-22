@@ -2104,15 +2104,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google-cloud/firestore@npm:^7.1.0":
-  version: 7.6.0
-  resolution: "@google-cloud/firestore@npm:7.6.0"
+"@google-cloud/firestore@npm:^7.7.0":
+  version: 7.7.0
+  resolution: "@google-cloud/firestore@npm:7.7.0"
   dependencies:
     fast-deep-equal: "npm:^3.1.1"
     functional-red-black-tree: "npm:^1.0.1"
-    google-gax: "npm:^4.3.1"
+    google-gax: "npm:^4.3.3"
     protobufjs: "npm:^7.2.6"
-  checksum: 10c0/1cdcedf4d607d26c6bf1fa9215ba567fbc34e0bb65d334a36664b564f52c85f0a6e8e0866ac5d980a0d645639a15e30ef7d8b0bc2e6f58a9b3f469438792b5a0
+  checksum: 10c0/b33b1b19cc54bdc5432208c692b606dd8b63a3147b50d19fd9f9baed103b6502c2006c572320cb346617eb01b2c79ab7f783f7fac7acf3f17425d9a2f510a3d5
   languageName: node
   linkType: hard
 
@@ -2165,13 +2165,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grpc/grpc-js@npm:~1.10.0":
-  version: 1.10.6
-  resolution: "@grpc/grpc-js@npm:1.10.6"
+"@grpc/grpc-js@npm:~1.10.3":
+  version: 1.10.8
+  resolution: "@grpc/grpc-js@npm:1.10.8"
   dependencies:
-    "@grpc/proto-loader": "npm:^0.7.10"
+    "@grpc/proto-loader": "npm:^0.7.13"
     "@js-sdsl/ordered-map": "npm:^4.4.2"
-  checksum: 10c0/5fc5ad0dd7fa49ddc3ccf05fa09b2c6ef20b9ff1933c574c8a3119de98b13f164c04b1bbf73bdea8f59b475d377771f4a6f8281d13b6636832676584399ef65f
+  checksum: 10c0/600ccd5fc1f4d5e49b52c1ac8fd656b4583d81e6f9708a75459861dbf55251e7c0378ff6ba0043c140916f22dee195119cec6535c7b7e8a0a9da244d48cacc9e
   languageName: node
   linkType: hard
 
@@ -2185,7 +2185,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grpc/proto-loader@npm:^0.7.0, @grpc/proto-loader@npm:^0.7.10, @grpc/proto-loader@npm:^0.7.8":
+"@grpc/proto-loader@npm:^0.7.0, @grpc/proto-loader@npm:^0.7.8":
   version: 0.7.12
   resolution: "@grpc/proto-loader@npm:0.7.12"
   dependencies:
@@ -2196,6 +2196,20 @@ __metadata:
   bin:
     proto-loader-gen-types: build/bin/proto-loader-gen-types.js
   checksum: 10c0/d026236f309e24fd5b840b9aefca49eb4002f270821e8194d0b622013c421b54e04df5f6b8f0797121a1e1141811a4ef088120690aea1e873701d277cd5b47fa
+  languageName: node
+  linkType: hard
+
+"@grpc/proto-loader@npm:^0.7.13":
+  version: 0.7.13
+  resolution: "@grpc/proto-loader@npm:0.7.13"
+  dependencies:
+    lodash.camelcase: "npm:^4.3.0"
+    long: "npm:^5.0.0"
+    protobufjs: "npm:^7.2.5"
+    yargs: "npm:^17.7.2"
+  bin:
+    proto-loader-gen-types: build/bin/proto-loader-gen-types.js
+  checksum: 10c0/dc8ed7aa1454c15e224707cc53d84a166b98d76f33606a9f334c7a6fb1aedd3e3614dcd2c2b02a6ffaf140587d19494f93b3a56346c6c2e26bc564f6deddbbf3
   languageName: node
   linkType: hard
 
@@ -5566,7 +5580,7 @@ __metadata:
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.1.3"
     firebase: "npm:^10.12.1"
-    firebase-admin: "npm:^12.1.0"
+    firebase-admin: "npm:^12.1.1"
     husky: "npm:^9.0.11"
     ioredis: "npm:^5.4.1"
     jest: "npm:^29.5.0"
@@ -7580,14 +7594,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"farmhash@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "farmhash@npm:3.3.0"
+"farmhash@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "farmhash@npm:3.3.1"
   dependencies:
     node-addon-api: "npm:^5.1.0"
     node-gyp: "npm:latest"
-    prebuild-install: "npm:^7.1.1"
-  checksum: 10c0/b08a42dfbd6d909f969a618242a4ce8f0fb06d90e25b54e76602bb07d92810e4362f7fded3dee115e74a85b1318ff712c5f5523f82588eda4ab2f1716c581a08
+    prebuild-install: "npm:^7.1.2"
+  checksum: 10c0/3633402d6989d55536b71742db7bf3b3b883d6729b6ff8f001701b733f8d8ccaf393b2b0d2b650c9a04fb3b24185ac79246800f6fa6b0e2fb891dc39aaa424f9
   languageName: node
   linkType: hard
 
@@ -7831,19 +7845,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase-admin@npm:^12.1.0":
-  version: 12.1.0
-  resolution: "firebase-admin@npm:12.1.0"
+"firebase-admin@npm:^12.1.1":
+  version: 12.1.1
+  resolution: "firebase-admin@npm:12.1.1"
   dependencies:
     "@fastify/busboy": "npm:^2.1.0"
     "@firebase/database-compat": "npm:^1.0.2"
     "@firebase/database-types": "npm:^1.0.0"
-    "@google-cloud/firestore": "npm:^7.1.0"
+    "@google-cloud/firestore": "npm:^7.7.0"
     "@google-cloud/storage": "npm:^7.7.0"
     "@types/node": "npm:^20.10.3"
-    farmhash: "npm:^3.3.0"
+    farmhash: "npm:^3.3.1"
     jsonwebtoken: "npm:^9.0.0"
-    jwks-rsa: "npm:^3.0.1"
+    jwks-rsa: "npm:^3.1.0"
     long: "npm:^5.2.3"
     node-forge: "npm:^1.3.1"
     uuid: "npm:^9.0.0"
@@ -7852,7 +7866,7 @@ __metadata:
       optional: true
     "@google-cloud/storage":
       optional: true
-  checksum: 10c0/55661aa9418477c0698f726af17427412ffa38d373a27b4198262ea463191d6f998c0a703386a65416cd9e4d6390ea87a10b0bd60d70704cf083e930fd0ee5fd
+  checksum: 10c0/142eb1cf8cd62870a4391ff978804e1d31797bbf672136221454f214c914c7830e1cd166613d520c78dfb4b84e1ba2e69b3852dea58e10e2aa7273a2cdacc83f
   languageName: node
   linkType: hard
 
@@ -8384,11 +8398,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"google-gax@npm:^4.3.1":
-  version: 4.3.2
-  resolution: "google-gax@npm:4.3.2"
+"google-gax@npm:^4.3.3":
+  version: 4.3.3
+  resolution: "google-gax@npm:4.3.3"
   dependencies:
-    "@grpc/grpc-js": "npm:~1.10.0"
+    "@grpc/grpc-js": "npm:~1.10.3"
     "@grpc/proto-loader": "npm:^0.7.0"
     "@types/long": "npm:^4.0.0"
     abort-controller: "npm:^3.0.0"
@@ -8400,7 +8414,7 @@ __metadata:
     protobufjs: "npm:7.2.6"
     retry-request: "npm:^7.0.0"
     uuid: "npm:^9.0.1"
-  checksum: 10c0/6c840f5f07e453d5a3aeec4eef65dead10fcd95d1432fd46494833ab46803f3c5398312ebfeb2d1de26367d7770146cf57d4c3f4d2864435be5b9c2999e37945
+  checksum: 10c0/08acc495345c6d14cf3f9381fc11b8ed00b3b9c86def4fd0edb16e3a393db19d1ceae06abab4cef82f849d87eb47f7662737a8d71bbf088a89eeac32b17ae650
   languageName: node
   linkType: hard
 
@@ -9916,7 +9930,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jwks-rsa@npm:^3.0.1":
+"jwks-rsa@npm:^3.1.0":
   version: 3.1.0
   resolution: "jwks-rsa@npm:3.1.0"
   dependencies:
@@ -11966,7 +11980,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prebuild-install@npm:^7.1.1":
+"prebuild-install@npm:^7.1.2":
   version: 7.1.2
   resolution: "prebuild-install@npm:7.1.2"
   dependencies:

@@ -31,7 +31,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "firebase": "^10.12.1",
-    "firebase-admin": "^12.1.0",
+    "firebase-admin": "^12.1.1",
     "ioredis": "^5.4.1",
     "mime-types": "^2.1.35",
     "pg": "^8.11.5",

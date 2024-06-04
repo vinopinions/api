@@ -2922,9 +2922,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/microservices@npm:^10.3.8":
-  version: 10.3.8
-  resolution: "@nestjs/microservices@npm:10.3.8"
+"@nestjs/microservices@npm:^10.3.9":
+  version: 10.3.9
+  resolution: "@nestjs/microservices@npm:10.3.9"
   dependencies:
     iterare: "npm:1.2.1"
     tslib: "npm:2.6.2"
@@ -2961,7 +2961,7 @@ __metadata:
       optional: true
     nats:
       optional: true
-  checksum: 10c0/830f67c0e24ba0a244de4ce41a46e4673c5cd6dc826f00db2026100a5635667e9fbe523a59ab2ec0883126664ada1239e6da9794069bdd7434d7f0c451620486
+  checksum: 10c0/33d7d485f4eb658ab5eebe5cb1335c67cf4308577cfbecf5b5475f8e276ff675cbd6bd9f3e29bd7aec5d7b9d3b762a9a8a959b64511996e2e8aa2c5164b437c4
   languageName: node
   linkType: hard
 
@@ -5457,7 +5457,7 @@ __metadata:
     "@nestjs/common": "npm:^10.3.8"
     "@nestjs/config": "npm:^3.2.2"
     "@nestjs/core": "npm:^10.3.8"
-    "@nestjs/microservices": "npm:^10.3.8"
+    "@nestjs/microservices": "npm:^10.3.9"
     "@nestjs/platform-express": "npm:^10.3.7"
     "@nestjs/schematics": "npm:^10.1.1"
     "@nestjs/swagger": "npm:^7.3.1"
